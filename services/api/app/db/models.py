@@ -139,6 +139,7 @@ class OtpChallenge(Base):
     locked_until: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
     last_sent_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     consumed_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    client_ip: Mapped[str | None] = mapped_column(Text)
 
 
 class RefreshToken(Base):

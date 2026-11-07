@@ -5,9 +5,9 @@ import secrets
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import issue_token
@@ -21,6 +21,10 @@ from app.domain.phone import normalize_phone
 router = APIRouter(prefix="/auth/otp")
 OTP_TTL = dt.timedelta(minutes=5)
 sender = ConsoleSender()
+RESEND_DELAY = dt.timedelta(seconds=60)
+WINDOW = dt.timedelta(hours=1)
+MAX_SENDS_PER_PHONE = 5  # per hour
+MAX_SENDS_PER_IP = 50  # per hour
 
 
 class OtpRequest(BaseModel):
@@ -44,22 +48,59 @@ def _ms(moment: dt.datetime | None) -> int | None:
     return None if moment is None else int(moment.timestamp() * 1000)
 
 
+def _too_many(retry_after: int) -> HTTPException:
+    return HTTPException(
+        status_code=429, detail={"code": "otp_rate_limited", "retry_after": retry_after},
+        headers={"Retry-After": str(max(1, retry_after))},
+    )
+
+
 @router.post("/request", status_code=202)
 async def request_code(
-    body: OtpRequest, session: AsyncSession = Depends(get_session)
+    body: OtpRequest, request: Request, session: AsyncSession = Depends(get_session)
 ) -> dict[str, str]:
     settings = get_settings()  # per request: a forbidden configuration serves nothing
     phone = _phone(body.phone)
+    ip = request.client.host if request.client else "unknown"
     now = dt.datetime.now(dt.UTC)
-    latest = await _latest(session, phone)
     channel = body.channel if body.channel in ("sms", "whatsapp") else "sms"
+    # Serialise requests for one phone: the lock is held until commit.
+    latest = await _latest(session, phone, lock=True)
     if latest is not None and latest.locked_until is not None and latest.locked_until > now:
         return {"status": "accepted"}  # locked: same answer, nothing sent, lock kept
+    sent_at = (
+        await session.execute(
+            select(func.max(OtpChallenge.last_sent_at)).where(OtpChallenge.phone_e164 == phone)
+        )
+    ).scalar_one()
+    if sent_at is not None and sent_at + RESEND_DELAY > now:
+        raise _too_many(int((sent_at + RESEND_DELAY - now).total_seconds()) + 1)
+    since = now - WINDOW
+    per_phone = (
+        await session.execute(
+            select(func.count()).where(OtpChallenge.phone_e164 == phone, OtpChallenge.last_sent_at > since)
+        )
+    ).scalar_one()
+    per_ip = (
+        await session.execute(
+            select(func.count()).where(OtpChallenge.client_ip == ip, OtpChallenge.last_sent_at > since)
+        )
+    ).scalar_one()
+    if per_phone >= MAX_SENDS_PER_PHONE or per_ip >= MAX_SENDS_PER_IP:
+        raise _too_many(int(WINDOW.total_seconds()))
+    inherited = latest is not None and latest.last_sent_at > since
+    await session.execute(  # a new code invalidates the previous ones
+        update(OtpChallenge)
+        .where(OtpChallenge.phone_e164 == phone, OtpChallenge.consumed_at.is_(None))
+        .values(consumed_at=now)
+    )
     code = TEST_CODE if settings.enable_test_otp else new_code()
     session.add(
         OtpChallenge(
             id=uuid.uuid4(), phone_e164=phone, code_hash=hash_code(code, settings.otp_pepper),
-            channel=channel, expires_at=now + OTP_TTL,
+            channel=channel, expires_at=now + OTP_TTL, client_ip=ip,
+            failed_attempts=latest.failed_attempts if inherited and latest else 0,
+            locked_until=latest.locked_until if inherited and latest else None,
         )
     )
     await session.commit()
@@ -67,15 +108,16 @@ async def request_code(
     return {"status": "accepted"}
 
 
-async def _latest(session: AsyncSession, phone: str) -> OtpChallenge | None:
-    return (
-        await session.execute(
-            select(OtpChallenge)
-            .where(OtpChallenge.phone_e164 == phone, OtpChallenge.consumed_at.is_(None))
-            .order_by(OtpChallenge.last_sent_at.desc(), OtpChallenge.expires_at.desc())
-            .limit(1)
-        )
-    ).scalar_one_or_none()
+async def _latest(session: AsyncSession, phone: str, lock: bool = False) -> OtpChallenge | None:
+    query = (
+        select(OtpChallenge)
+        .where(OtpChallenge.phone_e164 == phone, OtpChallenge.consumed_at.is_(None))
+        .order_by(OtpChallenge.last_sent_at.desc(), OtpChallenge.expires_at.desc())
+        .limit(1)
+    )
+    if lock:
+        query = query.with_for_update()
+    return (await session.execute(query)).scalar_one_or_none()
 
 
 @router.post("/verify")
@@ -85,7 +127,7 @@ async def verify_code(
     settings = get_settings()
     phone = _phone(body.phone)
     now = dt.datetime.now(dt.UTC)
-    challenge = await _latest(session, phone)
+    challenge = await _latest(session, phone, lock=True)  # row lock: failures count atomically
     if challenge is None:
         raise HTTPException(status_code=400, detail={"code": "otp_invalid", "attempts_left": 0})
     state: OtpState = {"failed_attempts": challenge.failed_attempts, "locked_until_ms": _ms(challenge.locked_until)}

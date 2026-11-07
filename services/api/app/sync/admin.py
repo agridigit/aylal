@@ -83,6 +83,8 @@ async def apply_admin_op(session: AsyncSession, user_id: uuid.UUID, op: dict[str
 async def _farm(session: Any, user_id: Any, op: Any, farm_id: Any, fields: Any, create: Any) -> Result:
     op_id = op["op_id"]
     farm = await session.get(Farm, farm_id)
+    if farm is not None and farm.deleted_at is not None:
+        raise NOT_FOUND
     if farm is None:  # creation by the future owner
         verdict = validate("farm", fields)
         if not verdict["valid"]:

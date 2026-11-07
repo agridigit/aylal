@@ -146,7 +146,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T075 [P] RED intégration : verrou OTP par téléphone sur fenêtre, ancien défi invalidé, délai de renvoi, plafonds horaires téléphone/IP (429), dans `services/api/tests/integration/test_otp_hardening.py`.
 - [x] T076 [P] RED intégration : atomicité du compteur d'échecs et de la consommation (20 vérifications parallèles), dans `services/api/tests/integration/test_otp_atomicity.py`.
 - [x] T077 [P] RED intégration : ferme supprimée -> 404 REST et refus sync/admin, dans `services/api/tests/integration/test_deleted_farm_access.py`.
-- [ ] T078 GREEN : `routers/auth.py` (échecs par téléphone, invalidation, limites 429, UPDATE conditionnel / `with_for_update`), `auth/access.py`, `auth/farm_context.py`, `sync/admin.py` (`Farm.deleted_at IS NULL`).
+- [x] T078 GREEN : `routers/auth.py` (échecs par téléphone, invalidation, limites 429, UPDATE conditionnel / `with_for_update`), `auth/access.py`, `auth/farm_context.py`, `sync/admin.py` (`Farm.deleted_at IS NULL`).
 
 ## Dépendances
 
