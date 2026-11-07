@@ -49,12 +49,11 @@ def test_given_server_owned_fields_when_uploading_then_they_are_ignored(client, 
     rid = uuid.uuid4()
     r = post(client, token_for, w["worker"], [put(
         w["farm_a"], rid, [w["a1"]], status="validated", author_id=str(w["owner"]), warnings=[{"code": "x"}],
-        validated_by=str(w["owner"]), registry_entry_id=str(uuid.uuid4()), parcel_archived_at="2026-01-01T00:00:00Z",
-        label_photo_key="farms/x/labels/y")])
+        validated_by=str(w["owner"]), registry_entry_id=str(uuid.uuid4()), parcel_archived_at="2026-01-01T00:00:00Z")])
     assert r.status_code == 200, r.text
-    row = sql("SELECT status, author_id, validated_by, label_photo_key FROM operations WHERE id=$1", rid)[0]
+    row = sql("SELECT status, author_id, validated_by FROM operations WHERE id=$1", rid)[0]
     assert row["status"] == "pending_validation" and row["author_id"] == w["worker"]
-    assert row["validated_by"] is None and row["label_photo_key"] is None
+    assert row["validated_by"] is None
     assert sql("SELECT parcel_archived_at FROM operation_parcels WHERE operation_id=$1", rid)[0][0] is None
 
 

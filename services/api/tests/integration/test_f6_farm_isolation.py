@@ -27,13 +27,14 @@ def test_given_a_non_member_or_unknown_farm_when_calling_any_f6_route_then_404_w
     oid = add_operation(w["farm_a"], w["owner"], w["a1"])
     assert client.get(f"/v1/farms/{w['farm_a']}/operations/{oid}", headers=auth(token_for(w["owner"]))).status_code == 200
     ghost = uuid.uuid4()
+    job = uuid.uuid4()  # one stable job id: the reference keys embed it
     reference = {}
-    for method, path, body in routes(ghost, oid, w["a1"], uuid.uuid4()):
+    for method, path, body in routes(ghost, oid, w["a1"], job):
         r = call(client, token_for(w["owner"]), method, path, body)
         assert r.status_code == 404
         reference[(method, path.replace(str(ghost), "{farm}"))] = r.text
     for name, (user, farm) in _scenarios(w).items():
-        for method, path, body in routes(farm, oid, w["a1"], uuid.uuid4()):
+        for method, path, body in routes(farm, oid, w["a1"], job):
             r = call(client, token_for(user), method, path, body)
             assert r.status_code == 404, (name, method, path, r.status_code)
             assert r.text == reference[(method, path.replace(str(farm), "{farm}"))], (name, method, path)

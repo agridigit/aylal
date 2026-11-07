@@ -73,7 +73,7 @@ def test_given_a_sole_owner_deleting_the_account_then_the_registry_is_exported_f
     w = world
     oid = add_operation(w["farm_a"], w["owner"], w["a1"], type_="phyto")
     add_registry(w["farm_a"], oid, w["a1"], operator_user=w["owner"])
-    r = client.post("/v1/me/deletion", headers=auth(token_for(w["owner"])), json={})
+    r = client.post("/v1/me/deletion", headers=auth(token_for(w["owner"])), json={"confirm": True})
     assert r.status_code in (200, 202), r.text
     assert r.json().get("registry_export_id"), "the registry must be exported to the requester before anonymisation"
     assert sql("SELECT count(*) FROM registry_entries WHERE farm_id=$1", w["farm_a"])[0][0] == 1

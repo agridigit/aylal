@@ -111,7 +111,7 @@ def test_given_archive_restore_and_merge_then_parcel_archived_at_is_copied_to_op
     assert sql(q, oid)[0][0] is not None
     sql("UPDATE parcels SET archived_at=NULL WHERE id=$1", w["a1"])
     assert sql(q, oid)[0][0] is None
-    sql("UPDATE parcels SET archived_at=now(), merged_into=$2 WHERE id=$1", w["a1"], w["a2"])
+    sql("UPDATE parcels SET archived_at=now(), merged_into_id=$2 WHERE id=$1", w["a1"], w["a2"])
     assert sql(q, oid)[0][0] is not None
 
 
