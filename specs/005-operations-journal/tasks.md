@@ -8,9 +8,9 @@
 
 ## Phase 1 : Mise en place (non-écran sauf T004)
 
-- [ ] T001 Ajouter aux Dockerfiles `services/api/Dockerfile` et `services/workers/Dockerfile` : `reportlab`, `openpyxl`, `arabic-reshaper`, `python-bidi` ; à `apps/mobile/package.json` : `expo-notifications` (locales uniquement), `expo-sharing`, `expo-image-picker` (repli si `expo-camera` absent). Jamais sur l'hôte.
-- [ ] T002 [P] Créer les clés i18n vides `packages/i18n/locales/{ary,ar,fr}/{operations,phyto,registry,reminders}.json` et étendre le test de parité `packages/i18n/tests/parity.test.ts`.
-- [ ] T003 [P] Créer les squelettes vides de dossiers/modules listés dans plan.md (`services/api/app/operations/`, `packages/domain/vectors/`, `services/workers/tasks/`) sans logique, pour que les tâches RED importent des modules existants.
+- [x] T001 Ajouter aux Dockerfiles `services/api/Dockerfile` et `services/workers/Dockerfile` : `reportlab`, `openpyxl`, `arabic-reshaper`, `python-bidi` ; à `apps/mobile/package.json` : `expo-notifications` (locales uniquement), `expo-sharing`, `expo-image-picker` (repli si `expo-camera` absent). Jamais sur l'hôte.
+- [x] T002 [P] Créer les clés i18n vides `packages/i18n/locales/{ary,ar,fr}/{operations,phyto,registry,reminders}.json` et étendre le test de parité `packages/i18n/tests/parity.test.ts`.
+- [x] T003 [P] Créer les squelettes vides de dossiers/modules listés dans plan.md (`services/api/app/operations/`, `packages/domain/vectors/`, `services/workers/tasks/`) sans logique, pour que les tâches RED importent des modules existants.
 - [ ] T004 **T-DESIGN-GATE (humain, bloquante pour tout `[écran]`)** : maquettes haute fidélité arabe + français, **validées par un humain** (validation consignée dans `specs/005-operations-journal/decisions.md`), dans `docs/design/005-operations-journal/` pour F6-E1 journal, F6-E2 choix d'icône, F6-E3 formulaire, F6-E4 traitement phyto (produit, dose, avertissements), F6-E5 date de récolte (fiche parcelle), F6-E6 planifiées/rappels (P1), F6-E7 dictée (P1), puis F6-E8 étiquette, F6-E9 validation gestionnaire, F6-E10 historique des corrections, F6-E11 export (P2). Conformes à `docs/design/aylal-design-system.md` (jetons, 4 états, RTL, boutons >= 48 dp, plein soleil). **Dépendance externe** : fusion de la branche `004-design-system` (qui reconstruit `packages/ui`) dans main, vérifiée avant tout écran. F6 ne modifie NI `packages/ui` NI `docs/design/aylal-design-system.md` ; composants manquants (`OperationTypeTile`, `WarningBanner`, `DoseField`, `HarvestDateCard`, `PendingBadge`, `ProductRow`) demandés dans `decisions.md`.
 
 ## Phase 2 : Fondations (non-écran, bloquent tous les récits)
@@ -58,7 +58,7 @@
 - [x] T028 **G4-GREEN registre réglementaire** : `services/api/app/operations/registry.py` (écritures `application`/`reversal` compensatoires, snapshot, `retain_until`), `services/workers/tasks/purge_expired_registry.py`, extension de `services/api/app/accounts/{export.py,purge.py}` (anonymisation, export préalable), config `AYLAL_REGISTRY_RETENTION_YEARS`, `AYLAL_VISION_URL`, `AYLAL_NLU_URL` dans `services/api/app/config.py` et `docker-compose.yml` (`${VAR:-}` vides) ; fait passer T008, T018, T019.
 - [x] T029 **G5-GREEN IP de confiance et limiteur** : extraire `client_ip()` de `services/api/app/routers/auth.py` vers `services/api/app/auth/client_ip.py` (comportement inchangé) ; limiteur Redis partagé `services/api/app/auth/rate_limit.py` ; fait passer T009, T020 ; tests F1 verts.
 - [x] T030 **GREEN contrat** : `specs/005-operations-journal/contracts/openapi.yaml` synchronisé, squelettes de routeurs `services/api/app/routers/{operations,phyto_products,registry}.py` enregistrés ; fait passer T022.
-- [ ] T031 REFACTOR fondations : dédupliquer sans changer le comportement, tous les tests T005-T022a verts (`refactor(005-operations-journal): foundations`).
+- [x] T031 REFACTOR fondations : dédupliquer sans changer le comportement, tous les tests T005-T022a verts (`refactor(005-operations-journal): foundations`).
 - [x] T031a **Durcissement-RED conservation** (sécurité) : `services/api/tests/unit/test_f6_retention_rule.py` (`retain_until(performed_on, *, recorded_on, years=None)` = max(performed_on, recorded_on) + années) et `services/api/tests/integration/test_f6_retention_hardening.py` (opération antidatée de 10 ans, chaîne annulation/correction au `retain_until` le plus long, `purge_expired_registry` ne supprime aucune entrée d'une chaîne dont un membre n'est pas expiré, ni une ligne enregistrée aujourd'hui).
 - [x] T031b **Durcissement-RED visibilité non-staff** (sécurité) : `services/api/tests/integration/test_f6_nonstaff_line_visibility.py` (mark_done / cancel REST et rejeu de `put` par la synchro : 404 tant que TOUTES les lignes ne sont pas visibles du non-staff, rien n'est écrit ni au registre).
 - [x] T031c **Durcissement-RED anonymisation du compte supprimé** (sécurité) : `services/workers/tests/integration/test_f6_anonymise_account_data.py` (`SqlAccountRepo` réel : `registry_entries` par `recorded_by`/`operator_user_id`, `operations` par `author_id`/`operator_user_id`, `operation_corrections` par `author_id` perdent `operator_name` et identifiants de `note` ; produit, dose, dates conservés ; lignes des autres utilisateurs intactes).
@@ -84,7 +84,7 @@
 - [x] T036 [US1] GREEN création et lecture : `services/api/app/operations/service.py` (création, répartition, statut initial, éligibilité de rôle), `services/api/app/routers/operations.py` ; fait passer T033, T034.
 - [x] T037 [US1] GREEN synchro écriture/lecture : `services/api/app/sync/operations.py` (`authorize` + `apply` via `access.py`, quota sous verrou, conflits champ par champ ; résolution de `label_photo_id` sur (id, farm_id, user_id), aucune clé client lue) ; fait passer T035 et T022a (voie sync).
 - [x] T038 [P] [US1] GREEN view models mobiles : `apps/mobile/src/operations/viewModels/operationForm.ts`, `journal.ts` (SQLite local, indicateur « à envoyer ») ; fait passer T032.
-- [ ] T039 [US1] REFACTOR récit 1.
+- [x] T039 [US1] REFACTOR récit 1.
 
 ### Écrans (dépendent de T004 + fusion 004-design-system)
 
@@ -109,7 +109,7 @@
 - [x] T048 [P] [US2] GREEN catalogue : `services/api/app/routers/phyto_products.py`, `services/workers/tasks/import_phyto_catalog.py` (import mensuel, `catalog_versions`, budget <= 3 Mo compressé) ; fait passer T043 (catalogue), T044.
 - [x] T049 [P] [US2] GREEN étiquette : `services/api/app/operations/label.py` (port `LabelRecognizer`, repli ; clé générée serveur `farms/{farm_id}/labels/{uuid}`, émission de `label_photo_id`, vérification ferme + utilisateur, purge à 24 h) ; fait passer T045 et T022a (voie REST).
 - [x] T050 [P] [US2] GREEN local : `apps/mobile/src/operations/localControls.ts`, `catalogCache.ts` (< 50 ms, date du catalogue) avec tests Jest `apps/mobile/src/operations/__tests__/localControls.test.ts` écrits avant (RED).
-- [ ] T051 [US2] REFACTOR récit 2.
+- [x] T051 [US2] REFACTOR récit 2.
 
 ### Écrans (dépendent de T004 + fusion 004-design-system)
 

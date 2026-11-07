@@ -111,5 +111,15 @@ Aucune assertion de sécurité n'est affaiblie ; chaque correction est minimale.
 - **Mise en file** : l'API met `build_registry_export` en file arq après validation (`app/operations/queue.py`) ; échec de mise en file = job `failed` (créneau libéré) + 503 `export_unavailable`. `AYLAL_ENQUEUE_JOBS=0` sur `api-test` uniquement : les suites d'intégration partagent la base avec le worker de la pile et créent des jobs `queued` volontairement. `arq` ajouté aux dépendances de l'API (il impose `redis<6` : un `type: ignore` dans `rate_limit.py`).
 - **MinIO** : les services signent avec `S3_ACCESS_KEY`/`S3_SECRET_KEY` ; le compte root MinIO suit désormais ces variables si `MINIO_ROOT_*` n'est pas défini (avant : défauts différents, `SignatureDoesNotMatch`). `api-test` et `worker` attendent `minio-init` (seau `aylal`).
 - **Statut d'export** : `requested_by` seul reçoit les URL (sinon 404 identique à un job inconnu) ; `corrected` = une écriture compensatoire de la même opération/parcelle précède l'application courante.
-- **Catalogue** : les anciennes versions sont conservées, mais `GET /v1/phyto-products` ne filtre pas encore sur la dernière version (doublons possibles après un 2e import). Suivi à traiter avec la reconnaissance d'étiquette ; non fait ici pour ne pas fragiliser les tests parallèles qui créent leurs propres versions.
+- **Catalogue** : les anciennes versions sont conservées ; `GET /v1/phyto-products` ne renvoie que la dernière (corrigé, voir « Finition »).
 - **Flaky observé une fois** : `test_given_the_hourly_limit_of_one_user...` (dictée) a échoué lors d'un `make test-integration` puis est passé deux fois ; non reproduit.
+
+## Finition : provenance des polices, catalogue, lint
+
+- **Provenance des polices d'export** (`services/api/app/operations/fonts/`). Vérifié par la table `name` des fichiers : `IBMPlexSans-Regular.ttf` = « IBM Plex Sans » (Copyright IBM Corp., licence SIL OFL 1.1) ; `IBMPlexSansArabic-Regular.ttf` = « IBM Plex Sans Arabic » (OFL 1.1). La police latine a été copiée une fois depuis un projet frère hors dépôt ; elle est désormais versionnée ici (licences `OFL-IBMPlexSans.txt` et `OFL-IBMPlexSansArabic.txt` à côté) et aucun fichier du dépôt ne référence de chemin hors dépôt (Dockerfile du worker : `COPY services/api/app/operations/fonts/`). Source publique de remplacement identique à l'espèce : `@fontsource/ibm-plex-sans` 5.3.0. Empreintes SHA-256 :
+  - `IBMPlexSans-Regular.ttf` 975dcda37d80f038dcd143c22e33ca2d97a0cc5a929aace1c749153b0fe1afa5
+  - `IBMPlexSansArabic-Regular.ttf` 4800c6ff40c070a65f9184d73e4ea4a669ecfb7a5b8778722d49c7f89e3d58d9
+  - `OFL-IBMPlexSans.txt` 7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da
+  - `OFL-IBMPlexSansArabic.txt` 1c32ddc3fc6efd167cdcbe475195287f2dc26ed1a4c92fbe31c87ceaffe44f98
+- **Catalogue** : `GET /v1/phyto-products` ne renvoie que les produits de la dernière version du catalogue (`imported_at` le plus récent) ; pas de doublons après un second import.
+- **Lint des tests** : `F811` ignoré pour `tests/**` (`pyproject.toml`) : l'import d'une fixture pytest (`world`) puis sa réception en paramètre est l'idiome attendu ; aucune assertion modifiée.

@@ -292,7 +292,7 @@ async def _write_lines(session: AsyncSession, op: dict[str, Any], parcels: list[
     weights = areas if sum(areas) > 0 else [1.0] * len(parcels)
     quantity = op["quantity_total"]
     shares = allocate(quantity, weights) if quantity is not None else [None] * len(parcels)
-    first = (op.get("product_lines") or [{}])[0] if op.get("product_lines") else {}
+    first = (op.get("product_lines") or [{}])[0]
     for parcel, share in zip(parcels, shares, strict=True):
         await session.execute(
             text(
