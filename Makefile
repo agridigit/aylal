@@ -21,7 +21,7 @@ test: test-api test-domain test-mobile   ## tous les tests unitaires et d'intég
 # l'e2e passe par le proxy vers l'API de la pile : route dev-token activée pour les tests uniquement (env dev/test)
 test test-api e2e-api coverage test-integration check: export AYLAL_ENABLE_DEV_TOKEN=1
 test-api:
-	$(DC) --profile test run --rm api-test pytest -q $(ARGS)
+	$(DC) --profile test run --rm api-test pytest -q --ignore=tests/e2e $(ARGS)
 	$(DC) run --rm --no-deps worker pytest -q
 test-domain:
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- $(ARGS)
@@ -49,6 +49,7 @@ apk:           ## construit l'APK release arm64 dans Docker -> apps/mobile/dist/
 test-deps:     ## refuse une app « façade » : dépendances réelles déclarées, aucun stub natif
 	$(DC) --profile test run --rm --no-deps js-test node scripts/check-real-deps.mjs
 e2e-api:
+	$(MAKE) up
 	$(DC) --profile test run --rm api-test pytest -q tests/e2e
 lint:
 	$(DC) --profile test run --rm js-test pnpm -r lint
@@ -57,7 +58,7 @@ typecheck:
 	$(DC) --profile test run --rm js-test pnpm -r typecheck
 	$(DC) --profile test run --rm api-test mypy app
 coverage:      ## seuil 80 % pytest et Vitest
-	$(DC) --profile test run --rm api-test pytest --cov=app --cov-fail-under=80
+	$(DC) --profile test run --rm api-test pytest --ignore=tests/e2e --cov=app --cov-fail-under=80
 	$(DC) --profile test run --rm js-test pnpm -r --filter @aylal/domain test -- --coverage
 apk-size:      ## APK release <= 40 Mo
 	bash scripts/check-apk-size.sh
