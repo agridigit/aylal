@@ -71,3 +71,26 @@ Seuil CPS (section 15) : « Application installée < 40 Mo » ; la porte `apk-si
 Écarté : `libcrypto.so` (5 Mo, sqlcipher d'op-sqlite) est requis par « chiffrés au repos, y compris sur le téléphone » (constitution) ; GIF : aucun `.gif` dans le dépôt, gain de 0,3 Mo seulement, négligeable. `libmaplibre.so` : 10,8 Mo, indissociable de la carte.
 
 Reste 8 Mo à gagner : non atteignable sans décision humaine. `apk-size` reste rouge. Option recommandée : relever le budget à 52 Mo pour F2 (la carte est un besoin P1 de la fonctionnalité) en amendant le CPS, en gardant arm64 seul + R8 ; alternative : AAB/split par densité n'aide pas (les .so dominent). À valider : le build R8 n'a pas été lancé sur émulateur (E2E_SKIP) ; faire un passage Maestro avant fusion.
+
+## Budget APK 40 Mo : audit du contenu de l'APK (second tour)
+
+Audit de `apps/mobile/dist/app-release.apk` (49 921 377 o, arm64-v8a, R8 actif) par `unzip -v` et `readelf -S` dans l'image `android-build`. Aucun build supplémentaire n'a été lancé : chaque levier ci-dessous est évalué sur les tailles réelles des entrées de l'APK.
+
+| Contenu | Taille | Constat | Levier |
+|---|---|---|---|
+| `lib/arm64-v8a/*.so` (28 fichiers, stockés non compressés) | 40,98 Mo | 82 % de l'APK | voir lignes suivantes |
+| `libmaplibre.so` | 10,85 Mo | déjà sans `.symtab` ni `.debug_*` ; variante `opengl` (défaut de `maplibre-react-native` 11.5.1, la seule plus légère que `vulkan`) | rien à gagner |
+| `libreactnative.so` + `libhermesvm.so` + `libjsi.so` | 10,2 Mo | socle React Native, sans symboles | aucun |
+| `libcrypto.so` | 4,98 Mo | sqlcipher (op-sqlite) | conservé : chiffrement au repos (constitution) |
+| `libreanimated`/`libworklets`/`libexpo-modules-*` | 5,0 Mo | requis par expo-router, écrans et gestes | aucun |
+| `libc++_shared.so` | 1,29 Mo | requis par toutes les bibliothèques C++ | conservé |
+| `libgifimage.so` + `libnative-filters.so` (Fresco) | 0,60 Mo | seul retrait plausible (`packagingOptions.excludes`) ; gain 1,2 % ; non vérifiable sans passage Maestro (risque de plantage au décodage d'un GIF/flou) | non appliqué |
+| `assets/index.android.bundle` (bytecode Hermes) | 4,0 Mo | déjà bytecode minifié, aucune source map embarquée | aucun |
+| `classes.dex` | 6,4 Mo (2,9 Mo compressé) | déjà passé par R8 | aucun |
+| `resources.arsc` + `res/` | 1,5 Mo | R8 + réduction des ressources actifs ; `resConfigs` : gain estimé < 0,3 Mo | négligeable |
+| Polices IBM Plex, `.ttf`/`.otf`, `.gif` | 0 | aucune police ni GIF dans l'APK (polices non encore embarquées par les écrans) | rien à sous-ensembler |
+| Images | < 0,2 Mo | quelques PNG/WebP de ressources, déjà minimaux | aucun |
+
+Symboles de debug : déjà retirés par AGP (pas de `doNotStrip`) ; `.eh_frame` est nécessaire aux exceptions C++. Pas de bibliothèque en double (une seule `libc++_shared.so`, une seule ABI).
+
+Conclusion mesurée : le maximum réaliste de tous les leviers non risqués est d'environ 0,6 à 0,9 Mo (49,9 -> environ 49,1 Mo) pour un objectif de 40 Mo (-9,9 Mo). Aucun levier conforme au CPS et à la constitution ne comble l'écart. La compression des `.so` reste écartée (elle déplacerait la taille vers l'installation, voir plus haut). Seuil non relâché, carte non retirée, aucun test modifié : `apk-size` reste rouge à 49,9 Mo ; décision humaine requise (amender le budget CPS §15 pour F2, ou retirer/différer la carte vectorielle).
