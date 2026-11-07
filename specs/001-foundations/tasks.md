@@ -105,7 +105,7 @@
 - [ ] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
 - [ ] T057 [US3] Créer le shell mobile `apps/mobile/{package.json,app.json,babel.config.js,jest.config.js}` et `apps/mobile/src/sync/{db.ts,connector.ts,syncState.ts,encryptionKey.ts,storageWarning.ts}` (PowerSync + SQLCipher, expo-secure-store)
 - [ ] T058 [P] [US3] Implémenter `apps/mobile/src/telemetry/telemetry.ts` (anonyme, désactivable, `telemetry_enabled`)
-- [ ] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois T0xx US4 disponible ; en attendant, interface minimale testée)
+- [ ] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
 - [ ] T060 [US3] Commit `feat(foundations): green - offline sync` ; REFACTOR `refactor(foundations): offline sync`
 
 **Point de contrôle** : 1 000 enregistrements / 30 jours : 0 perte, 0 doublon.
