@@ -51,7 +51,7 @@ Index GiST sur `geometry`. 50 lignes générées par graine déterministe.
 `op_id uuid PK`, `record_id uuid`, `applied_at timestamptz`, `result jsonb`. Un `op_id` déjà vu renvoie le résultat enregistré sans réappliquer.
 
 ### sync_conflicts (journal, aucune perte silencieuse)
-`id uuid PK`, `record_id uuid`, `field text`, `discarded_value jsonb`, `kept_value jsonb`, `discarded_by uuid`, `base_version bigint`, `server_version bigint`, `detected_at timestamptz`, `acknowledged_at timestamptz null`. Synchronisée en lecture vers les membres de la ferme pour afficher l'état « en conflit ».
+`id uuid PK`, `farm_id uuid FK` (dénormalisé depuis `trial_records.farm_id` à l'écriture, non modifiable ; sert au contrôle d'accès de l'acquittement : membre `editor`/`owner` requis, sinon 404 inter-ferme), `record_id uuid`, `field text`, `discarded_value jsonb`, `kept_value jsonb`, `discarded_by uuid`, `base_version bigint`, `server_version bigint`, `detected_at timestamptz`, `acknowledged_at timestamptz null`. Synchronisée en lecture vers les membres de la ferme pour afficher l'état « en conflit ».
 
 ## Local au téléphone (non synchronisé)
 

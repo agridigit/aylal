@@ -82,10 +82,11 @@
 - [ ] T036 [P] [US3] Test de contrat `services/api/tests/contract/test_openapi_sync.py` : jeton d'essai et envoi de synchronisation conformes à `contracts/openapi.yaml` (AC3.2)
 - [ ] T037 [P] [US3] Test de contrat `tests/contract/test_powersync_rules.py` : `infra/powersync/sync-rules.yaml` identique à `contracts/powersync-sync-rules.yaml` et filtre par ferme/membre (AC3.2, FR-018)
 - [ ] T038 [P] [US3] Test pytest `services/api/tests/integration/test_acl.py` : refus 403 hors ferme ; `viewer` ne peut pas écrire ; `editor`/`owner` peuvent ; `farm_members` en lecture seule (FR-018, R8)
-- [ ] T039 [P] [US3] Test pytest `services/api/tests/integration/test_idempotency.py` : un `op_id` rejoué renvoie le résultat enregistré dans `applied_ops` sans réappliquer ; coupure en plein envoi sans doublon (cas limite, AC3.2)
-- [ ] T040 [P] [US3] Test pytest `services/api/tests/integration/test_conflicts.py` : même champ modifié par deux appareils -> règle d'ordre d'arrivée, ligne dans `sync_conflicts` (`discarded_value`, `kept_value`, `base_version`, `server_version`), `has_conflict = true` jusqu'à acquittement ; horloge décalée sans effet (AC3.4)
+- [ ] T039 [P] [US3] Test pytest `services/api/tests/integration/test_idempotency.py` : un `op_id` rejoué renvoie le résultat enregistré dans `applied_ops` sans réappliquer ; coupure en plein envoi sans doublon (cas limite, AC3.2) [FR-013]
+- [ ] T040 [P] [US3] Test pytest `services/api/tests/integration/test_conflicts.py` : même champ modifié par deux appareils -> règle d'ordre d'arrivée, ligne dans `sync_conflicts` (`discarded_value`, `kept_value`, `base_version`, `server_version`), `has_conflict = true` jusqu'à acquittement ; horloge décalée sans effet (AC3.4) [FR-015]
+- [ ] T040a [P] [US3] Test pytest `services/api/tests/integration/test_acl_conflict_ack.py` : `POST /v1/sync/conflicts/{id}/acknowledge` par un membre `editor`/`owner` de la ferme du conflit -> 204 ; par un utilisateur d'une AUTRE ferme (ou non membre) -> 404 (jamais 403, corps identique à un id inexistant) ; `viewer` de la bonne ferme -> 403 ; sans jeton -> 401 ; le conflit reste non acquitté après un refus (FR-018, sécurité inter-ferme)
 - [ ] T041 [P] [US3] Test pytest `services/api/tests/integration/test_validation_server.py` : rejet par le serveur des entrées que les vecteurs T008 déclarent invalides (AC3.5)
-- [ ] T042 [P] [US3] Test pytest `services/api/tests/integration/test_offline_30_days.py` : 1 000 enregistrements créés et modifiés sur 30 jours simulés, reconnexion, 0 perte, 0 doublon (AC3.3, SC-005)
+- [ ] T042 [P] [US3] Test pytest `services/api/tests/integration/test_offline_30_days.py` : 1 000 enregistrements créés et modifiés sur 30 jours simulés, reconnexion, 0 perte, 0 doublon (AC3.3, SC-005) [FR-012]
 - [ ] T043 [P] [US3] Test pytest `services/api/tests/integration/test_encryption.py` : `scram-sha-256` actif, accès TLS via `proxy`, refus du clair (AC3.6, FR-017)
 - [ ] T044 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/localStore.test.ts` : saisie sans réseau enregistrée localement, état `pending` dérivé de `ps_crud` (AC3.1, FR-014)
 - [ ] T045 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/syncState.test.ts` : transitions `pending -> synced`, `pending -> conflict`, `conflict -> synced`, `synced -> pending` ; « non envoyé » visible tant que non acquitté (AC3.2, cas limite changement de téléphone)
@@ -93,14 +94,14 @@
 - [ ] T047 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/storageWarning.test.ts` : avertissement avant perte de saisie si stockage presque plein (cas limite)
 - [ ] T048 [P] [US3] Test Jest `apps/mobile/src/telemetry/__tests__/telemetry.test.ts` : télémétrie anonyme (`install_id` aléatoire, sans donnée personnelle) et désactivable (FR-020)
 - [ ] T049 [P] [US3] Test E2E Maestro `apps/mobile/maestro/offline_sync.yaml` : mode avion -> saisie -> « non envoyé » -> retour réseau -> indicateur disparu (AC3.1, AC3.2)
-- [ ] T050 [US3] Lancer pytest et Jest : T036 à T048 DOIVENT échouer ; commit `test(foundations): red - offline sync`
+- [ ] T050 [US3] Lancer pytest et Jest : T036 à T048 et T040a DOIVENT échouer ; commit `test(foundations): red - offline sync`
 
 ### Implémentation (GREEN)
 
 - [ ] T051 [US3] Créer les modèles SQLAlchemy `services/api/app/db/models.py` (farms, farm_members, parcels, trial_records avec `server_version`, `field_versions`, `has_conflict`, `deleted_at`, applied_ops, sync_conflicts) selon data-model.md
 - [ ] T052 [US3] Créer la migration `services/api/alembic/versions/0001_initial.py` (PostGIS, index GiST sur `parcels.geometry`, publication logique pour PowerSync)
 - [ ] T053 [P] [US3] Implémenter `services/api/app/auth/` : jeton d'essai et contrôle ferme/rôle (`owner`/`editor`/`viewer`) (FR-018)
-- [ ] T054 [US3] Implémenter `services/api/app/sync/apply.py` (envoi idempotent via `applied_ops`, validation partagée, résolution de `packages/domain` répliquée selon R6, écriture `sync_conflicts`) et `services/api/app/routers/sync.py`
+- [ ] T054 [US3] Implémenter `services/api/app/sync/apply.py` (envoi idempotent via `applied_ops`, validation partagée, résolution de `packages/domain` répliquée selon R6, écriture `sync_conflicts`) et `services/api/app/routers/sync.py` (dont `POST /sync/conflicts/{id}/acknowledge` : résolution du conflit vers `sync_conflicts.farm_id`, contrôle membre `editor`/`owner` de cette ferme, 404 si autre ferme, fait passer T040a)
 - [ ] T055 [P] [US3] Créer `infra/powersync/sync-rules.yaml` (copie conforme du contrat) et brancher `powersync` dans `docker-compose.yml`
 - [ ] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
 - [ ] T057 [US3] Créer le shell mobile `apps/mobile/{package.json,app.json,babel.config.js,jest.config.js}` et `apps/mobile/src/sync/{db.ts,connector.ts,syncState.ts,encryptionKey.ts,storageWarning.ts}` (PowerSync + SQLCipher, expo-secure-store)
@@ -121,7 +122,7 @@
 - [ ] T063 [P] [US4] Test Vitest `packages/ui/tests/motion.test.ts` : durées de transition 200 à 300 ms ; supprimées ou réduites si « réduire les animations » est actif (AC4.6, FR-024)
 - [ ] T064 [P] [US4] Test Vitest `packages/ui/tests/stories-coverage.test.ts` : chaque composant exporté a une story par variante et par état (défaut, actif, désactivé, chargement, erreur) (AC4.3, FR-022)
 - [ ] T065 [P] [US4] Test Vitest `packages/ui/tests/touch-target.test.ts` : tout composant interactif a une zone tactile >= 48 dp (AC2.5, FR-010)
-- [ ] T066 [P] [US4] Test Playwright `packages/ui/visual/catalog.spec.ts` : captures Storybook 3 thèmes x 2 sens (LTR/RTL) de chaque composant contre `packages/ui/visual/__screenshots__/` ; une modification involontaire est détectée (AC4.1, AC4.4, AC4.5, SC-007)
+- [ ] T066 [P] [US4] Test Playwright `packages/ui/visual/catalog.spec.ts` : captures Storybook 3 thèmes x 2 sens (LTR/RTL) de chaque composant contre `packages/ui/visual/__screenshots__/` ; une modification involontaire est détectée (AC4.1, AC4.4, AC4.5, SC-007) [FR-023]
 - [ ] T067 [P] [US4] Test Playwright `packages/ui/visual/regression-detect.spec.ts` : une altération volontaire d'un composant fait échouer `make test-visual` (AC4.5)
 - [ ] T068 [P] [US4] Test Vitest `packages/ui/tests/long-text.test.ts` : texte long (fr) et court (ar) sans débordement ni troncature illisible (cas limite)
 - [ ] T069 [US4] Lancer : T061 à T068 DOIVENT échouer ; commit `test(foundations): red - design system`
@@ -157,7 +158,7 @@
 ### Implémentation (GREEN)
 
 - [ ] T086 [US2] Créer `packages/i18n/package.json`, `packages/i18n/src/index.ts` (i18next, repli `fr`) et `packages/i18n/locales/{ary,ary-Latn,ar,fr}.json` selon `contracts/i18n-contract.md` (textes provisoires mais complets)
-- [ ] T087 [US2] Implémenter l'écran `apps/mobile/src/screens/Home/` (4 états via `packages/ui`, RTL, sélecteur de langue, bouton de lecture vocale) et `apps/mobile/app/_layout.tsx`, `apps/mobile/app/index.tsx`
+- [ ] T087 [US2] Implémenter l'écran `apps/mobile/src/screens/Home/` (4 états via `packages/ui`, RTL, sélecteur de langue, bouton de lecture vocale) et `apps/mobile/app/_layout.tsx`, `apps/mobile/app/index.tsx` [FR-006]
 - [ ] T088 [P] [US2] Implémenter `apps/mobile/src/voice/speak.ts` (expo-speech)
 - [ ] T089 [P] [US2] Implémenter `apps/mobile/src/perf/startupMark.ts` (Hermes, marque de démarrage)
 - [ ] T090 [P] [US2] Implémenter la persistance de `locale`/`theme` dans `app_settings` : `apps/mobile/src/settings/appSettings.ts`
@@ -206,7 +207,7 @@
 - [ ] T112 [P] Vérifier la couverture >= 80 % du code métier (`packages/domain`, `services/api/app/domain`) via `make coverage` (SC-009, FR-004)
 - [ ] T113 [P] Vérifier que chaque critère d'acceptation P1 (AC1.x à AC4.x) a au moins un test automatisé : matrice de traçabilité `specs/001-foundations/traceability.md` (SC-009)
 - [ ] T114 [P] Passer `quickstart.md` en entier sur un clone propre (Docker seul) et corriger les écarts
-- [ ] T115 **make check vert** : lancer `make check` (lint, typecheck, test, coverage, test-visual, apk-size, diagrams, e2e ou `E2E_SKIP=1` avec avertissement et justification en CI Linux/KVM) ; tout échec est corrigé, jamais contourné en modifiant un test
+- [ ] T115 **make check vert** : lancer `make check` (lint, typecheck, test, coverage, test-visual, apk-size, diagrams, e2e ou `E2E_SKIP=1` avec avertissement et justification en CI Linux/KVM) ; tout échec est corrigé, jamais contourné en modifiant un test [SC-001]
 - [ ] T116 **Documentation de fin de module (/aylal.docs)** : exécuter `/aylal.docs` pour produire `docs/modules/001-foundations/{ingenieur.md,agriculteur.fr.md,agriculteur.ar.md}`, `diagrams/*.mmd` (flowchart, sequenceDiagram, erDiagram, stateDiagram-v2), `img/*.svg` et `img/*.png` via `make diagrams`, chaque doc intégrant l'image ET le bloc de code source ; mettre à jour `CHANGELOG.md` (FR-026)
 
 ## Dépendances
@@ -235,4 +236,4 @@ Aucun récit P3 n'existe dans la spec F0. Restent hors périmètre (reportés) :
 
 ## Totaux
 
-116 tâches : Setup 7, Fondations 12, US1 16, US3 25, US4 15, US2 16, US5 8, US6 12, Finition 5.
+117 tâches : Setup 7, Fondations 12, US1 16, US3 26, US4 15, US2 16, US5 8, US6 12, Finition 5.

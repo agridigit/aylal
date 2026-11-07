@@ -66,12 +66,20 @@ paths:
   /sync/conflicts/{id}/acknowledge:
     post:
       summary: Acquitte un conflit (l'enregistrement quitte l'état en conflit)
+      description: >
+        Le serveur résout le conflit vers sa ferme (sync_conflicts.farm_id, à défaut
+        record_id -> trial_records.farm_id), puis exige que l'appelant soit membre de
+        cette ferme avec le rôle editor ou owner. Si le conflit appartient à une ferme
+        dont l'appelant n'est pas membre, ou n'existe pas : 404 (jamais 403, pour ne pas
+        révéler l'existence de l'identifiant). 403 uniquement si l'appelant est membre
+        de la ferme mais viewer.
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
         "204": { description: Acquitté }
-        "403": { description: Rôle insuffisant }
-        "404": { description: Inconnu }
+        "401": { description: Jeton absent ou invalide }
+        "403": { description: Membre de la ferme du conflit mais rôle insuffisant (viewer) }
+        "404": { description: Conflit inconnu OU appartenant à une autre ferme (indistinguables) }
 components:
   securitySchemes:
     bearer: { type: http, scheme: bearer, bearerFormat: JWT }
