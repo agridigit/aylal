@@ -22,6 +22,7 @@ class Settings:
     sms_gateway_key: str
     enable_test_otp: bool
     trusted_proxies: tuple[str, ...] = ()
+    tiles_base_url: str = ""
 
 
 def get_settings() -> Settings:
@@ -45,6 +46,7 @@ def get_settings() -> Settings:
     enable_test_otp = os.environ.get("AYLAL_ENABLE_TEST_OTP", "0") == "1"
     if enable_test_otp and env not in _LOCAL_ENVS:
         raise RuntimeError("AYLAL_ENABLE_TEST_OTP=1 is forbidden when AYLAL_ENV is not dev/test")
+    tiles_base_url = os.environ.get("AYLAL_TILES_BASE_URL", "").strip()
     return Settings(
         database_url=os.environ.get(
             "AYLAL_DATABASE_URL", "postgresql://aylal:aylal_dev@db:5432/aylal"
@@ -56,7 +58,15 @@ def get_settings() -> Settings:
         sms_gateway_url=os.environ.get("AYLAL_SMS_GATEWAY_URL", ""),
         sms_gateway_key=os.environ.get("AYLAL_SMS_GATEWAY_KEY", ""),
         enable_test_otp=enable_test_otp,
+        tiles_base_url=tiles_base_url,
         trusted_proxies=tuple(
             p.strip() for p in os.environ.get("AYLAL_TRUSTED_PROXIES", "").split(",") if p.strip()
         ),
     )
+
+
+def require_tiles_base_url(settings: Settings) -> str:
+    """Tiles URL for the map endpoints; refused outside dev/test when absent (guard-rail 5)."""
+    if settings.env not in _LOCAL_ENVS and not settings.tiles_base_url:
+        raise RuntimeError("AYLAL_TILES_BASE_URL must be set when AYLAL_ENV is not dev/test")
+    return settings.tiles_base_url
