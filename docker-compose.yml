@@ -195,9 +195,25 @@ services:
       dockerfile: infra/docker/e2e.Dockerfile
       args:
         MAESTRO_URL: ${MAESTRO_URL:-}
+    extra_hosts: ["host.docker.internal:host-gateway"]
     volumes: [".:/repo"]
 
+  # ---------- Build Android (profil "build") : APK release arm64, linux/amd64 via Rosetta ----------
+  android-build:
+    profiles: ["build"]
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: infra/docker/android-build.Dockerfile
+      args:
+        ANDROID_CMDLINE_URL: ${ANDROID_CMDLINE_URL:-}
+    volumes: [".:/repo", "android-build:/build", "android-sdk:/opt/android-sdk", "gradle-cache:/cache/gradle", "pnpm-store-amd64:/pnpm/store"]
+
 volumes:
+  android-build:
+  android-sdk:
+  gradle-cache:
+  pnpm-store-amd64:
   db-data:
   minio-data:
   pnpm-store:
