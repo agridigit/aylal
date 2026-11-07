@@ -1,0 +1,8 @@
+[
+  {"name": "first failure increments the counter without locking", "state": {"failedAttempts": 0, "lockedUntilMs": null}, "action": "failure", "nowMs": 1000, "expect": {"failedAttempts": 1, "lockedUntilMs": null}},
+  {"name": "second failure does not lock", "state": {"failedAttempts": 1, "lockedUntilMs": null}, "action": "failure", "nowMs": 1000, "expect": {"failedAttempts": 2, "lockedUntilMs": null}},
+  {"name": "third failure locks for 5 minutes", "state": {"failedAttempts": 2, "lockedUntilMs": null}, "action": "failure", "nowMs": 1000, "expect": {"failedAttempts": 3, "lockedUntilMs": 301000}},
+  {"name": "locked state reports locked before expiry", "state": {"failedAttempts": 3, "lockedUntilMs": 301000}, "action": "isLocked", "nowMs": 300999, "expect": true},
+  {"name": "locked state is free at expiry", "state": {"failedAttempts": 3, "lockedUntilMs": 301000}, "action": "isLocked", "nowMs": 301000, "expect": false},
+  {"name": "unlocked state is not locked", "state": {"failedAttempts": 1, "lockedUntilMs": null}, "action": "isLocked", "nowMs": 5, "expect": false}
+]
