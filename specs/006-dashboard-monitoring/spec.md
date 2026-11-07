@@ -133,7 +133,12 @@ L'agriculteur reçoit un résumé vocal de la journée sous forme de notificatio
 
 ### Session 2026-11-07
 
-(Aucune à ce stade : le CPS section 8 couvre le périmètre.)
+- Q : Qui reçoit les alertes et le résumé vocal ? → R : Propriétaire et gestionnaires pour toutes les parcelles ; un ouvrier seulement pour ses parcelles attribuées (CPS section 6, critère F1 ; section 8 reste muette, choix le plus simple et le plus sûr).
+- Q : Quels canaux de notification ? → R : Notification poussée sur le téléphone en premier ; les autres canaux de la section 16 (WhatsApp, SMS de secours) ne sont pas exigés par cette fonctionnalité (CPS section 8 ne cite que « notification »), gratuité préservée.
+- Q : Valeurs chiffrées des seuils météo et de l'« anomalie » de vigueur ? → R : Le CPS section 8 les définit « par culture et par stade » dans le référentiel des cultures (section 17), validé par l'agronomie ; les valeurs sont des données de référentiel fixées au plan, pas des règles de la spec. Par défaut prudent : en cas de doute, l'état est orange et non vert.
+- Q : Que fait l'app quand une image est trop nuageuse ? → R : Elle garde la dernière image valide, affichée avec sa date (règle des 80 % de la section 8 ; pas de nouveau calcul de substitution).
+- Q : Résumé vocal : heure et langue ? → R : Une fois par jour, le matin par défaut, dans la langue du compte (darija, arabe, français, section 4) ; l'heure exacte est un paramètre fixé au plan. Texte affiché en repli si la lecture est impossible.
+- Q : Comparaison avec l'an dernier sans historique ? → R : Message explicatif, sans courbe vide (section 8, récit P2).
 
 ## États et RTL des écrans *(obligatoire)*
 
@@ -206,4 +211,4 @@ L'agriculteur reçoit un résumé vocal de la journée sous forme de notificatio
 - Les seuils météo par culture et par stade sont maintenus dans le référentiel des cultures par l'équipe AYLAL, avec validation agronomique.
 - L'heure du résumé vocal a une valeur par défaut le matin, modifiable ; l'heure exacte est fixée au plan.
 - Imagerie Sentinel-2 et météo sans limite d'usage (CPS section 19).
-- Aucune question ouverte : le CPS section 8 couvre le périmètre.
+- Aucune question ouverte : le CPS section 8 couvre le périmètre ; les points muets sont tranchés dans les clarifications.
