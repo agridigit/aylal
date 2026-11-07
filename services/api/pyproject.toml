@@ -35,6 +35,7 @@ ignore_errors = true
 
 [tool.coverage.run]
 omit = ["app/generated/check_fresh.py"]   # outil CI de fraîcheur, pas du code métier
+concurrency = ["thread", "greenlet"]   # SQLAlchemy async runs endpoint bodies in greenlets
 
 [tool.coverage.report]
 fail_under = 80
@@ -44,4 +45,4 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
 
 [tool.ruff.lint.per-file-ignores]
 # tests : subprocess sans check explicite et pytest.raises(Exception) volontaires
-"tests/**" = ["PLW1510", "B017"]
+"tests/**" = ["PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167"]

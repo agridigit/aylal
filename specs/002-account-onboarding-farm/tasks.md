@@ -41,14 +41,14 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 3 : Récit 1 — Inscription par téléphone et code (P1)
 
 ### Tests RED
-- [ ] T019 [P] Unitaires : génération, hachage argon2 + pepper, expiration, comparaison à temps constant, compteur d'échecs et verrou dans `services/api/tests/unit/test_otp.py` (R1-A1, R1-A2).
-- [ ] T020 [P] Unitaires : rotation des jetons, détection de réutilisation (famille révoquée) dans `services/api/tests/unit/test_sessions.py` (R1-A4).
-- [ ] T021 [P] Intégration : `POST /v1/auth/otp/request` (202, 422, 429 quota) et `verify` (200, 400, 410, 423 après 3 échecs, verrou 5 min côté serveur, compte non dupliqué) dans `services/api/tests/integration/test_auth_otp.py` (R1-A1, A2, A3).
-- [ ] T022 [P] Intégration : `refresh` (rotation, 401 sur réutilisation) et `logout` dans `services/api/tests/integration/test_auth_session.py` (R1-A4).
-- [ ] T023 [P] Intégration worker : port `OtpSender`, canal au choix puis repli sur l'autre, aucun appel hors Maroc, dans `services/workers/tests/integration/test_send_otp.py`.
-- [ ] T024 [P] Contrat `/v1/auth/*` dans `services/api/tests/contract/test_auth_contract.py`.
-- [ ] T025 [P] E2E service : inscription complète puis retour d'un utilisateur existant dans `services/api/tests/e2e/test_signup_login_e2e.py` (R1-A1, A3).
-- [ ] T026 [P] Mobile unitaires : `session.ts` (persistance après redémarrage), `secureStore.ts`, `localPin.ts` (4 chiffres, haché, jamais envoyé au serveur, optionnel) dans `apps/mobile/src/auth/__tests__/` (R1-A4, R1-A5).
+- [x] T019 [P] Unitaires : génération, hachage argon2 + pepper, expiration, comparaison à temps constant, compteur d'échecs et verrou dans `services/api/tests/unit/test_otp.py` (R1-A1, R1-A2).
+- [x] T020 [P] Unitaires : rotation des jetons, détection de réutilisation (famille révoquée) dans `services/api/tests/unit/test_sessions.py` (R1-A4).
+- [x] T021 [P] Intégration : `POST /v1/auth/otp/request` (202, 422, 429 quota) et `verify` (200, 400, 410, 423 après 3 échecs, verrou 5 min côté serveur, compte non dupliqué) dans `services/api/tests/integration/test_auth_otp.py` (R1-A1, A2, A3).
+- [x] T022 [P] Intégration : `refresh` (rotation, 401 sur réutilisation) et `logout` dans `services/api/tests/integration/test_auth_session.py` (R1-A4).
+- [x] T023 [P] Intégration worker : port `OtpSender`, canal au choix puis repli sur l'autre, aucun appel hors Maroc, dans `services/workers/tests/integration/test_send_otp.py`.
+- [x] T024 [P] Contrat `/v1/auth/*` dans `services/api/tests/contract/test_auth_contract.py`.
+- [x] T025 [P] E2E service : inscription complète puis retour d'un utilisateur existant dans `services/api/tests/e2e/test_signup_login_e2e.py` (R1-A1, A3).
+- [x] T026 [P] Mobile unitaires : `session.ts` (persistance après redémarrage), `secureStore.ts`, `localPin.ts` (4 chiffres, haché, jamais envoyé au serveur, optionnel) dans `apps/mobile/src/auth/__tests__/` (R1-A4, R1-A5).
 - [ ] T027 [P] Mobile écrans : E2 numéro et E3 code avec 4 états et RTL (ordre des cases) dans `apps/mobile/src/screens/{Phone,Code}/__tests__/` (R1-A2).
 - [ ] T028 [P] E2E mobile Maestro : `apps/mobile/e2e/` ou `apps/mobile/maestro/signup_login.yaml` (R1-A1, A3, A4, A5).
 
