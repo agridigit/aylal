@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Consent, Farm, FarmMember, TrialRecord, User
 
 _FIELD_SCOPE = (
-    "p.farm_id = ANY(:farms) AND (p.farm_id = ANY(:wide) OR EXISTS ("
-    "SELECT 1 FROM worker_parcels w WHERE w.parcel_id = p.id AND w.farm_id = p.farm_id AND w.user_id = :u))"
+    "p.farm_id = ANY(:farms) AND (p.farm_id = ANY(:wide) OR (p.archived_at IS NULL AND EXISTS ("
+    "SELECT 1 FROM worker_parcels w WHERE w.parcel_id = p.id AND w.farm_id = p.farm_id AND w.user_id = :u)))"
 )
 
 
