@@ -121,13 +121,16 @@ services:
       AYLAL_SMS_GATEWAY_URL: ${AYLAL_SMS_GATEWAY_URL:-}
       AYLAL_SMS_GATEWAY_KEY: ${AYLAL_SMS_GATEWAY_KEY:-}
       AYLAL_ENABLE_TEST_OTP: ${AYLAL_ENABLE_TEST_OTP:-}
-      # comma-separated IPs/CIDRs of the reverse proxy (Caddy); default = the private compose network ranges where only Caddy fronts the API; empty = forwarded headers ignored
-      AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      # exact address of Caddy on the dedicated edge network; empty = forwarded headers ignored (fail closed)
+      AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-172.29.77.2/32}
+    networks:
+      default: {}
+      edge: { ipv4_address: 172.29.77.3 }
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
       migrate: { condition: service_completed_successfully }
-    ports: ["8000:8000"]
+    ports: ["127.0.0.1:8000:8000"]   # loopback only (Android emulator via 10.0.2.2); Caddy is the only network path to the API
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/v1/health', timeout=3).status == 200 else 1)"]
       interval: 5s
@@ -154,6 +157,9 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     volumes: ["./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"]
+    networks:
+      default: {}
+      edge: { ipv4_address: 172.29.77.2 }
     ports: ["8443:443"]
     depends_on:
       api: { condition: service_healthy }
@@ -245,3 +251,9 @@ volumes:
   # Data: one set per branch (compose project aylal-<branch>, see scripts/dc.sh).
   db-data:
   minio-data:
+
+networks:
+  # dedicated proxy <-> api link with a static Caddy address, trusted by the API for X-Real-IP
+  edge:
+    ipam:
+      config: [{ subnet: 172.29.77.0/24 }]

@@ -70,7 +70,7 @@ def client_ip(request: Request) -> str | None:
             return None
         if not any(addr in n for n in trusted):
             return str(addr)
-    return None
+    return host if request.headers.get("x-forwarded-for") else None  # every hop trusted: the socket peer
 
 
 def _ip(value: str | None) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
