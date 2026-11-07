@@ -1,0 +1,24 @@
+openapi: 3.1.0
+info: { title: AYLAL API — F1 (extension de F0), version: 0.2.0 }
+x-conventions:
+  scope: "Toute route /farms/{farm_id}/* : non-membre -> 404 (identique à ferme inexistante) ; membre sans droit -> 403."
+paths:
+  /v1/auth/otp/request: { post: { summary: Demander un code, responses: { "202": {description: accepté}, "422": {description: numéro invalide}, "429": {description: trop de demandes} } } }
+  /v1/auth/otp/verify: { post: { summary: Vérifier le code, responses: { "200": {description: session}, "400": {description: code erroné}, "410": {description: expiré}, "423": {description: verrouillé 5 min} } } }
+  /v1/auth/refresh: { post: { summary: Renouveler la session (rotation), responses: { "200": {description: ok}, "401": {description: refusé} } } }
+  /v1/auth/logout: { post: { summary: Déconnexion volontaire (révoque), responses: { "204": {description: ok} } } }
+  /v1/me: { get: { summary: Profil, responses: { "200": {description: ok} } }, patch: { summary: Nom, langue, responses: { "200": {description: ok} } } }
+  /v1/me/consents: { get: {summary: Lister, responses: {"200": {description: ok}}}, post: { summary: Donner un consentement (version), responses: { "201": {description: ok} } } }
+  /v1/me/consents/{purpose}: { delete: { summary: Retirer, responses: { "204": {description: ok} } } }
+  /v1/me/export: { post: { summary: Export complet asynchrone, responses: { "202": {description: ok} } } }
+  /v1/me/deletion: { post: { summary: Demander la suppression (30 j), responses: { "202": {description: ok} } } }
+  /v1/farms: { get: { summary: Mes fermes avec rôle, responses: { "200": {description: ok} } }, post: { summary: Créer (propriétaire = utilisateur courant), responses: { "201": {description: ok}, "422": {description: nom ou emplacement manquant} } } }
+  /v1/farms/{farm_id}: { get: { summary: Détail, responses: { "200": {description: ok}, "404": {description: non membre ou inexistante} } }, patch: { summary: Modifier (propriétaire/gestionnaire), responses: { "200": {description: ok}, "403": {description: droit insuffisant}, "404": {description: non membre} } } }
+  /v1/farms/{farm_id}/members: { get: { summary: Équipe, responses: { "200": {description: ok}, "404": {description: non membre} } } }
+  /v1/farms/{farm_id}/members/{user_id}: { patch: { summary: Changer le rôle (propriétaire), responses: { "200": {description: ok}, "403": {description: refusé}, "404": {description: non membre} } }, delete: { summary: Retirer (propriétaire non retirable), responses: { "204": {description: ok}, "403": {description: refusé}, "404": {description: non membre} } } }
+  /v1/farms/{farm_id}/members/{user_id}/parcels: { put: { summary: Attribuer des parcelles à un ouvrier, responses: { "200": {description: ok}, "404": {description: non membre} } } }
+  /v1/farms/{farm_id}/invitations: { get: {summary: Lister, responses: {"200": {description: ok}, "404": {description: non membre}}}, post: { summary: Inviter (propriétaire), responses: { "201": {description: ok}, "409": {description: déjà membre}, "422": {description: numéro ou rôle invalide} } } }
+  /v1/farms/{farm_id}/invitations/{invitation_id}: { delete: { summary: Annuler, responses: { "204": {description: ok}, "404": {description: inexistante dans cette ferme} } } }
+  /v1/geo/regions: { get: { summary: Régions, responses: { "200": {description: ok} } } }
+  /v1/geo/communes: { get: { summary: Communes (filtre province), responses: { "200": {description: ok} } } }
+  /v1/geo/locate: { get: { summary: Commune d'un point (lat, lon), responses: { "200": {description: ok}, "404": {description: hors Maroc} } } }

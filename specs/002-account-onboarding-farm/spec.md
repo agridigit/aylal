@@ -13,7 +13,7 @@ Un agriculteur installe AYLAL et a créé son compte et sa ferme en moins de 2 m
 
 ### Session 2026-11-07 (mode autonome, réponses tirées du CPS sections 4, 15, 16, 19 et de la constitution)
 
-- Q : Canal d'envoi du code ? -> R : SMS par défaut, WhatsApp en alternative si disponible ; aucun mot de passe ni e-mail (gratuité et simplicité).
+- Q : Canal d'envoi du code ? -> R : SMS ou WhatsApp, au choix de l'utilisateur (CPS section 6), avec repli sur l'autre canal si l'un échoue ; aucun mot de passe ni e-mail (gratuité et simplicité). Corrigé après relecture du CPS : aucun canal n'est imposé par défaut.
 - Q : Comportement hors ligne à l'inscription ? -> R : la vérification du code exige le réseau ; une fois connecté, la session et la création de ferme fonctionnent hors ligne (SQLite local, synchronisation ensuite).
 - Q : Durée de session ? -> R : persistante jusqu'à déconnexion volontaire ; le code local à 4 chiffres est optionnel et stocké uniquement sur l'appareil.
 - Q : Langue par défaut ? -> R : choix explicite au premier écran (darija, arabe, français), modifiable ensuite ; aucune langue imposée.

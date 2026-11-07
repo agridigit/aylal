@@ -1,0 +1,21 @@
+# F1 : étend infra/powersync/sync-rules.yaml. Rôle lu en base ; aucune donnée d'une autre ferme.
+bucket_definitions:
+  user_own:
+    parameters: SELECT request.user_id() AS user_id
+    data:
+      - SELECT * FROM users WHERE id = bucket.user_id
+      - SELECT * FROM consents WHERE user_id = bucket.user_id
+  farm_staff:   # propriétaire et gestionnaire
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role IN ('owner','manager') AND removed_at IS NULL
+    data:
+      - SELECT * FROM farms WHERE id = bucket.farm_id
+      - SELECT * FROM farm_members WHERE farm_id = bucket.farm_id AND removed_at IS NULL
+      - SELECT * FROM invitations WHERE farm_id = bucket.farm_id
+      - SELECT * FROM worker_parcels WHERE farm_id = bucket.farm_id
+      - SELECT * FROM parcels WHERE farm_id = bucket.farm_id
+  farm_worker:  # ouvrier : seulement ses parcelles, jamais de table financière
+    parameters: SELECT farm_id, request.user_id() AS user_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
+    data:
+      - SELECT id, name FROM farms WHERE id = bucket.farm_id
+      - SELECT * FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id
+      - SELECT * FROM parcels WHERE farm_id = bucket.farm_id AND id IN (SELECT parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id)
