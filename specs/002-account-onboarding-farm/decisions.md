@@ -28,3 +28,10 @@
 ## Niveaux de test des constats de sécurité 2 (T075 à T077)
 - Unitaire : non applicable. Le comportement testé vit dans des transactions SQL (verrou de ligne, UPDATE conditionnel, jointure `Farm`) et dans le routage HTTP ; la politique pure (`otp_policy`) est déjà couverte. E2E : couvert par l'intégration sur PostgreSQL réel via ASGI ; pas de parcours utilisateur nouveau.
 - Seuils de limitation fixés par les tests (à respecter au GREEN) : 429 avec `Retry-After` pour un renvoi immédiat ; plafond horaire par téléphone atteint avant 10 envois espacés de 2 min ; plafond horaire par IP atteint avant 60 envois vers des numéros distincts.
+
+# Décisions tests RED récit 1 (T019 à T026)
+
+- T027 (écrans E2/E3) et T028 (Maestro signup_login) : bloquées par T004 (porte design, validation humaine des maquettes non levée). Non écrites.
+- Contrats posés par les tests, à respecter au GREEN : `app/auth/sessions.py` (`TokenRecord`, `hash_token`, `new_token`, `evaluate` -> `rotate|reuse|revoked`, `revoke_family`, `rotate`), `otp_policy.is_expired/attempts_left`, `otp.codes_equal` (via `hmac.compare_digest`), `POST /v1/auth/refresh` `{"refresh_token"}` (200 même forme que verify, 401 si inconnu/réutilisé + famille révoquée), `POST /v1/auth/logout` `{"refresh_token"}` + Bearer (204, révoque la famille de cet appareil seulement), erreurs `detail` en objet `{"code": ...}` (422 `phone_invalid`), jeton d'accès de 15 min (`expires_at`), `services/workers/tasks/send_otp.py` (`deliver_otp(phone, code, channel, senders)`, `DeliveryFailed`, `ForeignNumber`, tâche `send_otp` dans `WorkerSettings.functions`), `apps/mobile/src/auth/{secureStore,session,localPin}.ts` (fabriques `createSecureStore(backend)` préfixe `aylal_`, `createSession(store)`, `createLocalPin({store,hash,randomSalt})`).
+- E2E T025 : exige `AYLAL_ENV=test` et `AYLAL_ENABLE_TEST_OTP=1` sur la pile ; le GREEN ajoute cet export au Makefile (cibles e2e-api).
+- Niveaux : T019/T020/T026 unitaires, T021/T022/T024 intégration/contrat, T023 intégration worker (faux adaptateurs du port, sans réseau), T025 E2E service. Le mobile n'a pas d'intégration propre (écrans bloqués par T004).
