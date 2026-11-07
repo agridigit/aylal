@@ -128,6 +128,20 @@ L'agriculteur importe des parcelles depuis un fichier (KML, Shapefile) envoyé p
 - Ouvrier invité (F1) : ne voit que les parcelles qui lui sont attribuées.
 - Parcelle de moins de 0,3 ha ou sous serre : signalée comme peu adaptée à l'imagerie (utilisé par F3).
 
+## Clarifications
+
+### Session 2026-11-07
+
+Vérifiées contre le CPS section 7 (le CPS ne mentionne ni restauration, ni chevauchement, ni sol : décisions prises ici, les plus simples compatibles avec gratuité et hors ligne).
+
+- Q : Une parcelle archivée peut-elle être restaurée ? → R : Oui, pendant les 90 jours, car « archivée » (CPS §7) implique une conservation ; aucune restauration après suppression définitive.
+- Q : Un chevauchement entre parcelles est-il bloquant ? → R : Non, simple avertissement ; l'agriculteur peut confirmer (cultures associées, limites imprécises).
+- Q : La fusion exige-t-elle la même culture ? → R : Non ; les campagnes actives des deux parcelles sont conservées, et si les deux portent la même culture active elles sont fusionnées en une seule campagne (règle « une campagne active par culture »).
+- Q : Le type de sol est-il obligatoire ? → R : Non, facultatif, valeur par défaut prudente (CPS §17, référentiel Sols).
+- Q : Qui peut créer, modifier ou archiver une parcelle ? → R : Propriétaire et gestionnaires ; l'ouvrier voit seulement ses parcelles attribuées (CPS §6).
+- Q : La « destination » de la campagne est-elle saisie ? → R : Facultative (CPS §17), non demandée au lancement de la saisie.
+- Q : Culture libre : partagée ? → R : Privée à la ferme de l'agriculteur, sans coefficients agronomiques (les conseils dépendant du référentiel sont alors désactivés).
+
 ## États et RTL des écrans *(obligatoire)*
 
 Pour chaque écran, les quatre états sont conçus : chargement (squelettes, jamais d'écran blanc), vide (illustration et action proposée), erreur (message clair et solution), hors ligne (indicateur de ce qui n'est pas encore envoyé). Toute mise en page est en miroir complet en arabe et darija en graphie arabe (sens de lecture, icônes directionnelles, alignements, saisie de nombres).
