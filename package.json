@@ -10,7 +10,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"

@@ -2,6 +2,31 @@
 
 Tenu automatiquement par Claude (sous-agent `git-keeper`). Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [SemVer](https://semver.org/lang/fr/).
 
+## [0.3.0] - 2026-11-07 — F2 Parcelles et cultures
+### Ajouts
+- Parcelles, cultures et campagnes : modèle, API, synchronisation et règles de domaine
+- Découper et fusionner des parcelles, avec quota
+- Carte et tuiles hors ligne (style de carte, garde des tuiles)
+- Archivage, purge et export des parcelles
+- Irrigation liée aux parcelles et aux cultures
+- Corrections de sécurité : parcelle archivée masquée à l'ouvrier en REST, synchronisation et export ; plafonds de sommets et de 500 parcelles avec verrou ; règles PowerSync valides avec garde-fou
+- Dérogation de budget APK à 52 Mo, documentée via le mécanisme apk-budget.env
+### Corrections
+- Les règles de synchronisation PowerSync sont acceptées par le service
+- Vérification de types des règles de domaine sous noUncheckedIndexedAccess
+- L'export applique la barrière des parcelles archivées pour les ouvriers
+### Documentation
+- Documentation ingénieur et agriculteur du module 003-fields-crops
+- Audit du contenu de l'APK : aucun levier ne comble l'écart de 40 Mo ; dérogation à 52 Mo documentée
+- Limites connues : écrans reportés (porte design T004), photos de cultures et morocco.pmtiles non fournis
+### Technique
+- Tests rouges puis verts pour fondations, règles de domaine, géométrie, découpe/fusion, archivage, export, garde des tuiles et dérogation APK
+- R8 et réduction des ressources, mesures du budget APK
+- Corrections de lint et annotations de types
+- Fusion de main dans la branche
+
+Documentation du module : [docs/modules/003-fields-crops/](docs/modules/003-fields-crops/)
+
 ## [0.2.0] - 2026-11-07 — F1 Compte, onboarding et ferme
 ### Ajouts
 - Fondations du module compte, onboarding et ferme (modèle, API, domaine)
