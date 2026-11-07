@@ -195,10 +195,10 @@
 
 ### Implémentation (GREEN)
 
-- [ ] T106 [US6] Implémenter `apps/mobile/src/screens/Map/` (MapLibre RN, 50 parcelles, vigueur, tuiles et polices locales)
-- [ ] T107 [P] [US6] Implémenter `apps/mobile/src/screens/Showcase/` (écran animé Reanimated, composants `packages/ui`)
-- [ ] T108 [P] [US6] Implémenter `apps/mobile/src/perf/metrics.ts` (démarrage, ouverture carte, images/s, trafic) et l'écran « Mesures » en build dev
-- [ ] T109 [US6] Compléter `scripts/report.sh` (agrégation JSON -> `mesures.md`, comparaison aux seuils de la section 15 du CPS, `STRICT=1`)
+- [x] T106 [US6] Implémenter `apps/mobile/src/screens/Map/` (MapLibre RN, 50 parcelles, vigueur, tuiles et polices locales)
+- [x] T107 [P] [US6] Implémenter `apps/mobile/src/screens/Showcase/` (écran animé Reanimated, composants `packages/ui`)
+- [x] T108 [P] [US6] Implémenter `apps/mobile/src/perf/metrics.ts` (démarrage, ouverture carte, images/s, trafic) et l'écran « Mesures » en build dev
+- [x] T109 [US6] Compléter `scripts/report.sh` (agrégation JSON -> `mesures.md`, comparaison aux seuils de la section 15 du CPS, `STRICT=1`)
 - [ ] T110 [US6] Exécuter le protocole sur l'Android 2 Go de référence, déposer les JSON dans `docs/modules/001-foundations/measures/`, lancer `make report` ; tout « non tenu » ouvre un réexamen noté dans `specs/001-foundations/decisions.md` (AC6.1 à AC6.4, SC-002, SC-003, SC-008)
 - [ ] T111 [US6] Commit `feat(foundations): green - prototype` ; REFACTOR `refactor(foundations): prototype`
 

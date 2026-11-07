@@ -15,6 +15,8 @@ interface HomeProps extends HomeInput {
   onRetry: () => void;
   onAddItem: () => void;
   onOpenTrialRecord: () => void;
+  onOpenMap?: () => void;
+  onOpenShowcase?: () => void;
 }
 
 export function Home(props: HomeProps) {
@@ -30,8 +32,14 @@ export function Home(props: HomeProps) {
   const onPress = (id: string) => {
     if (id === "home.speak") speak(t("home.title"), i18n.locale);
     else if (id === "home.openTrialRecord") props.onOpenTrialRecord();
+    else if (id === "home.openMap") props.onOpenMap?.();
+    else if (id === "home.openShowcase") props.onOpenShowcase?.();
     else props.onChangeLanguage(id.replace("lang.", "") as Locale);
   };
+
+  const extraButtons: { id: string }[] = [];
+  if (props.onOpenMap) extraButtons.push({ id: "home.openMap" });
+  if (props.onOpenShowcase) extraButtons.push({ id: "home.openShowcase" });
 
   return (
     <View style={{ flex: 1, gap: 16, padding: 16, direction: layout.writingDirection }}>
@@ -78,6 +86,11 @@ export function Home(props: HomeProps) {
               label={t(b.labelKey)}
               onPress={() => onPress(b.id)}
             />
+          </View>
+        ))}
+        {extraButtons.map((b) => (
+          <View key={b.id} testID={b.id} style={{ minWidth: 48, minHeight: 48 }}>
+            <Button variant="secondary" label={t(b.id)} onPress={() => onPress(b.id)} />
           </View>
         ))}
       </View>

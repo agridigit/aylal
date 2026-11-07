@@ -13,7 +13,9 @@
       "retry": "Réessayer",
       "loading": "Chargement en cours",
       "ready": "Tout est prêt"
-    }
+    },
+    "openMap": "Ouvrir la carte",
+    "openShowcase": "Voir la démo"
   },
   "lang": {
     "ary": "Darija (arabe)",
@@ -34,5 +36,18 @@
       "conflict": "Conflit à vérifier",
       "synced": "Envoyé"
     }
+  },
+  "map": {
+    "title": "Mes parcelles",
+    "empty": "Aucune parcelle enregistrée"
+  },
+  "showcase": {
+    "title": "Démonstration"
+  },
+  "measures": {
+    "export": "Exporter les mesures",
+    "unmeasured": "Non mesuré",
+    "met": "Seuil tenu",
+    "not_met": "Seuil non tenu"
   }
 }

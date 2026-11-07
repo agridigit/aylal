@@ -7,6 +7,7 @@ module.exports = {
   transform: { "^.+\\.ts$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.json", diagnostics: false }] },
   moduleNameMapper: {
     "^@aylal/domain/(.*)$": "<rootDir>/../../packages/domain/src/$1",
+    "^@aylal/ui/motion$": "<rootDir>/../../packages/ui/src/motion.ts",
     "^@aylal/i18n$": "<rootDir>/../../packages/i18n/src/index.ts",
   },
 };

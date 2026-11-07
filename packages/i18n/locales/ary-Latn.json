@@ -13,7 +13,9 @@
       "retry": "3awed jerreb",
       "loading": "Kayt7emmel",
       "ready": "Kolchi wajed"
-    }
+    },
+    "openMap": "7ell l-kharita",
+    "openShowcase": "Chouf l-3ard"
   },
   "lang": {
     "ary": "Darija (arabe)",
@@ -34,5 +36,18 @@
       "conflict": "Kayn ta3arod khassk tchoufo",
       "synced": "Tsifet"
     }
+  },
+  "map": {
+    "title": "Qet3ati",
+    "empty": "Ma kayn hta qet3a msejjla"
+  },
+  "showcase": {
+    "title": "3ard tawdihi"
+  },
+  "measures": {
+    "export": "Sdder l-9iyasat",
+    "unmeasured": "Ma t9asch",
+    "met": "L-7edd tahaqq9",
+    "not_met": "L-7edd ma tahaqq9ch"
   }
 }
