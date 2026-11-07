@@ -8,6 +8,7 @@ class Settings:
     database_url: str
     redis_url: str
     env: str
+    jwt_secret: str = "dev-only-secret-change-me"
 
 
 def get_settings() -> Settings:
@@ -17,4 +18,5 @@ def get_settings() -> Settings:
         ),
         redis_url=os.environ.get("AYLAL_REDIS_URL", "redis://redis:6379/0"),
         env=os.environ.get("AYLAL_ENV", "dev"),
+        jwt_secret=os.environ.get("AYLAL_JWT_SECRET", "dev-only-secret-change-me"),
     )

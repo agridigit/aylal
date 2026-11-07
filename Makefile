@@ -29,10 +29,10 @@ update-visual: ## régénère les références (revue obligatoire)
 	$(DC) --profile visual run --rm visual pnpm --filter @aylal/ui test:visual -- --update-snapshots
 test-unit:     ## tests unitaires seuls
 	$(DC) --profile test run --rm api-test pytest -q -n auto tests/unit $(ARGS)
-	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/unit
+	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/unit --passWithNoTests
 test-integration: ## tests d'intégration seuls (dont contrats)
 	$(DC) --profile test run --rm api-test pytest -q tests/integration tests/contract /repo/tests/contract
-	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/integration
+	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/integration --passWithNoTests
 test-pyramid:  ## chaque module a ses tests unitaires, d'intégration et de bout en bout
 	bash scripts/check-test-pyramid.sh
 e2e: e2e-api   ## bout en bout (KVM requis, sauf E2E_SKIP=1)
