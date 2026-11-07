@@ -1,0 +1,42 @@
+flowchart LR
+  subgraph Phone[Téléphone Android - écrans reportés T004]
+    Sess[auth/session, secureStore, localPin]
+    AF[farms/activeFarm]
+    SQL[(SQLite chiffré)]
+  end
+  subgraph Edge[Réseau edge 172.29.77.0/24]
+    Caddy[proxy Caddy<br/>réécrit X-Real-IP / X-Forwarded-For]
+  end
+  subgraph API[api FastAPI /v1]
+    Auth[routers/auth<br/>otp, refresh, logout]
+    Me[routers/me, account]
+    Farms[routers/farms, geo]
+    Sync[routers/sync + sync/admin]
+    Ctx[auth/farm_context<br/>farm_role lu en base]
+    Dom[domain/roles, otp_policy,<br/>account_deletion, phone]
+  end
+  subgraph Worker[worker Arq]
+    T1[send_otp - non branché à l'API]
+    T2[purge_pending - horaire]
+    T3[purge_deleted - 03:00]
+    T4[expire_invitations - 03:30]
+  end
+  PS[powersync<br/>sync-rules par rôle]
+  DB[(PostgreSQL 16 + PostGIS)]
+  Phone --> Caddy --> Auth
+  Caddy --> PS
+  Phone --> PS
+  Phone --> Sync
+  Auth --> Dom
+  Me --> Dom
+  Farms --> Ctx
+  Sync --> Ctx
+  Ctx --> Dom
+  Auth --> DB
+  Me --> DB
+  Farms --> DB
+  Sync --> DB
+  PS --> DB
+  T2 --> DB
+  T3 --> DB
+  T4 --> DB

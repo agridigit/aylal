@@ -1,0 +1,29 @@
+sequenceDiagram
+  participant M as Mobile
+  participant C as Caddy
+  participant A as API
+  participant D as PostgreSQL
+  M->>C: POST /v1/auth/otp/request {phone, channel}
+  C->>A: X-Real-IP réécrit
+  A->>D: verrou consultatif (téléphone), dernier défi FOR UPDATE
+  A->>D: délai 60 s, plafonds 5/h téléphone et 50/h IP
+  A->>D: invalide les défis précédents, insère défi (Argon2id + poivre)
+  A-->>M: 202 accepted
+  M->>A: POST /v1/auth/otp/verify {phone, code}
+  A->>D: défi FOR UPDATE, verrou 5 min après 3 échecs
+  alt code faux
+    A-->>M: 400 otp_invalid / 423 otp_locked
+  else code bon
+    A->>D: défi consommé, utilisateur pending créé, invitations honorées
+    A->>D: refresh_token (nouvelle famille, haché SHA-256)
+    A-->>M: 200 access 15 min + refresh + fermes
+  end
+  M->>A: POST /v1/auth/refresh {refresh_token}
+  A->>D: jeton FOR UPDATE, evaluate
+  alt jeton valide
+    A->>D: rotated_at, nouveau jeton, même famille
+    A-->>M: 200 nouveaux jetons
+  else jeton déjà tourné (réutilisation)
+    A->>D: révoque toute la famille
+    A-->>M: 401 refresh_refused
+  end

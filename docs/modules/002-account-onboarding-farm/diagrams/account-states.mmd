@@ -1,0 +1,17 @@
+stateDiagram-v2
+  state "Compte" as Compte {
+    [*] --> pending: otp/verify réussi (nouveau numéro)
+    pending --> active: consentement data_policy + nom (PATCH /me)
+    pending --> [*]: purge après 24 h sans consentement ni nom ni ferme
+    active --> deletion_requested: POST /me/deletion (jetons révoqués)
+    deletion_requested --> [*]: purge après 30 j
+  }
+  state "Invitation" as Invitation {
+    [*] --> inv_pending: POST /farms/id/invitations
+    inv_pending --> accepted: otp/verify du numéro invité
+    inv_pending --> cancelled: DELETE invitation
+    inv_pending --> expired: après 30 j (worker 03:30)
+    accepted --> [*]
+    cancelled --> [*]
+    expired --> [*]
+  }

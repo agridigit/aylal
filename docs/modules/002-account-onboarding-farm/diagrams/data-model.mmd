@@ -1,0 +1,84 @@
+erDiagram
+  users ||--o{ consents : donne
+  users ||--o{ refresh_tokens : possede
+  users ||--o{ farm_members : membre
+  farms ||--o{ farm_members : compte
+  farms ||--o{ invitations : emet
+  farms ||--o{ parcels : contient
+  farm_members ||--o{ worker_parcels : attribue
+  parcels ||--o{ worker_parcels : attribuee
+  geo_regions ||--o{ geo_provinces : parent
+  geo_communes ||--o{ farms : situe
+  users {
+    uuid id PK
+    text phone_e164 UK
+    text display_name
+    text language
+    text status
+    timestamptz deletion_requested_at
+  }
+  consents {
+    uuid id PK
+    uuid user_id FK
+    text purpose
+    text text_version
+    timestamptz withdrawn_at
+  }
+  otp_challenges {
+    uuid id PK
+    text phone_e164
+    text code_hash
+    int failed_attempts
+    timestamptz locked_until
+    timestamptz consumed_at
+    text client_ip
+  }
+  refresh_tokens {
+    uuid id PK
+    uuid user_id FK
+    text token_hash UK
+    uuid family_id
+    timestamptz rotated_at
+    timestamptz revoked_at
+  }
+  farms {
+    uuid id PK
+    text name
+    uuid owner_id
+    point location
+    int commune_id FK
+    timestamptz deleted_at
+  }
+  farm_members {
+    uuid farm_id PK
+    uuid user_id PK
+    text role
+    timestamptz removed_at
+  }
+  worker_parcels {
+    uuid farm_id PK
+    uuid user_id PK
+    uuid parcel_id PK
+  }
+  invitations {
+    uuid id PK
+    uuid farm_id FK
+    text phone_e164
+    text role
+    text status
+    timestamptz expires_at
+  }
+  geo_regions {
+    int id PK
+  }
+  geo_provinces {
+    int id PK
+    int parent_id FK
+  }
+  geo_communes {
+    int id PK
+  }
+  parcels {
+    uuid id PK
+    uuid farm_id FK
+  }
