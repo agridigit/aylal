@@ -1,0 +1,152 @@
+[
+ {
+  "role": "owner",
+  "action": "operation.create",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "operation.create",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "operation.create",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "operation.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "operation.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "operation.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "operation.mark_done",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "operation.mark_done",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "operation.mark_done",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "operation.cancel",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "operation.cancel",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "operation.cancel",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "operation.validate",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "operation.validate",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "operation.validate",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "operation.correct",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "operation.correct",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "operation.correct",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "registry.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "registry.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "registry.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "registry.export",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "registry.export",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "registry.export",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "phyto_product.create_free",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "phyto_product.create_free",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "phyto_product.create_free",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "operation.delete",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "operation.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "operation.delete",
+  "allowed": false
+ }
+]

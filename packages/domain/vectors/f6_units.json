@@ -1,0 +1,38 @@
+[
+ {
+  "value": 1,
+  "from": "L/ha",
+  "to": "mL/ha",
+  "expected": 1000
+ },
+ {
+  "value": 500,
+  "from": "mL/ha",
+  "to": "L/ha",
+  "expected": 0.5
+ },
+ {
+  "value": 2,
+  "from": "kg/ha",
+  "to": "g/ha",
+  "expected": 2000
+ },
+ {
+  "value": 250,
+  "from": "g/ha",
+  "to": "kg/ha",
+  "expected": 0.25
+ },
+ {
+  "value": 3,
+  "from": "L/ha",
+  "to": "L/ha",
+  "expected": 3
+ },
+ {
+  "value": 1,
+  "from": "L/ha",
+  "to": "kg/ha",
+  "expected": null
+ }
+]

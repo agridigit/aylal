@@ -22,3 +22,9 @@ def test_generated_pydantic_models_are_up_to_date() -> None:
         ["python", "-m", "app.generated.check_fresh"], capture_output=True, text=True, cwd=GENERATED.parents[1]
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_f6_operation_schema_is_exported_from_zod_and_generated() -> None:
+    assert (DOMAIN_DIR / "schema" / "operation.json").exists(), "Zod export has no F6 operation schema"
+    assert (GENERATED / "schema" / "operation.json").exists(), "generated F6 operation schema missing"
+    assert "OperationInput" in (GENERATED / "models.py").read_text(), "Pydantic OperationInput not generated"

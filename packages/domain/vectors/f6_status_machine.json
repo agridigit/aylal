@@ -1,0 +1,229 @@
+{
+ "today": "2026-11-07",
+ "transitions": [
+  {
+   "from": "planned",
+   "action": "mark_done",
+   "role": "owner",
+   "to": "validated"
+  },
+  {
+   "from": "pending_validation",
+   "action": "validate",
+   "role": "owner",
+   "to": "validated"
+  },
+  {
+   "from": "validated",
+   "action": "cancel",
+   "role": "owner",
+   "to": "cancelled"
+  },
+  {
+   "from": "done",
+   "action": "cancel",
+   "role": "owner",
+   "to": "cancelled"
+  },
+  {
+   "from": "pending_validation",
+   "action": "cancel",
+   "role": "owner",
+   "to": "cancelled"
+  },
+  {
+   "from": "planned",
+   "action": "cancel",
+   "role": "owner",
+   "to": "cancelled"
+  },
+  {
+   "from": "validated",
+   "action": "correct",
+   "role": "owner",
+   "to": "validated"
+  },
+  {
+   "from": "pending_validation",
+   "action": "correct",
+   "role": "owner",
+   "to": "pending_validation"
+  },
+  {
+   "from": "validated",
+   "action": "validate",
+   "role": "owner",
+   "to": null
+  },
+  {
+   "from": "cancelled",
+   "action": "mark_done",
+   "role": "owner",
+   "to": null
+  },
+  {
+   "from": "cancelled",
+   "action": "correct",
+   "role": "owner",
+   "to": null
+  },
+  {
+   "from": "done",
+   "action": "mark_done",
+   "role": "owner",
+   "to": null
+  },
+  {
+   "from": "planned",
+   "action": "mark_done",
+   "role": "manager",
+   "to": "validated"
+  },
+  {
+   "from": "pending_validation",
+   "action": "validate",
+   "role": "manager",
+   "to": "validated"
+  },
+  {
+   "from": "validated",
+   "action": "cancel",
+   "role": "manager",
+   "to": "cancelled"
+  },
+  {
+   "from": "done",
+   "action": "cancel",
+   "role": "manager",
+   "to": "cancelled"
+  },
+  {
+   "from": "pending_validation",
+   "action": "cancel",
+   "role": "manager",
+   "to": "cancelled"
+  },
+  {
+   "from": "planned",
+   "action": "cancel",
+   "role": "manager",
+   "to": "cancelled"
+  },
+  {
+   "from": "validated",
+   "action": "correct",
+   "role": "manager",
+   "to": "validated"
+  },
+  {
+   "from": "pending_validation",
+   "action": "correct",
+   "role": "manager",
+   "to": "pending_validation"
+  },
+  {
+   "from": "validated",
+   "action": "validate",
+   "role": "manager",
+   "to": null
+  },
+  {
+   "from": "cancelled",
+   "action": "mark_done",
+   "role": "manager",
+   "to": null
+  },
+  {
+   "from": "cancelled",
+   "action": "correct",
+   "role": "manager",
+   "to": null
+  },
+  {
+   "from": "done",
+   "action": "mark_done",
+   "role": "manager",
+   "to": null
+  },
+  {
+   "from": "planned",
+   "action": "mark_done",
+   "role": "worker",
+   "to": "pending_validation"
+  },
+  {
+   "from": "planned",
+   "action": "cancel",
+   "role": "worker",
+   "to": "cancelled"
+  },
+  {
+   "from": "pending_validation",
+   "action": "validate",
+   "role": "worker",
+   "to": null
+  },
+  {
+   "from": "validated",
+   "action": "correct",
+   "role": "worker",
+   "to": null
+  },
+  {
+   "from": "validated",
+   "action": "cancel",
+   "role": "worker",
+   "to": null
+  },
+  {
+   "from": "pending_validation",
+   "action": "cancel",
+   "role": "worker",
+   "to": null
+  }
+ ],
+ "initial": [
+  {
+   "performed_on": "2026-11-08",
+   "role": "owner",
+   "status": "planned"
+  },
+  {
+   "performed_on": "2026-11-08",
+   "role": "worker",
+   "status": "planned"
+  },
+  {
+   "performed_on": "2026-11-07",
+   "role": "owner",
+   "status": "validated"
+  },
+  {
+   "performed_on": "2026-11-01",
+   "role": "manager",
+   "status": "validated"
+  },
+  {
+   "performed_on": "2026-11-07",
+   "role": "worker",
+   "status": "pending_validation"
+  }
+ ],
+ "overdue": [
+  {
+   "status": "planned",
+   "performed_on": "2026-11-06",
+   "overdue": true
+  },
+  {
+   "status": "planned",
+   "performed_on": "2026-11-07",
+   "overdue": false
+  },
+  {
+   "status": "done",
+   "performed_on": "2026-11-06",
+   "overdue": false
+  }
+ ]
+}
