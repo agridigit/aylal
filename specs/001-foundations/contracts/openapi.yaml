@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: AYLAL API (F0)
+  version: 0.1.0
+servers:
+  - url: https://localhost:8443/v1
+security:
+  - bearer: []
+paths:
+  /health:
+    get:
+      summary: Santé du service (sans authentification)
+      security: []
+      responses:
+        "200":
+          description: Service en bonne santé
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+        "503":
+          description: Dépendance indisponible (db ou redis)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+  /auth/dev-token:
+    post:
+      summary: Jeton de compte d'essai (404 hors AYLAL_ENV=dev|test)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Jeton JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, expires_at]
+                properties:
+                  token: { type: string }
+                  expires_at: { type: string, format: date-time }
+        "404": { description: Désactivé en dehors de dev/test }
+  /sync/upload:
+    post:
+      summary: Applique un lot d'opérations locales (idempotent par op_id)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadBatch" }
+      responses:
+        "200":
+          description: Résultat par opération, dans l'ordre reçu
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadResult" }
+        "401": { description: Jeton absent ou invalide }
+        "422": { description: Lot mal formé }
+  /sync/conflicts/{id}/acknowledge:
+    post:
+      summary: Acquitte un conflit (l'enregistrement quitte l'état en conflit)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Acquitté }
+        "403": { description: Rôle insuffisant }
+        "404": { description: Inconnu }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    Health:
+      type: object
+      required: [status, checks]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        checks:
+          type: object
+          additionalProperties: { type: string, enum: [ok, down] }
+    UploadBatch:
+      type: object
+      required: [ops]
+      properties:
+        ops:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/Op" }
+    Op:
+      type: object
+      required: [op_id, table, kind, record_id, base_version]
+      properties:
+        op_id: { type: string, format: uuid }
+        table: { type: string, enum: [trial_records] }
+        kind: { type: string, enum: [put, patch, delete] }
+        record_id: { type: string, format: uuid }
+        farm_id: { type: string, format: uuid }
+        base_version: { type: integer, minimum: 0, description: "0 pour une création" }
+        fields:
+          type: object
+          description: Uniquement les champs modifiés ; validés par le schéma partagé
+    UploadResult:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            required: [op_id, status]
+            properties:
+              op_id: { type: string, format: uuid }
+              status: { type: string, enum: [applied, duplicate, conflict_logged, rejected] }
+              server_version: { type: integer }
+              error:
+                type: object
+                properties:
+                  code: { type: string, enum: [validation, forbidden, not_found] }
+                  field: { type: string }
