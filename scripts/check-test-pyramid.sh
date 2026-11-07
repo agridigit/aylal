@@ -4,6 +4,7 @@
 # Conventions:
 #   unit        : <module>/tests/unit/**   (TS legacy: <module>/tests/*.test.ts counts as unit)
 #   integration : <module>/tests/integration/**  (services: tests/contract/** also counts)
+#   apps (mobile): tests live next to code in src/**/__tests__ ; Maestro flows in maestro/
 #   e2e         : services/<s>/tests/e2e/**, apps/mobile/e2e/** (Maestro), apps/{web,desktop}/e2e/** (Playwright)
 set -u
 cd "$(git rev-parse --show-toplevel)"
@@ -15,11 +16,11 @@ for m in packages/* services/* apps/*; do
   [ -d "$m" ] || continue
   # only modules that contain production code
   [ -d "$m/src" ] || [ -d "$m/app" ] || continue
-  has "$m/tests/unit" || { [ -d "$m/tests" ] && has "$m/tests" -maxdepth 1; } || err "$m : aucun test unitaire ($m/tests/unit/)"
-  has "$m/tests/integration" "$m/tests/contract" || err "$m : aucun test d'intégration ($m/tests/integration/)"
+  has "$m/tests/unit" || { [ -d "$m/tests" ] && has "$m/tests" -maxdepth 1; } || { [ "${m#apps/}" != "$m" ] && has "$m/src"; } || err "$m : aucun test unitaire ($m/tests/unit/)"
+  has "$m/tests/integration" "$m/tests/contract" || { [ "${m#apps/}" != "$m" ] && has "$m/src"; } || err "$m : aucun test d'intégration ($m/tests/integration/)"
   case "$m" in
     services/*) has "$m/tests/e2e" || err "$m : aucun test de bout en bout ($m/tests/e2e/)";;
-    apps/*)     has "$m/e2e"       || err "$m : aucun test de bout en bout ($m/e2e/)";;
+    apps/*)     has "$m/e2e" "$m/maestro" || err "$m : aucun test de bout en bout ($m/e2e/)";;
   esac
 done
 

@@ -1,7 +1,7 @@
 export const LOW_STORAGE_BYTES = 50 * 1024 * 1024;
 
 export type StorageCheck =
-  | { level: "ok" }
+  | { level: "ok"; messageKey?: undefined }
   | { level: "warning" | "blocking"; messageKey: string };
 
 export function checkStorage(i: { freeBytes: number; requiredBytes: number }): StorageCheck {

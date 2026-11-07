@@ -27,7 +27,7 @@ async def _check_db(url: str) -> Check:
         finally:
             await conn.close()
         return "ok"
-    except Exception:
+    except (OSError, TimeoutError, asyncpg.PostgresError, asyncpg.InterfaceError):
         return "down"
 
 
@@ -44,7 +44,7 @@ async def _check_redis(url: str) -> Check:
         finally:
             writer.close()
         return "ok" if reply.startswith(b"+PONG") else "down"
-    except Exception:
+    except (OSError, TimeoutError):
         return "down"
 
 

@@ -35,3 +35,7 @@ fail_under = 80
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
+
+[tool.ruff.lint.per-file-ignores]
+# tests : subprocess sans check explicite et pytest.raises(Exception) volontaires
+"tests/**" = ["PLW1510", "B017"]

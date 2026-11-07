@@ -32,5 +32,5 @@ export async function uploadBatch(
     body: JSON.stringify({ ops }),
   });
   if (!res.ok) throw new Error(`upload failed: ${res.status}`);
-  return (await res.json()).results;
+  return ((await res.json()) as { results: any }).results;
 }

@@ -7,3 +7,12 @@ declare module "react-native" {
   export const Switch: any;
   export const StyleSheet: any;
 }
+
+// Typage minimal de react-native-reanimated (dépendance native, absente du typecheck Docker).
+declare module "react-native-reanimated" {
+  const Animated: any;
+  export default Animated;
+  export const useAnimatedStyle: any;
+  export const useSharedValue: any;
+  export const withTiming: any;
+}
