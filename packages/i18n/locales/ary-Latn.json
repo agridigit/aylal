@@ -1,0 +1,38 @@
+{
+  "home": {
+    "title": "Marhba bik f AYLAL",
+    "subtitle": "Lflaha dyalk hta bla reseau",
+    "speak": "Smaa",
+    "openTrialRecord": "Sejjel tajriba",
+    "offlineBanner": "Bla internet: lma3lomat dyalk mahfodin f telephone",
+    "state": {
+      "empty": "Ma kayn hta ma3louma daba",
+      "emptyAction": "Zid tajriba",
+      "error": "Waqa3 mochkil",
+      "errorSolution": "Chouf internet dyalk w 3awed jerreb",
+      "retry": "3awed jerreb",
+      "loading": "Kayt7emmel",
+      "ready": "Kolchi wajed"
+    }
+  },
+  "lang": {
+    "ary": "Darija (arabe)",
+    "ary-Latn": "Darija (latin)",
+    "ar": "Arabe",
+    "fr": "Français"
+  },
+  "trialRecord": {
+    "title": "Tajriba jdida",
+    "fields": {
+      "title": "L3onwan",
+      "note": "Mola7aza",
+      "quantity": "Lkemmiya"
+    },
+    "save": "Sejjel",
+    "sync": {
+      "pending": "Baqi ma tsifetch",
+      "conflict": "Kayn ta3arod khassk tchoufo",
+      "synced": "Tsifet"
+    }
+  }
+}

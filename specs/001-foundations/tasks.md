@@ -103,10 +103,10 @@
 - [x] T053 [P] [US3] Implémenter `services/api/app/auth/` : jeton d'essai et contrôle ferme/rôle (`owner`/`editor`/`viewer`) (FR-018)
 - [x] T054 [US3] Implémenter `services/api/app/sync/apply.py` (envoi idempotent via `applied_ops`, validation partagée, résolution de `packages/domain` répliquée selon R6, écriture `sync_conflicts`) et `services/api/app/routers/sync.py` (dont `POST /sync/conflicts/{id}/acknowledge` : résolution du conflit vers `sync_conflicts.farm_id`, contrôle membre `editor`/`owner` de cette ferme, 404 si autre ferme, fait passer T040a)
 - [x] T055 [P] [US3] Créer `infra/powersync/sync-rules.yaml` (copie conforme du contrat) et brancher `powersync` dans `docker-compose.yml`
-- [ ] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
+- [x] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
 - [x] T057 [US3] Créer le shell mobile `apps/mobile/{package.json,app.json,babel.config.js,jest.config.js}` et `apps/mobile/src/sync/{db.ts,connector.ts,syncState.ts,encryptionKey.ts,storageWarning.ts}` (PowerSync + SQLCipher, expo-secure-store)
 - [x] T058 [P] [US3] Implémenter `apps/mobile/src/telemetry/telemetry.ts` (anonyme, désactivable, `telemetry_enabled`)
-- [ ] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
+- [x] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
 - [x] T060 [US3] Commit `feat(foundations): green - offline sync` ; REFACTOR `refactor(foundations): offline sync`
 
 **Point de contrôle** : 1 000 enregistrements / 30 jours : 0 perte, 0 doublon.
@@ -157,10 +157,10 @@
 
 ### Implémentation (GREEN)
 
-- [ ] T086 [US2] Créer `packages/i18n/package.json`, `packages/i18n/src/index.ts` (i18next, repli `fr`) et `packages/i18n/locales/{ary,ary-Latn,ar,fr}.json` selon `contracts/i18n-contract.md` (textes provisoires mais complets)
+- [x] T086 [US2] Créer `packages/i18n/package.json`, `packages/i18n/src/index.ts` (i18next, repli `fr`) et `packages/i18n/locales/{ary,ary-Latn,ar,fr}.json` selon `contracts/i18n-contract.md` (textes provisoires mais complets)
 - [ ] T087 [US2] Implémenter l'écran `apps/mobile/src/screens/Home/` (4 états via `packages/ui`, RTL, sélecteur de langue, bouton de lecture vocale) et `apps/mobile/app/_layout.tsx`, `apps/mobile/app/index.tsx` [FR-006]
-- [ ] T088 [P] [US2] Implémenter `apps/mobile/src/voice/speak.ts` (expo-speech)
-- [ ] T089 [P] [US2] Implémenter `apps/mobile/src/perf/startupMark.ts` (Hermes, marque de démarrage)
+- [x] T088 [P] [US2] Implémenter `apps/mobile/src/voice/speak.ts` (expo-speech)
+- [x] T089 [P] [US2] Implémenter `apps/mobile/src/perf/startupMark.ts` (Hermes, marque de démarrage)
 - [ ] T090 [P] [US2] Implémenter la persistance de `locale`/`theme` dans `app_settings` : `apps/mobile/src/settings/appSettings.ts`
 - [ ] T091 [US2] Commit `feat(foundations): green - home screen` ; REFACTOR `refactor(foundations): home screen`
 
