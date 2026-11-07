@@ -125,7 +125,7 @@ services:
       AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-172.29.77.2/32}
     networks:
       default: {}
-      edge: { ipv4_address: 172.29.77.3 }
+      edge: { ipv4_address: 172.29.77.3, aliases: [api-edge] }
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
