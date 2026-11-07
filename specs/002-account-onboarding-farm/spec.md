@@ -9,6 +9,16 @@
 
 Un agriculteur installe AYLAL et a créé son compte et sa ferme en moins de 2 minutes, sans e-mail ni mot de passe. Cette fonctionnalité est la porte d'entrée de toutes les autres (F2 à F9) : sans compte vérifié et sans ferme, aucune parcelle ni opération ne peut exister.
 
+## Clarifications
+
+### Session 2026-11-07 (mode autonome, réponses tirées du CPS sections 4, 15, 16, 19 et de la constitution)
+
+- Q : Canal d'envoi du code ? -> R : SMS par défaut, WhatsApp en alternative si disponible ; aucun mot de passe ni e-mail (gratuité et simplicité).
+- Q : Comportement hors ligne à l'inscription ? -> R : la vérification du code exige le réseau ; une fois connecté, la session et la création de ferme fonctionnent hors ligne (SQLite local, synchronisation ensuite).
+- Q : Durée de session ? -> R : persistante jusqu'à déconnexion volontaire ; le code local à 4 chiffres est optionnel et stocké uniquement sur l'appareil.
+- Q : Langue par défaut ? -> R : choix explicite au premier écran (darija, arabe, français), modifiable ensuite ; aucune langue imposée.
+- Aucun marqueur [NEEDS CLARIFICATION] ne subsiste dans cette spécification.
+
 ## Scénarios utilisateur et tests *(obligatoire)*
 
 ### Récit 1 — Je m'inscris avec mon numéro de téléphone et un code (Priorité : P1)
