@@ -26,4 +26,9 @@ if $clean && [ -f "$stamp" ]; then
 fi
 
 make "$target"
-$clean && echo "$head" > "$stamp" || true
+if $clean; then
+  echo "$head" > "$stamp"
+  # the full check includes the fast gate
+  [ "$name" = check ] && echo "$head" > .aylal/green-check-fast
+fi
+true

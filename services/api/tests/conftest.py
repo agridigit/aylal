@@ -3,15 +3,19 @@
 Nothing here is autouse: unit tests never touch the database.
 
 Isolation: integration and contract tests run against a throw-away database created for the
-session (aylal_test_<random>) and dropped at the end, so they never truncate the shared dev
-database nor depend on migrations applied by another branch. E2E tests keep the stack database
+session (aylal_test_<random>, one per pytest-xdist worker) and dropped at the end, so they never
+truncate the shared dev database nor depend on migrations applied by another branch.
+Speed: migrations run once into a template database (aylal_tpl_<hash of alembic/>); each session
+clones it with CREATE DATABASE ... TEMPLATE instead of replaying Alembic. E2E tests keep the stack database
 (see tests/e2e/conftest.py) because they go through the running API.
 """
 import asyncio
+import hashlib
 import os
 import subprocess
 import uuid
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -27,23 +31,32 @@ DEFAULT_DB_URL = "postgresql://aylal:aylal_dev@db:5432/aylal"
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Point the app at a per-session database name before any app module is imported."""
-    if "AYLAL_STACK_DATABASE_URL" in os.environ:
+    """Point the app at a per-process database name before any app module is imported.
+
+    xdist workers inherit the controller's environment, so ownership is tracked by PID: each
+    process (controller or worker) gets its own database.
+    """
+    if os.environ.get("AYLAL_TEST_DB_PID") == str(os.getpid()):
         return
-    stack_url = os.environ.get("AYLAL_DATABASE_URL", DEFAULT_DB_URL)
-    os.environ["AYLAL_STACK_DATABASE_URL"] = stack_url
+    stack_url = os.environ.setdefault(
+        "AYLAL_STACK_DATABASE_URL", os.environ.get("AYLAL_DATABASE_URL", DEFAULT_DB_URL)
+    )
     os.environ["AYLAL_DATABASE_URL"] = f"{stack_url.rsplit('/', 1)[0]}/aylal_test_{uuid.uuid4().hex[:10]}"
+    os.environ["AYLAL_TEST_DB_PID"] = str(os.getpid())
 
 
 def _admin(statement: str) -> None:
+    """Run a statement on the stack database, serialized with template builds and clones
+    (pytest-xdist workers share the cluster)."""
     import asyncpg
 
     async def _run() -> None:
         conn = await asyncpg.connect(os.environ["AYLAL_STACK_DATABASE_URL"])
         try:
+            await conn.execute("SELECT pg_advisory_lock(424242)")
             await conn.execute(statement)
         finally:
-            await conn.close()
+            await conn.close()  # also releases the lock
 
     asyncio.run(_run())
 
@@ -60,15 +73,58 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
         _admin(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)')
 
 
+def _template_name() -> str:
+    """Changes whenever a migration (or the Alembic env) changes."""
+    digest = hashlib.sha256()
+    for path in sorted(Path("/app/alembic").rglob("*.py")):
+        digest.update(path.name.encode() + path.read_bytes())
+    return f"aylal_tpl_{digest.hexdigest()[:12]}"
+
+
+def _ensure_template(template: str) -> None:
+    import asyncpg
+
+    async def _run() -> None:
+        conn = await asyncpg.connect(os.environ["AYLAL_STACK_DATABASE_URL"])
+        try:
+            await conn.execute("SELECT pg_advisory_lock(424242)")
+            if await conn.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", template):
+                return
+            building = f"{template}_build"
+            await conn.execute(f'DROP DATABASE IF EXISTS "{building}" WITH (FORCE)')
+            await conn.execute(f'CREATE DATABASE "{building}"')
+            base = os.environ["AYLAL_STACK_DATABASE_URL"].rsplit("/", 1)[0]
+            result = subprocess.run(
+                ["alembic", "upgrade", "head"],
+                capture_output=True,
+                text=True,
+                cwd="/app",
+                env={**os.environ, "AYLAL_DATABASE_URL": f"{base}/{building}"},
+            )
+            if result.returncode != 0:
+                await conn.execute(f'DROP DATABASE IF EXISTS "{building}" WITH (FORCE)')
+                raise AssertionError(result.stdout + result.stderr)
+            # publish atomically, then drop templates of older migration sets
+            await conn.execute(f'ALTER DATABASE "{building}" RENAME TO "{template}"')
+            stale = await conn.fetch(
+                "SELECT datname FROM pg_database WHERE datname LIKE 'aylal\\_tpl\\_%' AND datname <> $1",
+                template,
+            )
+            for row in stale:
+                await conn.execute(f'DROP DATABASE IF EXISTS "{row["datname"]}" WITH (FORCE)')
+        finally:
+            await conn.close()
+
+    asyncio.run(_run())
+
+
 @pytest.fixture(scope="session")
 def migrated() -> None:
     name = _test_db_name()
-    _admin(f'CREATE DATABASE "{name}"')
+    template = _template_name()
+    _ensure_template(template)
+    _admin(f'CREATE DATABASE "{name}" TEMPLATE "{template}"')
     _created.append(name)
-    result = subprocess.run(
-        ["alembic", "upgrade", "head"], capture_output=True, text=True, cwd="/app"
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @pytest.fixture
