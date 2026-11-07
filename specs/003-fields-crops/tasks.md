@@ -27,9 +27,9 @@
 
 ### Implémentation
 
-- [ ] T012 Règles Zod dans `packages/domain/src/{geometry,area,overlap,field,crop,season,phenology,block,merge}.ts`, génération JSON Schema -> Pydantic (chaîne F0), miroirs `services/api/app/domain/{geometry.py,season_rules.py,field_rules.py}` ; fait passer T009 et T011.
+- [x] T012 Règles Zod dans `packages/domain/src/{geometry,area,overlap,field,crop,season,phenology,block,merge}.ts`, génération JSON Schema -> Pydantic (chaîne F0), miroirs `services/api/app/domain/{geometry.py,season_rules.py,field_rules.py}` ; fait passer T009 et T011.
 - [x] T013 Migration `services/api/alembic/versions/0004_fields_crops.py` (extension de `parcels`, tables `crops`, `seasons`, `field_blocks`, `field_commands`, seed des 16 cultures) et modèles dans `services/api/app/db/models.py` ; fait passer T010 et T008 (partie migration).
-- [ ] T014 Étendre `services/api/app/domain/roles.py` et `packages/domain/src/roles.ts` (matrice F2 : écritures owner/manager ; lecture ouvrier limitée à `worker_parcels`) ; fait passer T011.
+- [x] T014 Étendre `services/api/app/domain/roles.py` et `packages/domain/src/roles.ts` (matrice F2 : écritures owner/manager ; lecture ouvrier limitée à `worker_parcels`) ; fait passer T011.
 - [x] T015 `farm_context`/`authorize` : jointure `farms.deleted_at IS NULL` et `parcels.archived_at IS NULL`, chargement des objets enfants toujours avec `farm_id` dans la clause WHERE, visibilité ouvrier (404) dans `services/api/app/auth/farm_context.py` et `services/api/app/auth/access.py`, y compris pour blocs et campagnes dont la parcelle parente est archivée ; fait passer T008 (`deleted_farm_404`) et T007b (partie REST).
 - [x] T016 Squelette des routeurs `services/api/app/routers/{fields.py,seasons.py,blocks.py,crops.py}` derrière `farm_context`/`require(action)` ; fait passer **T005 (404 inter-ferme)** et **T006 (403 par rôle, 404 non attribuée)** une fois les routes alimentées par les récits.
 - [x] T017 Autorisation de synchro `services/api/app/sync/fields.py` (`authorize` + `apply` pour `parcels`, `seasons`, `field_blocks`, `crops`, `field_commands`, champs serveur ignorés) branchée dans `services/api/app/routers/sync.py` ; fait passer **T007**.
