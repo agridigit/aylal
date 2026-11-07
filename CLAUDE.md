@@ -16,7 +16,7 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 - **Trois niveaux de tests obligatoires pour chaque module** (`packages/*`, `services/*`, `apps/*`) et pour chaque fonctionnalité :
   - unitaires : `<module>/tests/unit/` — une règle ou une fonction isolée, sans réseau ni base ;
   - intégration : `<module>/tests/integration/` (et `tests/contract/` pour les contrats) — plusieurs composants réels ensemble (API + PostgreSQL, synchronisation SQLite/PowerSync, workers + Redis/MinIO, domaine TS ↔ API Python) ;
-  - bout en bout : `services/<s>/tests/e2e/` (parcours HTTP complet sur la pile Docker), `apps/mobile/e2e/` (Maestro), `apps/web|desktop/e2e/` (Playwright) — parcours utilisateur d'un critère d'acceptation P1.
+  - bout en bout : `services/<s>/tests/e2e/` (parcours HTTP complet sur la pile Docker), `apps/mobile/maestro/` (Maestro, sur l'émulateur Android `aylal-2go` : `make e2e`), `apps/web|desktop/e2e/` (Playwright) — parcours utilisateur d'un critère d'acceptation P1.
 - Chaque critère d'acceptation P1 est couvert aux trois niveaux quand c'est applicable ; sinon la raison est notée dans `specs/<feature>/decisions.md`.
 - Garde automatique : `make test-pyramid` (inclus dans `make check`) refuse un module sans les trois niveaux, ou une branche qui change du code sans ajouter de tests aux trois niveaux. `make e2e` doit être vert avant `/aylal.release`.
 
