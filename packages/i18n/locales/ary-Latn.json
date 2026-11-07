@@ -1,4 +1,12 @@
 {
+  "onboarding": {
+    "language": {
+      "title": "Khtar l-lugha dyalk",
+      "subtitle": "T9dar tbddlha mn b3d",
+      "speak": "Sm3",
+      "confirm": "Kmml"
+    }
+  },
   "home": {
     "title": "Marhba bik f AYLAL",
     "subtitle": "Lflaha dyalk hta bla reseau",

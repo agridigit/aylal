@@ -10,3 +10,8 @@ export const FarmRegistration = z
   .meta({ title: "FarmRegistration" });
 
 export const validateFarm = (input: unknown): Verdict => validateWith(FarmRegistration, input);
+
+/** A farm still in the local upload queue is shown as "pending upload". */
+export function farmUploadState(farmId: string, pendingIds: readonly string[]): "pending_upload" | "synced" {
+  return pendingIds.includes(farmId) ? "pending_upload" : "synced";
+}

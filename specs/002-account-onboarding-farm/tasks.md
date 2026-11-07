@@ -79,7 +79,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T042 [P] E2E service `services/api/tests/e2e/test_consent_profile_e2e.py` et mobile `apps/mobile/maestro/consent_profile.yaml`. (partie service ; Maestro bloquée par T004)
 
 ### Implémentation
-- [ ] T043 `services/api/app/routers/me.py` (profil, consentements), worker de purge dans `services/workers/tasks/purge_deleted_accounts.py`.
+- [x] T043 `services/api/app/routers/me.py` (profil, consentements), worker de purge dans `services/workers/tasks/purge_deleted_accounts.py`.
 - [ ] T044 `apps/mobile/src/screens/{Consent,Profile}/`, textes `onboarding.json`.
 
 ## Phase 6 : Récit 4 — Création de la ferme (P1)
@@ -93,7 +93,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T050 [P] E2E mobile parcours complet langue -> numéro -> code -> consentement -> surnom -> ferme en moins de 2 min et moins de 200 Ko : `apps/mobile/maestro/onboarding.yaml` (R4-A4, SC) ; E2E service `services/api/tests/e2e/test_onboarding_e2e.py`. (partie service ; Maestro bloquée par T004)
 
 ### Implémentation
-- [ ] T051 `services/api/app/routers/farms.py` (création, liste, détail via `farm_context`), `services/api/app/geo/`.
+- [x] T051 `services/api/app/routers/farms.py` (création, liste, détail via `farm_context`), `services/api/app/geo/`.
 - [ ] T052 `apps/mobile/src/screens/FarmCreate/`, textes `farm.json`.
 
 ## Phase 7 : Récit 8 — Suppression du compte et export (P1)

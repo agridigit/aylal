@@ -77,3 +77,28 @@ export function createI18n(initial: string | undefined = DEFAULT_LOCALE): I18n {
     },
   };
 }
+
+export const LANGUAGE_CODES = ["ary", "ar", "fr"] as const;
+export type LanguageCode = (typeof LANGUAGE_CODES)[number];
+
+export interface LanguageOption {
+  code: LanguageCode;
+  label: string;
+  spokenText: string;
+  speechLocale: string;
+  dir: "rtl" | "ltr";
+}
+
+/** First-launch choice, in display order; each label and spoken text is in its own language. */
+export const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
+  { code: "ary", label: "الدارجة", spokenText: "الدارجة المغربية", speechLocale: "ar-MA", dir: "rtl" },
+  { code: "ar", label: "العربية", spokenText: "اللغة العربية", speechLocale: "ar", dir: "rtl" },
+  { code: "fr", label: "Français", spokenText: "Français", speechLocale: "fr-FR", dir: "ltr" },
+];
+
+/** Switches texts and direction at once; refuses an unknown language and keeps the current one. */
+export async function applyLanguage(i18n: I18n, code: string): Promise<{ locale: Locale; rtl: boolean }> {
+  if (!LANGUAGE_OPTIONS.some((o) => o.code === code)) throw new Error(`i18n: unsupported language ${code}`);
+  await i18n.changeLanguage(code);
+  return { locale: i18n.locale, rtl: isRtl(i18n.locale) };
+}
