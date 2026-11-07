@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LIMITS, canCreateField, imagerySuitable, validateField } from "../src/field";
+import { IRRIGATION_MODES, LIMITS, canCreateField, imagerySuitable, isIrrigationMode, validateField } from "../src/field";
 import { square } from "./_f2";
 
 const ring = square(-7.6, 33.57, 0.001);
@@ -47,5 +47,42 @@ describe("imagerySuitable", () => {
     expect(imagerySuitable(0.3, false)).toBe(true);
     expect(imagerySuitable(0.29, false)).toBe(false);
     expect(imagerySuitable(5, true)).toBe(false);
+  });
+});
+
+describe("irrigation and greenhouse (R3-A1, R3-A2)", () => {
+  it("given the five irrigation modes then they are exactly rainfed, gravity, sprinkler, drip and pivot", () => {
+    expect([...IRRIGATION_MODES]).toEqual(["rainfed", "gravity", "sprinkler", "drip", "pivot"]);
+  });
+  it("given each mode or no mode when checking then it is accepted, an unknown mode is not", () => {
+    for (const m of IRRIGATION_MODES) expect(isIrrigationMode(m)).toBe(true);
+    expect(isIrrigationMode(null)).toBe(true); // not filled in yet
+    expect(isIrrigationMode("flood")).toBe(false);
+  });
+  it("given an irrigation mode and a greenhouse flag when validating a field then both are returned", () => {
+    const r = validateField({ name: "A", ring, irrigation: "drip", greenhouse: true });
+    expect(r).toMatchObject({ ok: true, irrigation: "drip", greenhouse: true });
+  });
+  it("given no irrigation and no greenhouse when validating a field then irrigation is null and greenhouse false", () => {
+    expect(validateField({ name: "A", ring })).toMatchObject({ ok: true, irrigation: null, greenhouse: false });
+  });
+  it("given an unknown irrigation mode or a non boolean greenhouse when validating then irrigation_invalid or greenhouse_invalid", () => {
+    expect(validateField({ name: "A", ring, irrigation: "flood" as never })).toMatchObject({ ok: false, code: "irrigation_invalid" });
+    expect(validateField({ name: "A", ring, greenhouse: "yes" as never })).toMatchObject({ ok: false, code: "greenhouse_invalid" });
+  });
+  it("given the 0.3 ha boundary and a greenhouse when checking imagery then a greenhouse always makes it unsuitable", () => {
+    expect(imagerySuitable(0.3, true)).toBe(false);
+    expect(imagerySuitable(0.2999, false)).toBe(false);
+  });
+});
+
+describe("declared area kept apart from the calculated one (R1-A5)", () => {
+  it("given a declared area different from the calculated one when validating then both are returned unchanged", () => {
+    const r = validateField({ name: "A", ring, areaDeclaredHa: 7.5 });
+    expect(r).toMatchObject({ ok: true, areaDeclaredHa: 7.5 });
+    expect((r as { areaHa: number }).areaHa).not.toBe(7.5);
+  });
+  it("given no declared area when validating then areaDeclaredHa is null", () => {
+    expect(validateField({ name: "A", ring })).toMatchObject({ ok: true, areaDeclaredHa: null });
   });
 });

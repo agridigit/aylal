@@ -42,12 +42,12 @@
 ## Phase 3 : Récit 1 — Dessiner une parcelle (P1)
 
 ### Tests RED (non-écran)
-- [ ] T021 [P] Unitaires domaine : aire, croisement, simplification Douglas-Peucker (≤ 500 sommets), < 3 points, surface nulle, chevauchement (avertissement non bloquant), surface déclarée distincte de la calculée, dans `packages/domain/tests/{area,geometry,overlap}.test.ts` et `services/api/tests/unit/test_f2_geometry.py` (R1-A2, R1-A3, R1-A5, CL).
-- [ ] T022 [P] Unitaires mobile : `apps/mobile/src/fields/__tests__/{drawSession,gpsWalk}.test.ts` (touches, tour GPS, précision, reprise/correction, signal faible) (R1-A1, R1-A4, CL).
-- [ ] T023 [P] Intégration API `services/api/tests/integration/test_fields_create.py` : `POST /v1/farms/{farm_id}/fields` (201 + surface serveur PostGIS, `warnings` chevauchement, 422 croisement/< 3 points/aire nulle/`outside_morocco`, `area_calc_ha` client ignoré, `area_declared_ha` conservée à part) ; `PATCH` et archivage (R1-A2 à A5, CL).
-- [ ] T024 [P] Intégration synchro hors ligne `services/api/tests/integration/test_fields_offline_sync.py` : parcelle GPS créée hors ligne puis rejouée via `/v1/sync/upload`, surface recalculée par le serveur, idempotence, conflit sans perte (`sync_conflicts`) (R1-A1, CL).
-- [ ] T025 [P] Contrat `services/api/tests/contract/test_fields_contract.py` (schémas `fields`, `geometry-rules.md`).
-- [ ] T026 [P] E2E service `services/api/tests/e2e/test_field_draw_e2e.py` : créer par touches puis par GPS, vérifier surface, croisement refusé, synchro au retour du réseau (R1-A1 à A5).
+- [x] T021 [P] Unitaires domaine : aire, croisement, simplification Douglas-Peucker (≤ 500 sommets), < 3 points, surface nulle, chevauchement (avertissement non bloquant), surface déclarée distincte de la calculée, dans `packages/domain/tests/{area,geometry,overlap}.test.ts` et `services/api/tests/unit/test_f2_geometry.py` (R1-A2, R1-A3, R1-A5, CL).
+- [x] T022 [P] Unitaires mobile : `apps/mobile/src/fields/__tests__/{drawSession,gpsWalk}.test.ts` (touches, tour GPS, précision, reprise/correction, signal faible) (R1-A1, R1-A4, CL).
+- [x] T023 [P] Intégration API `services/api/tests/integration/test_fields_create.py` : `POST /v1/farms/{farm_id}/fields` (201 + surface serveur PostGIS, `warnings` chevauchement, 422 croisement/< 3 points/aire nulle/`outside_morocco`, `area_calc_ha` client ignoré, `area_declared_ha` conservée à part) ; `PATCH` et archivage (R1-A2 à A5, CL).
+- [x] T024 [P] Intégration synchro hors ligne `services/api/tests/integration/test_fields_offline_sync.py` : parcelle GPS créée hors ligne puis rejouée via `/v1/sync/upload`, surface recalculée par le serveur, idempotence, conflit sans perte (`sync_conflicts`) (R1-A1, CL).
+- [x] T025 [P] Contrat `services/api/tests/contract/test_fields_contract.py` (schémas `fields`, `geometry-rules.md`).
+- [x] T026 [P] E2E service `services/api/tests/e2e/test_field_draw_e2e.py` : créer par touches puis par GPS, vérifier surface, croisement refusé, synchro au retour du réseau (R1-A1 à A5).
 
 ### Implémentation (non-écran)
 - [ ] T027 `services/api/app/routers/fields.py` (create, patch, archive) et règles serveur ; fait passer T023 ; alimente T005, T006.
@@ -63,10 +63,10 @@
 ## Phase 4 : Récit 2 — Nommer la parcelle et choisir sa culture (P1)
 
 ### Tests RED (non-écran)
-- [ ] T034 [P] Unitaires domaine : cycle pérenne (année de plantation) vs annuelle (date de semis), exclusivité des deux, estimation de stade, correction jamais écrasée par la réestimation, culture libre sans coefficients (conseils désactivés), dans `packages/domain/tests/{crop,season,phenology}.test.ts` et `services/api/tests/unit/test_f2_season_rules.py` (R2-A3, R2-A4, R2-A5).
-- [ ] T035 [P] Intégration API `services/api/tests/integration/test_crops.py` : `GET /v1/crops` renvoie les 16 cultures du référentiel avec photo, `POST /v1/farms/{farm_id}/crops` (culture libre privée à la ferme, 201 ; 403 ouvrier ; 404 non membre ; 422), culture libre invisible des autres fermes ; campagne initiale avec variété facultative, 422 dates incohérentes avec le cycle ; `PATCH` stade corrigé conservé, dans `services/api/tests/integration/test_season_stage.py` (R2-A1 à A5).
-- [ ] T036 [P] Contrat `services/api/tests/contract/test_crops_seasons_contract.py` ; unitaires UI des composants `packages/ui/src/components/{CropTile,PrecisionMeter,MapLegend,DrawToolbar}/__tests__/` (écrits seulement après T004 pour l'aspect visuel, la logique d'état avant).
-- [ ] T037 [P] E2E service `services/api/tests/e2e/test_crop_choice_e2e.py` : une parcelle pour chacune des 16 cultures et une culture libre (R2-A1 à A5).
+- [x] T034 [P] Unitaires domaine : cycle pérenne (année de plantation) vs annuelle (date de semis), exclusivité des deux, estimation de stade, correction jamais écrasée par la réestimation, culture libre sans coefficients (conseils désactivés), dans `packages/domain/tests/{crop,season,phenology}.test.ts` et `services/api/tests/unit/test_f2_season_rules.py` (R2-A3, R2-A4, R2-A5).
+- [x] T035 [P] Intégration API `services/api/tests/integration/test_crops.py` : `GET /v1/crops` renvoie les 16 cultures du référentiel avec photo, `POST /v1/farms/{farm_id}/crops` (culture libre privée à la ferme, 201 ; 403 ouvrier ; 404 non membre ; 422), culture libre invisible des autres fermes ; campagne initiale avec variété facultative, 422 dates incohérentes avec le cycle ; `PATCH` stade corrigé conservé, dans `services/api/tests/integration/test_season_stage.py` (R2-A1 à A5).
+- [x] T036 [P] Contrat `services/api/tests/contract/test_crops_seasons_contract.py` ; unitaires UI des composants `packages/ui/src/components/{CropTile,PrecisionMeter,MapLegend,DrawToolbar}/__tests__/` (écrits seulement après T004 pour l'aspect visuel, la logique d'état avant).
+- [x] T037 [P] E2E service `services/api/tests/e2e/test_crop_choice_e2e.py` : une parcelle pour chacune des 16 cultures et une culture libre (R2-A1 à A5).
 
 ### Implémentation (non-écran)
 - [ ] T038 `services/api/app/routers/crops.py` et routes de campagne initiale dans `services/api/app/routers/seasons.py` ; fait passer T035 ; alimente T005, T006.
@@ -81,9 +81,9 @@
 ## Phase 5 : Récit 3 — Irrigation et serre (P1)
 
 ### Tests RED (non-écran)
-- [ ] T044 [P] Unitaires domaine : cinq modes d'irrigation + non renseigné, serre booléen, `imagery_suitable` (< 0,3 ha ou serre) dans `packages/domain/tests/field.test.ts` (R3-A1, R3-A2, CL).
-- [ ] T045 [P] Intégration API `services/api/tests/integration/test_field_irrigation.py` : chaque mode et serre oui/non enregistrés et relus à la création et à la modification ; 422 mode inconnu (R3-A1, R3-A2).
-- [ ] T046 [P] E2E service `services/api/tests/e2e/test_irrigation_greenhouse_e2e.py` (R3-A1, R3-A2).
+- [x] T044 [P] Unitaires domaine : cinq modes d'irrigation + non renseigné, serre booléen, `imagery_suitable` (< 0,3 ha ou serre) dans `packages/domain/tests/field.test.ts` (R3-A1, R3-A2, CL).
+- [x] T045 [P] Intégration API `services/api/tests/integration/test_field_irrigation.py` : chaque mode et serre oui/non enregistrés et relus à la création et à la modification ; 422 mode inconnu (R3-A1, R3-A2).
+- [x] T046 [P] E2E service `services/api/tests/e2e/test_irrigation_greenhouse_e2e.py` (R3-A1, R3-A2).
 
 ### Implémentation (non-écran)
 - [ ] T047 Champs `irrigation`, `greenhouse`, `soil` dans `services/api/app/routers/fields.py` et schémas ; fait passer T044 à T046 ; clés i18n dans `fields.json`.
@@ -95,10 +95,10 @@
 ## Phase 6 : Récit 4 — Carte de toutes les parcelles (P1)
 
 ### Tests RED (non-écran)
-- [ ] T050 [P] Unitaires mobile : GeoJSON local de toutes les parcelles, couleur par `status_summary` (`ok`/`watch`/`act`), couleur neutre distincte si NULL, parcelles chargées disponibles hors ligne, dans `apps/mobile/src/fields/__tests__/{mapData,offlineRegion}.test.ts` (R4-A1, R4-A2, R4-A4).
-- [ ] T051 [P] Intégration API `services/api/tests/integration/test_fields_list.py` : liste complète pour owner/manager (50 parcelles), ouvrier limité à ses parcelles (dupliqué volontairement avec T006 côté données), `status_summary` NULL -> champ nul ; archivées et ferme supprimée absentes (R4-A1, R4-A2).
-- [ ] T052 [P] Mesure SC-004 (RED, seuil initial) : `apps/mobile/src/fields/__tests__/map_perf.test.ts` — rendu de 50 parcelles < 2 s (mesure notée au gabarit de recette) (R4-A1).
-- [ ] T053 [P] E2E service `services/api/tests/e2e/test_field_map_e2e.py` : ferme de 50 parcelles, liste et fiche (R4-A1, R4-A3).
+- [x] T050 [P] Unitaires mobile : GeoJSON local de toutes les parcelles, couleur par `status_summary` (`ok`/`watch`/`act`), couleur neutre distincte si NULL, parcelles chargées disponibles hors ligne, dans `apps/mobile/src/fields/__tests__/{mapData,offlineRegion}.test.ts` (R4-A1, R4-A2, R4-A4).
+- [x] T051 [P] Intégration API `services/api/tests/integration/test_fields_list.py` : liste complète pour owner/manager (50 parcelles), ouvrier limité à ses parcelles (dupliqué volontairement avec T006 côté données), `status_summary` NULL -> champ nul ; archivées et ferme supprimée absentes (R4-A1, R4-A2).
+- [x] T052 [P] Mesure SC-004 (RED, seuil initial) : `apps/mobile/src/fields/__tests__/map_perf.test.ts` — rendu de 50 parcelles < 2 s (mesure notée au gabarit de recette) (R4-A1).
+- [x] T053 [P] E2E service `services/api/tests/e2e/test_field_map_e2e.py` : ferme de 50 parcelles, liste et fiche (R4-A1, R4-A3).
 
 ### Implémentation (non-écran)
 - [ ] T054 `GET /v1/farms/{farm_id}/fields` et `GET .../fields/{field_id}` dans `services/api/app/routers/fields.py` ; `apps/mobile/src/fields/{mapData.ts,offlineRegion.ts}` ; `infra/tiles/` et tâche `services/workers/tasks/build_tiles.py` + cible `make tiles` ; clés `map.json`.

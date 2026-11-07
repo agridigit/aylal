@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { displayStage, estimateStage } from "../src/phenology";
+import { adviceEnabled, displayStage, estimateStage, reestimateStage } from "../src/phenology";
 
 const wheat = {
   cycle: "annual",
@@ -25,5 +25,23 @@ describe("estimateStage", () => {
   it("given a stage_corrected when displaying then it wins over the estimate", () => {
     expect(displayStage({ stage_estimated: "tillering", stage_corrected: "heading" })).toBe("heading");
     expect(displayStage({ stage_estimated: "tillering", stage_corrected: null })).toBe("tillering");
+  });
+});
+
+describe("stage correction is kept (R2-A5) and custom crops have no advice (R2-A3)", () => {
+  it("given a corrected stage when the estimate is recomputed then stage_corrected is untouched and only the estimate changes", () => {
+    const season = { sowing_date: "2026-01-01", stage_estimated: "emergence", stage_corrected: "heading" };
+    const next = reestimateStage(wheat, season, "2026-05-01");
+    expect(next.stage_corrected).toBe("heading");
+    expect(next.stage_estimated).toBe("tillering");
+    expect(displayStage(next)).toBe("heading");
+  });
+  it("given no correction when the estimate is recomputed then the new estimate is displayed", () => {
+    const next = reestimateStage(wheat, { sowing_date: "2026-01-01", stage_estimated: "emergence", stage_corrected: null }, "2026-05-01");
+    expect(displayStage(next)).toBe("tillering");
+  });
+  it("given a free crop without coefficients when asking for advice then it is disabled, a validated reference crop enables it", () => {
+    expect(adviceEnabled({ has_agronomy: false, stages: [] })).toBe(false);
+    expect(adviceEnabled({ has_agronomy: true, stages: wheat.stages })).toBe(true);
   });
 });
