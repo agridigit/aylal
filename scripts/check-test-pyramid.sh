@@ -30,9 +30,9 @@ if [ "$branch" != "main" ] && git rev-parse -q --verify main >/dev/null; then
   changed="$(git diff --name-only main...HEAD; git diff --name-only HEAD; git ls-files --others --exclude-standard)"
   prod="$(printf '%s\n' "$changed" | grep -E '^(apps|packages|services)/[^/]+/(src|app)/' || true)"
   if [ -n "$prod" ]; then
-    printf '%s\n' "$changed" | grep -qE '/tests/unit/|^packages/[^/]+/tests/[^/]+\.test\.tsx?$' || err "branche $branch : code modifié sans test unitaire"
-    printf '%s\n' "$changed" | grep -qE '/tests/(integration|contract)/'                         || err "branche $branch : code modifié sans test d'intégration"
-    printf '%s\n' "$changed" | grep -qE '/tests/e2e/|^apps/[^/]+/e2e/'                            || err "branche $branch : code modifié sans test de bout en bout"
+    printf '%s\n' "$changed" | grep -qE '/tests/unit/|^packages/[^/]+/tests/[^/]+\.test\.tsx?$|^apps/[^/]+/src/(.+/)?__tests__/[^/]+\.test\.tsx?$' || err "branche $branch : code modifié sans test unitaire"
+    printf '%s\n' "$changed" | grep -qE '/tests/(integration|contract)/|/__tests__/integration/' || err "branche $branch : code modifié sans test d'intégration"
+    printf '%s\n' "$changed" | grep -qE '/tests/e2e/|^apps/[^/]+/(e2e|maestro)/'                || err "branche $branch : code modifié sans test de bout en bout"
   fi
 fi
 

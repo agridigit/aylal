@@ -11,5 +11,11 @@ port: 8080
 sync_rules:
   path: sync-rules.yaml
 client_auth:
-  jwks_uri: http://api:8000/v1/.well-known/jwks.json
+  # HS256 key shared with the API (AYLAL_JWT_SECRET), base64url-encoded by the compose entrypoint.
+  # No kid on purpose: the API issues tokens without kid, which matches a key defined without kid.
+  jwks:
+    keys:
+      - kty: oct
+        alg: HS256
+        k: !env PS_JWT_KEY
   audience: [powersync]

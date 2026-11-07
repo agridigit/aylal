@@ -21,3 +21,8 @@ packages/ui/test-results/
 .pnpm-store/
 storybook-static/
 .superpowers/
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/dist/
+.aylal/e2e/
+.coverage
