@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNetworkState } from "expo-network";
 import { Home } from "../src/screens/Home/Home";
 import { debugStateFrom } from "../src/screens/Home/debugState";
@@ -9,6 +9,7 @@ const E2E_DEBUG = process.env.EXPO_PUBLIC_E2E === "1";
 export default function Index() {
   const { i18n, setLocale } = useLocale();
   const { debugState } = useLocalSearchParams<{ debugState?: string }>();
+  const router = useRouter();
   const network = useNetworkState();
   const isOffline = network.isConnected === false || network.isInternetReachable === false;
   const debug = debugStateFrom(debugState, E2E_DEBUG);
@@ -22,7 +23,7 @@ export default function Index() {
       onChangeLanguage={setLocale}
       onRetry={() => {}}
       onAddItem={() => {}}
-      onOpenTrialRecord={() => {}}
+      onOpenTrialRecord={() => router.push("/trial-record")}
     />
   );
 }

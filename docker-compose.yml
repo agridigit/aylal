@@ -77,6 +77,13 @@ services:
       POWERSYNC_CONFIG_PATH: /config/config.yaml
       PS_DATA_SOURCE_URI: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
       PS_STORAGE_SOURCE_URI: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/powersync_storage
+      AYLAL_JWT_SECRET: ${AYLAL_JWT_SECRET:-}
+    # client_auth key = base64url(AYLAL_JWT_SECRET), derived here so the secret lives in .env/CI only.
+    # Without a secret the key is random: no token validates (fail closed), the service still starts.
+    entrypoint:
+      - sh
+      - -c
+      - 'S="$$AYLAL_JWT_SECRET"; [ -n "$$S" ] || S="$$(head -c 32 /dev/urandom | base64)"; PS_JWT_KEY="$$(printf %s "$$S" | base64 | tr -d "\n=" | tr "+/" "-_")"; export PS_JWT_KEY; exec node service/lib/entry.js start'
     depends_on:
       db: { condition: service_healthy }
       api: { condition: service_healthy }

@@ -6,13 +6,14 @@ import { buildTrialRecordViewModel, type TrialSyncState } from "./trialRecordVie
 
 interface TrialRecordProps {
   i18n: I18n;
-  syncState: TrialSyncState;
+  /** Undefined until a record has been saved: the indicator is then hidden. */
+  syncState?: TrialSyncState;
   onSave: (values: Record<string, string>) => void;
 }
 
 export function TrialRecord({ i18n, syncState, onSave }: TrialRecordProps) {
-  const vm = buildTrialRecordViewModel({ syncState });
-  const [values] = useState(() => ({}) as Record<string, string>);
+  const vm = buildTrialRecordViewModel({ syncState: syncState ?? "pending" });
+  const [values, setValues] = useState<Record<string, string>>({});
   function t(key: string) {
     return i18n.t(key);
   }
@@ -20,13 +21,18 @@ export function TrialRecord({ i18n, syncState, onSave }: TrialRecordProps) {
     <View style={{ flex: 1, gap: 16, padding: 16 }}>
       <Text variant="heading" label={t(vm.titleKey)} locale={i18n.locale} />
       {vm.fields.map((f) => (
-        <View key={f.id} testID={f.testId}>
-          <TextField label={t(f.labelKey)} />
-        </View>
+        <TextField
+          key={f.id}
+          testID={f.testId}
+          label={t(f.labelKey)}
+          onChangeText={(text) => setValues((v) => ({ ...v, [f.id]: text }))}
+        />
       ))}
-      <View testID={vm.syncIndicator.testId}>
-        <SyncBadge label={t(vm.syncIndicator.labelKey)} state={vm.syncIndicator.visible ? "loading" : "default"} />
-      </View>
+      {syncState ? (
+        <View testID={vm.syncIndicator.testId}>
+          <SyncBadge label={t(vm.syncIndicator.labelKey)} state={vm.syncIndicator.visible ? "loading" : "default"} />
+        </View>
+      ) : null}
       <View testID={vm.saveButton.testId} style={{ minWidth: vm.saveButton.minWidth, minHeight: vm.saveButton.minHeight }}>
         <Button label={t(vm.saveButton.labelKey)} onPress={() => onSave(values)} />
       </View>
