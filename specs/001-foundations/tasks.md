@@ -79,22 +79,22 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T036 [P] [US3] Test de contrat `services/api/tests/contract/test_openapi_sync.py` : jeton d'essai et envoi de synchronisation conformes à `contracts/openapi.yaml` (AC3.2)
-- [ ] T037 [P] [US3] Test de contrat `tests/contract/test_powersync_rules.py` : `infra/powersync/sync-rules.yaml` identique à `contracts/powersync-sync-rules.yaml` et filtre par ferme/membre (AC3.2, FR-018)
-- [ ] T038 [P] [US3] Test pytest `services/api/tests/integration/test_acl.py` : refus 403 hors ferme ; `viewer` ne peut pas écrire ; `editor`/`owner` peuvent ; `farm_members` en lecture seule (FR-018, R8)
-- [ ] T039 [P] [US3] Test pytest `services/api/tests/integration/test_idempotency.py` : un `op_id` rejoué renvoie le résultat enregistré dans `applied_ops` sans réappliquer ; coupure en plein envoi sans doublon (cas limite, AC3.2) [FR-013]
-- [ ] T040 [P] [US3] Test pytest `services/api/tests/integration/test_conflicts.py` : même champ modifié par deux appareils -> règle d'ordre d'arrivée, ligne dans `sync_conflicts` (`discarded_value`, `kept_value`, `base_version`, `server_version`), `has_conflict = true` jusqu'à acquittement ; horloge décalée sans effet (AC3.4) [FR-015]
-- [ ] T040a [P] [US3] Test pytest `services/api/tests/integration/test_acl_conflict_ack.py` : `POST /v1/sync/conflicts/{id}/acknowledge` par un membre `editor`/`owner` de la ferme du conflit -> 204 ; par un utilisateur d'une AUTRE ferme (ou non membre) -> 404 (jamais 403, corps identique à un id inexistant) ; `viewer` de la bonne ferme -> 403 ; sans jeton -> 401 ; le conflit reste non acquitté après un refus (FR-018, sécurité inter-ferme)
-- [ ] T041 [P] [US3] Test pytest `services/api/tests/integration/test_validation_server.py` : rejet par le serveur des entrées que les vecteurs T008 déclarent invalides (AC3.5)
-- [ ] T042 [P] [US3] Test pytest `services/api/tests/integration/test_offline_30_days.py` : 1 000 enregistrements créés et modifiés sur 30 jours simulés, reconnexion, 0 perte, 0 doublon (AC3.3, SC-005) [FR-012]
-- [ ] T043 [P] [US3] Test pytest `services/api/tests/integration/test_encryption.py` : `scram-sha-256` actif, accès TLS via `proxy`, refus du clair (AC3.6, FR-017)
-- [ ] T044 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/localStore.test.ts` : saisie sans réseau enregistrée localement, état `pending` dérivé de `ps_crud` (AC3.1, FR-014)
-- [ ] T045 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/syncState.test.ts` : transitions `pending -> synced`, `pending -> conflict`, `conflict -> synced`, `synced -> pending` ; « non envoyé » visible tant que non acquitté (AC3.2, cas limite changement de téléphone)
-- [ ] T046 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/encryptionKey.test.ts` : clé SQLCipher aléatoire au premier lancement stockée dans le stockage sécurisé, base ouverte chiffrée (AC3.6, R7)
-- [ ] T047 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/storageWarning.test.ts` : avertissement avant perte de saisie si stockage presque plein (cas limite)
-- [ ] T048 [P] [US3] Test Jest `apps/mobile/src/telemetry/__tests__/telemetry.test.ts` : télémétrie anonyme (`install_id` aléatoire, sans donnée personnelle) et désactivable (FR-020)
-- [ ] T049 [P] [US3] Test E2E Maestro `apps/mobile/maestro/offline_sync.yaml` : mode avion -> saisie -> « non envoyé » -> retour réseau -> indicateur disparu (AC3.1, AC3.2)
-- [ ] T050 [US3] Lancer pytest et Jest : T036 à T048 et T040a DOIVENT échouer ; commit `test(foundations): red - offline sync`
+- [x] T036 [P] [US3] Test de contrat `services/api/tests/contract/test_openapi_sync.py` : jeton d'essai et envoi de synchronisation conformes à `contracts/openapi.yaml` (AC3.2)
+- [x] T037 [P] [US3] Test de contrat `tests/contract/test_powersync_rules.py` : `infra/powersync/sync-rules.yaml` identique à `contracts/powersync-sync-rules.yaml` et filtre par ferme/membre (AC3.2, FR-018)
+- [x] T038 [P] [US3] Test pytest `services/api/tests/integration/test_acl.py` : refus 403 hors ferme ; `viewer` ne peut pas écrire ; `editor`/`owner` peuvent ; `farm_members` en lecture seule (FR-018, R8)
+- [x] T039 [P] [US3] Test pytest `services/api/tests/integration/test_idempotency.py` : un `op_id` rejoué renvoie le résultat enregistré dans `applied_ops` sans réappliquer ; coupure en plein envoi sans doublon (cas limite, AC3.2) [FR-013]
+- [x] T040 [P] [US3] Test pytest `services/api/tests/integration/test_conflicts.py` : même champ modifié par deux appareils -> règle d'ordre d'arrivée, ligne dans `sync_conflicts` (`discarded_value`, `kept_value`, `base_version`, `server_version`), `has_conflict = true` jusqu'à acquittement ; horloge décalée sans effet (AC3.4) [FR-015]
+- [x] T040a [P] [US3] Test pytest `services/api/tests/integration/test_acl_conflict_ack.py` : `POST /v1/sync/conflicts/{id}/acknowledge` par un membre `editor`/`owner` de la ferme du conflit -> 204 ; par un utilisateur d'une AUTRE ferme (ou non membre) -> 404 (jamais 403, corps identique à un id inexistant) ; `viewer` de la bonne ferme -> 403 ; sans jeton -> 401 ; le conflit reste non acquitté après un refus (FR-018, sécurité inter-ferme)
+- [x] T041 [P] [US3] Test pytest `services/api/tests/integration/test_validation_server.py` : rejet par le serveur des entrées que les vecteurs T008 déclarent invalides (AC3.5)
+- [x] T042 [P] [US3] Test pytest `services/api/tests/integration/test_offline_30_days.py` : 1 000 enregistrements créés et modifiés sur 30 jours simulés, reconnexion, 0 perte, 0 doublon (AC3.3, SC-005) [FR-012]
+- [x] T043 [P] [US3] Test pytest `services/api/tests/integration/test_encryption.py` : `scram-sha-256` actif, accès TLS via `proxy`, refus du clair (AC3.6, FR-017)
+- [x] T044 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/localStore.test.ts` : saisie sans réseau enregistrée localement, état `pending` dérivé de `ps_crud` (AC3.1, FR-014)
+- [x] T045 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/syncState.test.ts` : transitions `pending -> synced`, `pending -> conflict`, `conflict -> synced`, `synced -> pending` ; « non envoyé » visible tant que non acquitté (AC3.2, cas limite changement de téléphone)
+- [x] T046 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/encryptionKey.test.ts` : clé SQLCipher aléatoire au premier lancement stockée dans le stockage sécurisé, base ouverte chiffrée (AC3.6, R7)
+- [x] T047 [P] [US3] Test Jest `apps/mobile/src/sync/__tests__/storageWarning.test.ts` : avertissement avant perte de saisie si stockage presque plein (cas limite)
+- [x] T048 [P] [US3] Test Jest `apps/mobile/src/telemetry/__tests__/telemetry.test.ts` : télémétrie anonyme (`install_id` aléatoire, sans donnée personnelle) et désactivable (FR-020)
+- [x] T049 [P] [US3] Test E2E Maestro `apps/mobile/maestro/offline_sync.yaml` : mode avion -> saisie -> « non envoyé » -> retour réseau -> indicateur disparu (AC3.1, AC3.2)
+- [x] T050 [US3] Lancer pytest et Jest : T036 à T048 et T040a DOIVENT échouer ; commit `test(foundations): red - offline sync`
 
 ### Implémentation (GREEN)
 

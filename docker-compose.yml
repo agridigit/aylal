@@ -142,11 +142,13 @@ services:
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
+      proxy: { condition: service_healthy }
     environment:
       AYLAL_DOMAIN_DIR: /packages/domain
+      AYLAL_REPO_DIR: /repo
       AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
       AYLAL_REDIS_URL: redis://redis:6379/0
-    volumes: ["./services/api:/app", "./packages/domain:/packages/domain:ro"]
+    volumes: ["./services/api:/app", "./packages/domain:/packages/domain:ro", ".:/repo:ro"]
     command: ["pytest", "-q"]
 
   js-test:
