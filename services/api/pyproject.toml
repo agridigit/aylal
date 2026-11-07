@@ -45,4 +45,4 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
 
 [tool.ruff.lint.per-file-ignores]
 # tests : subprocess sans check explicite et pytest.raises(Exception) volontaires
-"tests/**" = ["PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167"]
+"tests/**" = ["PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167", "ASYNC221"]
