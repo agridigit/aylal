@@ -1,0 +1,212 @@
+[
+ {
+  "role": "owner",
+  "action": "field.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "season.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "season.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "season.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "block.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "block.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "block.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "field.create",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.create",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.create",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "field.update",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.update",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.update",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "field.archive",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.archive",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.archive",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "field.restore",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.restore",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.restore",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "field.merge",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.merge",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.merge",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "field.split",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.split",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.split",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "field.import",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "field.import",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "field.import",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "season.start",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "season.start",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "season.start",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "season.end",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "season.end",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "season.end",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "season.correct_stage",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "season.correct_stage",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "season.correct_stage",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "crop.create_custom",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "crop.create_custom",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "crop.create_custom",
+  "allowed": false
+ }
+]

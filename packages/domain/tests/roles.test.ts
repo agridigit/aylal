@@ -42,3 +42,17 @@ describe("role rules beyond the matrix (R6-A2, FR-022)", () => {
     });
   }
 });
+
+describe("F2 roles matrix shared vectors (field.*, season.*, crop.create_custom)", () => {
+  const f2: { role: string; action: string; allowed: boolean }[] = JSON.parse(
+    readFileSync(new URL("../vectors/f2_roles.json", import.meta.url), "utf-8"),
+  );
+  for (const m of f2) {
+    it(`given role ${m.role} when doing ${m.action} then allowed is ${m.allowed}`, () => {
+      expect(can(m.role, m.action)).toBe(m.allowed);
+    });
+  }
+  it("given an unknown F2 action then nobody can do it", () => {
+    expect(can("owner", "field.teleport")).toBe(false);
+  });
+});

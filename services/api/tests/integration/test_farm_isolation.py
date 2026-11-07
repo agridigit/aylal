@@ -120,3 +120,16 @@ def test_given_a_member_of_another_farm_when_addressed_via_my_farm_then_404_and_
     assert r.status_code == 404
     role = sql("SELECT role FROM farm_members WHERE farm_id=$1 AND user_id=$2", world["other"], world["other_owner"])
     assert role[0][0] == "owner"
+
+
+def test_given_a_stranger_when_reading_a_farm_holding_f2_data_then_404_like_an_unknown_farm(client, token_for, make_farm):
+    """T008 - isolation unchanged after 0004: farm_context still answers 404 for non-members."""
+    import uuid as _u
+
+    from tests.helpers import auth as _auth
+
+    owner, stranger = _u.uuid4(), _u.uuid4()
+    farm = make_farm({owner: "owner"})
+    r1 = client.get(f"/v1/farms/{farm}", headers=_auth(token_for(stranger)))
+    r2 = client.get(f"/v1/farms/{_u.uuid4()}", headers=_auth(token_for(stranger)))
+    assert r1.status_code == r2.status_code == 404

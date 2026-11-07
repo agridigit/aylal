@@ -111,3 +111,18 @@ def test_given_f0_roles_in_the_database_when_migrated_then_editor_is_manager_and
     text = " ".join(r[0] for r in allowed)
     assert "manager" in text and "worker" in text
     assert "editor" not in text and "viewer" not in text
+
+
+def test_given_a_parcel_without_vigor_when_the_owner_writes_via_sync_then_it_is_still_applied(
+    client, token_for, make_farm, upload
+) -> None:
+    """T008 - F0/F1 behaviour unchanged after 0004 (parcels.vigor nullable, deleted_at joined in farm_role)."""
+    from tests.helpers import sql
+
+    owner = uuid.uuid4()
+    farm = make_farm({owner: "owner"})
+    sql("INSERT INTO parcels (id, farm_id, name, geometry) VALUES ($1,$2,'NoVigor',"
+        "ST_SetSRID(ST_GeomFromText('POLYGON((0 0,0 1,1 1,1 0,0 0))'),4326))", uuid.uuid4(), farm)
+    rid = uuid.uuid4()
+    assert upload(token_for(owner), [_put(farm, rid)])["results"][0]["status"] == "applied"
+    assert client.get(f"/v1/farms/{farm}", headers=auth(token_for(owner))).status_code == 200

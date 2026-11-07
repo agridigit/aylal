@@ -94,3 +94,14 @@ def test_given_a_manager_when_acknowledging_a_conflict_then_it_is_204(client, to
 def test_given_a_worker_when_acknowledging_a_conflict_then_it_is_403_and_stays_open(client, token_for, conflict_f1):
     assert _ack(client, token_for(conflict_f1["worker"]), conflict_f1["id"]).status_code == 403
     assert _unacked(conflict_f1["id"])
+
+
+def test_given_a_deleted_farm_when_the_owner_acknowledges_a_conflict_then_it_is_404_and_stays_open(
+    client, token_for, conflict_f1
+):
+    """T008 - deleted_at joined in authorize: a deleted farm's conflicts are unreachable."""
+    farm = sql("SELECT farm_id FROM sync_conflicts WHERE id = $1", conflict_f1["id"])[0][0]
+    owner = sql("SELECT user_id FROM farm_members WHERE farm_id=$1 AND role='owner'", farm)[0][0]
+    sql("UPDATE farms SET deleted_at = now() WHERE id=$1", farm)
+    assert _ack(client, token_for(owner), conflict_f1["id"]).status_code == 404
+    assert _unacked(conflict_f1["id"])
