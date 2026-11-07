@@ -170,11 +170,11 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T092 [P] [US5] Test `tests/diagrams/test_render.sh` : des `.mmd` de `flowchart`, `sequenceDiagram`, `erDiagram`, `stateDiagram-v2` produisent un SVG et un PNG chacun dans `img/` du module (AC5.1, FR-025)
-- [ ] T093 [P] [US5] Test `tests/diagrams/test_invalid.sh` : un `.mmd` invalide fait échouer `make diagrams` en nommant le fichier fautif (AC5.2)
-- [ ] T094 [P] [US5] Test `tests/diagrams/test_reproducible.sh` : second lancement identique (sommes de contrôle égales, « 0 fichier rendu ») (AC5.3)
-- [ ] T095 [P] [US5] Test `tests/diagrams/test_duration.sh` : module standard rendu en moins de 2 minutes (SC-010)
-- [ ] T096 [US5] Lancer : DOIVENT échouer ; commit `test(foundations): red - diagrams`
+- [x] T092 [P] [US5] Test `tests/diagrams/test_render.sh` : des `.mmd` de `flowchart`, `sequenceDiagram`, `erDiagram`, `stateDiagram-v2` produisent un SVG et un PNG chacun dans `img/` du module (AC5.1, FR-025)
+- [x] T093 [P] [US5] Test `tests/diagrams/test_invalid.sh` : un `.mmd` invalide fait échouer `make diagrams` en nommant le fichier fautif (AC5.2)
+- [x] T094 [P] [US5] Test `tests/diagrams/test_reproducible.sh` : second lancement identique (sommes de contrôle égales, « 0 fichier rendu ») (AC5.3)
+- [x] T095 [P] [US5] Test `tests/diagrams/test_duration.sh` : module standard rendu en moins de 2 minutes (SC-010)
+- [x] T096 [US5] Lancer : DOIVENT échouer ; commit `test(foundations): red - diagrams`
 
 ### Implémentation (GREEN)
 
