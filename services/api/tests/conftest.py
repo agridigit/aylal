@@ -127,6 +127,14 @@ def migrated() -> None:
     _created.append(name)
 
 
+@pytest.fixture(autouse=True)
+def _integration_database(request: pytest.FixtureRequest) -> None:
+    """Integration tests that call sql() without a database fixture still find their throw-away DB
+    (otherwise the result depends on which test ran first on a pytest-xdist worker)."""
+    if "integration" in request.node.path.parts:
+        request.getfixturevalue("migrated")
+
+
 @pytest.fixture
 def clean_db(migrated: None) -> None:
     sql(f"TRUNCATE {TABLES} CASCADE")
