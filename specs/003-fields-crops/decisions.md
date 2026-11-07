@@ -56,3 +56,18 @@ Le service PowerSync refuse un seau sans paramètre cohérent avec `farm_id` (`f
 - Export (T062) : un gestionnaire reçoit toutes les parcelles/campagnes/blocs/cultures libres de ses fermes ; l'ouvrier uniquement ses parcelles assignées (pas de cultures libres).
 
 - Taille APK : `E2E_SKIP=1 make check` passe lint, typecheck, tests, couverture et visuel ; `apk-size` échoue : 50,8 Mo (limite 40 Mo, F1 : 38,3 Mo). Cause mesurée : `@maplibre/maplibre-react-native` (T001) ajoute `libmaplibre.so` (10,8 Mo non compressé) et le reste de la hausse vient des dépendances natives F2. Non corrigeable sans retirer la carte ; décision humaine requise (relever le budget ou réduire les modules natifs). Le e2e Maestro n'est pas exécuté (E2E_SKIP=1).
+
+## Budget APK 40 Mo : mesures et décision requise
+
+Seuil CPS (section 15) : « Application installée < 40 Mo » ; la porte `apk-size` mesure le fichier APK (arm64-v8a seul, déjà appliqué en F1 ; Android 9+ et 2 Go de RAM n'imposent pas armeabi-v7a, non ajouté).
+
+| Mesure (APK release arm64-v8a) | Taille |
+|---|---|
+| F1 (référence) | 38,3 Mo |
+| F2 avec carte MapLibre | 50,8 Mo (50 789 140 o) |
+| + R8 et réduction des ressources (`build-apk.sh`, appliqué) | 49,9 Mo (49 921 377 o), soit -0,9 Mo |
+| Compression des .so (`useLegacyPackaging`), estimation gzip -6 des .so (37,3 Mo -> 14,6 Mo) | environ 27 Mo de fichier, MAIS ~64 Mo installés (bibliothèques extraites) : NON appliqué, contourne la porte en aggravant le critère « installée » |
+
+Écarté : `libcrypto.so` (5 Mo, sqlcipher d'op-sqlite) est requis par « chiffrés au repos, y compris sur le téléphone » (constitution) ; GIF : aucun `.gif` dans le dépôt, gain de 0,3 Mo seulement, négligeable. `libmaplibre.so` : 10,8 Mo, indissociable de la carte.
+
+Reste 8 Mo à gagner : non atteignable sans décision humaine. `apk-size` reste rouge. Option recommandée : relever le budget à 52 Mo pour F2 (la carte est un besoin P1 de la fonctionnalité) en amendant le CPS, en gardant arm64 seul + R8 ; alternative : AAB/split par densité n'aide pas (les .so dominent). À valider : le build R8 n'a pas été lancé sur émulateur (E2E_SKIP) ; faire un passage Maestro avant fusion.

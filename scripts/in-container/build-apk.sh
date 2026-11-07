@@ -13,6 +13,10 @@ CI=1 npx expo prebuild --platform android --no-install --clean
 # arm64-v8a only: ABI of the emulator and of real 2 GB phones; faster build, smaller APK (decisions.md).
 sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/' android/gradle.properties
 grep -q '^reactNativeArchitectures=' android/gradle.properties || echo 'reactNativeArchitectures=arm64-v8a' >> android/gradle.properties
+# R8 + resource shrinking (size budget, decisions.md). Measured in decisions.md.
+set_prop() { grep -q "^$1=" android/gradle.properties && sed -i "s/^$1=.*/$1=$2/" android/gradle.properties || printf '\n%s=%s\n' "$1" "$2" >> android/gradle.properties; }
+set_prop android.enableMinifyInReleaseBuilds true
+set_prop android.enableShrinkResourcesInReleaseBuilds true
 (cd android && ./gradlew --no-daemon assembleRelease)
 mkdir -p /repo/apps/mobile/dist
 cp android/app/build/outputs/apk/release/app-release.apk /repo/apps/mobile/dist/app-release.apk
