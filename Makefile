@@ -1,5 +1,5 @@
 # AYLAL — toutes les commandes passent par Docker Compose (contrat : specs/001-foundations/contracts/make-targets.md)
-DC := docker compose
+DC := bash scripts/dc.sh
 # ex. make test-api ARGS=tests/unit/test_x.py — cibler un fichier pendant une tâche
 ARGS ?=
 # Maestro est téléchargé à la construction de l'image e2e uniquement (jamais un défaut d'exécution).

@@ -7,7 +7,7 @@
 # E2E_NO_BUILD=1 reuses apps/mobile/dist/app-release.apk. E2E_SKIP=1 skips with a loud warning (never in make check on a configured machine).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-DC="docker compose"
+DC="bash scripts/dc.sh"
 AVD="${AVD:-aylal-2go}"
 FLOWS="${E2E_FLOWS:-apps/mobile/maestro}"
 APK="${APK_PATH:-apps/mobile/dist/app-release.apk}"

@@ -217,10 +217,12 @@ services:
     volumes: [".:/repo", "android-build:/build", "android-sdk:/opt/android-sdk", "gradle-cache:/cache/gradle", "pnpm-store-amd64:/pnpm/store"]
 
 volumes:
-  android-build:
-  android-sdk:
-  gradle-cache:
-  pnpm-store-amd64:
+  # Build caches: shared by every branch (fixed names).
+  android-build: { name: aylal-cache-android-build }
+  android-sdk: { name: aylal-cache-android-sdk }
+  gradle-cache: { name: aylal-cache-gradle }
+  pnpm-store-amd64: { name: aylal-cache-pnpm-amd64 }
+  pnpm-store: { name: aylal-cache-pnpm }
+  # Data: one set per branch (compose project aylal-<branch>, see scripts/dc.sh).
   db-data:
   minio-data:
-  pnpm-store:
