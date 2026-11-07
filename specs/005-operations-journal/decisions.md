@@ -123,3 +123,5 @@ Aucune assertion de sécurité n'est affaiblie ; chaque correction est minimale.
   - `OFL-IBMPlexSansArabic.txt` 1c32ddc3fc6efd167cdcbe475195287f2dc26ed1a4c92fbe31c87ceaffe44f98
 - **Catalogue** : `GET /v1/phyto-products` ne renvoie que les produits de la dernière version du catalogue (`imported_at` le plus récent) ; pas de doublons après un second import.
 - **Lint des tests** : `F811` ignoré pour `tests/**` (`pyproject.toml`) : l'import d'une fixture pytest (`world`) puis sa réception en paramètre est l'idiome attendu ; aucune assertion modifiée.
+
+- **Taille APK** : mesurée à 50 480 024 octets (limite 41 943 040) lors de `E2E_SKIP=1 make check` ; aucun seuil relâché, aucune dérogation créée (décision humaine requise). Toutes les autres portes de `make check` précédant `apk-size` sont vertes.
