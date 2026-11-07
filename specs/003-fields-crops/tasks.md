@@ -34,7 +34,7 @@
 - [x] T016 Squelette des routeurs `services/api/app/routers/{fields.py,seasons.py,blocks.py,crops.py}` derrière `farm_context`/`require(action)` ; fait passer **T005 (404 inter-ferme)** et **T006 (403 par rôle, 404 non attribuée)** une fois les routes alimentées par les récits.
 - [x] T017 Autorisation de synchro `services/api/app/sync/fields.py` (`authorize` + `apply` pour `parcels`, `seasons`, `field_blocks`, `crops`, `field_commands`, champs serveur ignorés) branchée dans `services/api/app/routers/sync.py` ; fait passer **T007**.
 - [x] T018 [P] Règles de synchro PowerSync étendues (parcelles, campagnes, blocs, cultures ; ouvrier : ses parcelles seulement) dans `infra/powersync/sync-rules.yaml` conformes à `specs/003-fields-crops/contracts/powersync-sync-rules.yaml` (enfants de parcelle ouvrier filtrés sur parcelle parente non archivée), tests `services/api/tests/integration/test_f2_sync_rules_roles.py` et T007b écrits avant.
-- [ ] T019 [P] Contrat : synchroniser `specs/003-fields-crops/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f2_openapi_sync.py` écrit avant.
+- [ ] T019 [P] (RED écrit : `services/api/tests/contract/test_f2_openapi_sync.py`, drift `GET /v1/farms/{farm_id}/crops` non documenté) Contrat : synchroniser `specs/003-fields-crops/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f2_openapi_sync.py` écrit avant.
 - [ ] T020 [P] Garde-fou Maroc : test d'allowlist `services/api/tests/unit/test_f2_no_foreign_tiles.py` et `apps/mobile/src/fields/__tests__/mapStyle.allowlist.test.ts` (style de carte et code mobile ne référencent que `AYLAL_TILES_BASE_URL`, aucun domaine tiers de tuiles/géocodage), puis `apps/mobile/src/fields/mapStyle.ts` ; emprise Maroc : 422 `outside_morocco` testé dans `services/api/tests/integration/test_f2_outside_morocco.py` (garde-fou n°6).
 
 **Point de contrôle** : T005 à T011 verts (sauf routes alimentées par les récits), `make test-api` et `make test-domain` verts.
@@ -53,7 +53,7 @@
 - [x] T027 `services/api/app/routers/fields.py` (create, patch, archive) et règles serveur ; fait passer T023 ; alimente T005, T006.
 - [x] T028 [P] `services/api/app/sync/fields.py` (apply `parcels`) ; fait passer T024.
 - [x] T029 [P] Mobile : `apps/mobile/src/fields/{drawSession.ts,gpsWalk.ts}` (expo-location, précision, simplification) ; fait passer T022.
-- [ ] T030 [P] i18n `packages/i18n/locales/{ary,ar,fr}/fields.json` (dessin, erreurs de croisement, précision GPS).
+- [ ] T030 [P] (RED écrit : `packages/i18n/tests/f2-keys.test.ts`) i18n `packages/i18n/locales/{ary,ar,fr}/fields.json` (dessin, erreurs de croisement, précision GPS).
 
 ### Écrans (dépendent de T004)
 - [ ] T031 [écran] [P] [dépend de T004] Tests RED écrans F2-E2 dessin : touches et GPS, `PrecisionMeter`, explication visuelle du croisement, 4 états, miroir RTL, dans `apps/mobile/src/screens/FieldDraw/__tests__/` (R1-A3, R1-A4, CL).
@@ -110,9 +110,9 @@
 ## Phase 7 : Récit 5 — Découper ou fusionner (P2)
 
 ### Tests RED (non-écran)
-- [ ] T057 [P] Unitaires domaine : bloc contenu dans la parcelle (tolérance 1 %), pas de chevauchement entre blocs, surface cumulée de fusion, fusion de campagnes de même culture active, contiguïté, dans `packages/domain/tests/{block,merge}.test.ts` (R5-A1, R5-A2).
-- [ ] T058 [P] Intégration API `services/api/tests/integration/test_blocks.py` (201, 422 `block_outside_field`/`block_overlap`, 404 bloc d'une autre parcelle ou ferme, 403 ouvrier) et `test_field_merge.py` (surface cumulée, parcelle fusionnée archivée avec `merged_into_id`, campagnes conservées, 422 `merge_not_contiguous`, 404 inter-ferme, idempotence de la commande `field_commands`) (R5-A1, R5-A2).
-- [ ] T059 [P] E2E service `services/api/tests/e2e/test_split_merge_e2e.py` : découper puis fusionner, vérifier surfaces et rattachements, rejeu hors ligne (R5-A1, R5-A2).
+- [x] T057 [P] Unitaires domaine : bloc contenu dans la parcelle (tolérance 1 %), pas de chevauchement entre blocs, surface cumulée de fusion, fusion de campagnes de même culture active, contiguïté, dans `packages/domain/tests/{block,merge}.test.ts` (R5-A1, R5-A2).
+- [x] T058 [P] Intégration API `services/api/tests/integration/test_blocks.py` (201, 422 `block_outside_field`/`block_overlap`, 404 bloc d'une autre parcelle ou ferme, 403 ouvrier) et `test_field_merge.py` (surface cumulée, parcelle fusionnée archivée avec `merged_into_id`, campagnes conservées, 422 `merge_not_contiguous`, 404 inter-ferme, idempotence de la commande `field_commands`) (R5-A1, R5-A2).
+- [x] T059 [P] E2E service `services/api/tests/e2e/test_split_merge_e2e.py` : découper puis fusionner, vérifier surfaces et rattachements, rejeu hors ligne (R5-A1, R5-A2).
 
 ### Implémentation (non-écran)
 - [ ] T060 `services/api/app/routers/blocks.py`, route `POST .../fields/merge`, `services/api/app/sync/fields.py` (`field_blocks`, `field_commands`).
@@ -126,9 +126,9 @@
 ## Phase 8 : Récit 6 — Nouvelle campagne (P2)
 
 ### Tests RED (non-écran)
-- [ ] T065 [P] Unitaires domaine : une seule campagne active par parcelle et par culture, rotation (clôture de la précédente), cultures associées simultanées, dans `packages/domain/tests/season.test.ts` et `services/api/tests/unit/test_f2_season_rules.py` (R6-A1 à A3).
-- [ ] T066 [P] Intégration API `services/api/tests/integration/test_seasons_rotation.py` : rotation avec `close_ids` (précédente clôturée et consultable), 409 `season_already_active` pour la même culture, deux cultures actives simultanées, 403 ouvrier, 404 campagne d'une autre parcelle ou ferme ; index unique partiel respecté sous concurrence (R6-A1 à A3).
-- [ ] T067 [P] E2E service `services/api/tests/e2e/test_seasons_e2e.py` : enchaîner deux campagnes, consulter la première (R6-A1 à A3).
+- [x] T065 [P] Unitaires domaine : une seule campagne active par parcelle et par culture, rotation (clôture de la précédente), cultures associées simultanées, dans `packages/domain/tests/season.test.ts` et `services/api/tests/unit/test_f2_season_rules.py` (R6-A1 à A3).
+- [x] T066 [P] Intégration API `services/api/tests/integration/test_seasons_rotation.py` : rotation avec `close_ids` (précédente clôturée et consultable), 409 `season_already_active` pour la même culture, deux cultures actives simultanées, 403 ouvrier, 404 campagne d'une autre parcelle ou ferme ; index unique partiel respecté sous concurrence (R6-A1 à A3).
+- [x] T067 [P] E2E service `services/api/tests/e2e/test_seasons_e2e.py` : enchaîner deux campagnes, consulter la première (R6-A1 à A3).
 
 ### Implémentation (non-écran)
 - [ ] T068 Rotation, clôture et historique dans `services/api/app/routers/seasons.py` et `services/api/app/domain/season_rules.py` ; clés `seasons.json` (R6).
@@ -143,6 +143,12 @@
 - [x] T076 GREEN : contrôle de longueur brute dans `validate_ring`/`validateRing` avant déduplication et crossings ; constante `MAX_IMPORT_VERTICES_TOTAL = 20000` et erreur `too_many_vertices_total` dans `import_features`/`importFeatures` (`services/api/app/domain/geometry.py`, `packages/domain/src/geometry.ts`).
 - [x] T077 [P] Tests RED intégration `services/api/tests/integration/test_f2_geometry_resource_cap.py` et E2E `services/api/tests/e2e/test_geometry_resource_cap_e2e.py` : POST parcelle et sync put avec anneau géant -> 422 / opération non appliquée, rapide, sans timeout.
 - [x] T078 Les routes parcelles et la synchro refusent déjà un anneau géant (`check_polygon` plafonne la longueur brute, 422 `geometry_vertices`) ; T077 est donc un test de non-régression (déjà vert), aucun code requis.
+
+## Phase 8c : Contournement du plafond de 500 parcelles actives (constat sécurité)
+
+- [x] T079 [P] Tests RED `services/api/tests/integration/test_f2_field_quota_bypass.py` : restauration à 500 actives -> 422 `field_limit_reached` (REST ; la synchro ne peut pas restaurer, patch d'archivée = refusé), découpe (blocs) ne crée aucune parcelle, créations parallèles REST et synchro à 499 actives -> jamais plus de 500, restaurations parallèles idem.
+- [ ] T080 GREEN : plafond appliqué dans `restore_field` et `create_field` (REST et synchro) sous un verrou par ferme (`pg_advisory_xact_lock` ou `SELECT ... FOR UPDATE` sur `farms`) pris avant le comptage, dans la même transaction que l'écriture ; fait passer T079.
+- [ ] T081 GREEN Phases 7-8 (non-écran) : `plan_season_start`/`planSeasonStart`, `blocksOverlap`, rattachement des campagnes/blocs/attributions à la survivante dans `merge_fields`, 409 (et non 500) sur `IntegrityError` `seasons_one_active`, fait passer T057-T059, T065-T067.
 
 ## Phase 9 : Finition
 

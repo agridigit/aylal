@@ -38,3 +38,12 @@ Le service PowerSync refuse un seau sans paramètre cohérent avec `farm_id` (`f
 **Contrainte PowerSync** : `mapData.test.ts` exige que la requête locale de la carte (`FIELDS_LOCAL_SQL`) soit une lecture de `parcels` sans jointure ni sous-requête ; aucune règle de synchro n'est ajoutée par ces tâches.
 
 **Worker (Docker)** : l'image du worker copie le code (pas de montage) ; reconstruire (`docker compose build worker`) avant `make test-worker` pour voir les nouveaux fichiers de test.
+
+## Phases 7 et 8 : tests RED non-écran (commit `test(fields-crops): red - split merge seasons`)
+
+**Écrans bloqués par T004** : T063 (SplitMerge, ArchivedFields, Maestro `split_merge.yaml`) et T069 (Seasons, Maestro `seasons.yaml`) ne sont pas écrits ; niveaux unitaire/intégration/E2E UI impossibles sans maquettes validées.
+
+**RED réel (le GREEN doit créer)** : `plan_season_start` (Python) et `planSeasonStart` (TS, vecteurs `f2_season_rotation.json`) ; `blocksOverlap` (TS) ; `merge_fields` doit rattacher campagnes (la plus ancienne active par culture gardée, l'autre clôturée), blocs et `worker_parcels` à la survivante, avec `parcel_archived_at` NULL (pas de jointure PowerSync) ; `PATCH ended_at: null` et démarrages concurrents d'une même culture : 409 `season_already_active` au lieu d'un 500 `IntegrityError` ; clés i18n `fields.*`, `seasons.errors.season_already_active`, `crops.names.<slug>` en ary/ar/fr (T030) ; ligne `GET /v1/farms/{farm_id}/crops` dans `contracts/openapi.yaml` (T019).
+**Déjà vert (non-régression)** : routes blocs (201, 422, 403, 404), garde-fous de fusion (403, 404 inter-ferme, 422 non contigu, atomicité), idempotence `field_commands`, domaine de fusion TS, E2E campagnes et rejeu de fusion. `contracts/openapi.yaml` est désormais du YAML valide.
+
+**Plafond de 500 parcelles** : « découper » n'est pas contournable car découper crée des blocs, jamais de parcelle ; le test le verrouille. La synchro ne peut pas restaurer (toute écriture sous parcelle archivée = 404). Les contournements réels : `restore_field` sans contrôle, et courses entre `count` et `INSERT` (REST et synchro) : verrou par ferme requis.
