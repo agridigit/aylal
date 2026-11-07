@@ -67,3 +67,11 @@
 - `infra/powersync/sync-rules.yaml` : le seau personnel `farm_data` (test F0 T037) devient le seau du personnel (propriétaire/gestionnaire, `removed_at IS NULL`) et `farm_worker` est ajouté pour l'ouvrier. Le contrat `specs/001-foundations/contracts/powersync-sync-rules.yaml` est aligné (le test d'identité T037 reste inchangé). Pas de seau `user_own` : les tests T065 exigent `farm_members` dans les paramètres de tout seau non ouvrier.
 - `current_user` vérifie `users.status` avec sa propre session (une session partagée ouvrirait la transaction que `sync/upload` démarre) ; un utilisateur absent de la table reste accepté (fixtures F0).
 - `POST /v1/me/export` renvoie l'`export_id` ; la génération asynchrone côté worker et la livraison du fichier restent à faire (`build_export` est prêt). Les enregistrements `trial_records` de l'utilisateur supprimé sont conservés (pas de FK), anonymisation à décider.
+
+# Correctif règles PowerSync acceptées par le service (fix platform)
+
+- Le service refusait `sync-rules.yaml` (listes `IN (...)`, sous-requête, jointure, absence de colonne `id`, paramètres non couverts). Règles réécrites ; validées par `scripts/validate-sync-rules.sh` (parseur du service, branché sur `make up`/`make check`) et `tests/platform/test_powersync_rules_valid.sh`.
+- Sémantique conservée : personnel = `role != 'worker'` (au lieu de `IN ('owner','manager')`, liste non supportée) + `removed_at IS NULL` ; ouvrier : `farm_worker_farm` (nom de ferme) et `farm_worker` (ses affectations, ses essais), aucun champ financier ni `SELECT *`. `farm_members` et `worker_parcels` (clé composite) exposent un `id` calculé.
+- Parcelles de l'ouvrier : le service interdit jointure et sous-requête ; le seau `farm_worker_parcels` est paramétré par `worker_parcels WHERE user_id = request.user_id()`. Sûr car `routers/farms.py` purge `worker_parcels` à la sortie du membre et au changement de rôle.
+- Tests T065 ajustés en conséquence (assertions textuelles : `role != 'worker'`, paramètre `worker_parcels` pour le seau des parcelles) ; contrat specs/001 réaligné sur l'infra (test d'identité T037 inchangé).
+- Signalé : `specs/003-fields-crops/contracts/powersync-sync-rules.yaml` a le même défaut potentiel (`SELECT *` sur `parcels`/`seasons`/`field_blocks` : exige une colonne `id`, à vérifier ; `IN (subquery)` du contrat 002 non supporté).

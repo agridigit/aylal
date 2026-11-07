@@ -3,22 +3,32 @@
 # seulement ses parcelles attribuées, sans champ financier ni SELECT * sur les tables d'administration.
 # Un membre retiré (removed_at) perd ses données à la synchronisation suivante.
 # Aucune donnée d'une autre ferme n'est jamais répliquée.
+# Contraintes du service : chaque requête retourne une colonne id, couvre tous les paramètres du seau,
+# pas de liste IN (...) ni de sous-requête ; farm_members et worker_parcels (clé composite) ont un id calculé.
+# Vérifié par scripts/validate-sync-rules.sh (make check) et tests/platform/test_powersync_rules_valid.sh.
 bucket_definitions:
   farm_data:
-    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role IN ('owner','manager') AND removed_at IS NULL
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role != 'worker' AND removed_at IS NULL
     data:
       - SELECT * FROM farms WHERE id = bucket.farm_id
-      - SELECT * FROM farm_members WHERE farm_id = bucket.farm_id AND removed_at IS NULL
+      - SELECT farm_id || ':' || user_id AS id, farm_id, user_id, role, added_at, removed_at FROM farm_members WHERE farm_id = bucket.farm_id AND removed_at IS NULL
       - SELECT * FROM invitations WHERE farm_id = bucket.farm_id
-      - SELECT * FROM worker_parcels WHERE farm_id = bucket.farm_id
+      - SELECT farm_id || ':' || user_id || ':' || parcel_id AS id, farm_id, user_id, parcel_id, assigned_at FROM worker_parcels WHERE farm_id = bucket.farm_id
       - SELECT * FROM parcels WHERE farm_id = bucket.farm_id
       - SELECT * FROM trial_records WHERE farm_id = bucket.farm_id AND deleted_at IS NULL
       - SELECT * FROM sync_conflicts WHERE farm_id = bucket.farm_id AND acknowledged_at IS NULL
+  farm_worker_farm:
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
+    data:
+      - SELECT id, name FROM farms WHERE id = bucket.farm_id
   farm_worker:
     parameters: SELECT farm_id, request.user_id() AS user_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
     data:
-      - SELECT id, name FROM farms WHERE id = bucket.farm_id
-      - SELECT farm_id, user_id, parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id
-      - SELECT id, farm_id, name, geometry, vigor FROM parcels WHERE farm_id = bucket.farm_id AND id IN (SELECT parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id)
+      - SELECT farm_id || ':' || user_id || ':' || parcel_id AS id, farm_id, user_id, parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id
       - SELECT id, farm_id, author_id, title, note, quantity, created_at, updated_at, server_version, field_versions FROM trial_records WHERE farm_id = bucket.farm_id AND author_id = bucket.user_id AND deleted_at IS NULL
+  farm_worker_parcels:
+    # worker_parcels est purgé à la sortie du membre ou au changement de rôle (routers/farms.py) : seules les lignes d'ouvriers actifs existent
+    parameters: SELECT parcel_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, name, geometry, vigor FROM parcels WHERE id = bucket.parcel_id
 # Les écritures ne passent PAS par PowerSync : le connecteur mobile envoie ps_crud vers POST /v1/sync/upload.

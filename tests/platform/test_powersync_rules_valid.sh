@@ -9,7 +9,8 @@ cid="$(bash scripts/dc.sh ps -q powersync 2>/dev/null)"
 if [ -n "$cid" ]; then
   st="$(docker inspect -f '{{.State.Health.Status}}' "$cid")"
   [ "$st" = "healthy" ] || fail "powersync is '$st', expected healthy"
-  bash scripts/dc.sh logs powersync 2>&1 | grep -Eqi 'not supported here|must cover all bucket parameters|must return an id' \
+  since="$(docker inspect -f '{{.State.StartedAt}}' "$cid")"
+  bash scripts/dc.sh logs --since "$since" powersync 2>&1 | grep -Eqi 'not supported here|must cover all bucket parameters|must return an id' \
     && fail "powersync rejected the sync rules"
 fi
 finish
