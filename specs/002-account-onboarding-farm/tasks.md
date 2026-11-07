@@ -99,10 +99,10 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 7 : Récit 8 — Suppression du compte et export (P1)
 
 ### Tests RED
-- [ ] T053 [P] Unitaires : calcul de la date limite à 30 jours, règles propriétaire avec membres dans `services/api/tests/unit/test_account_deletion.py` (R8-A1, A3).
-- [ ] T054 [P] Intégration : `POST /v1/me/deletion` (202, déconnexion, révocation des jetons, date limite renvoyée), purge effective par worker, `POST /v1/me/export` (202, contenu complet) dans `services/api/tests/integration/test_account_deletion_export.py` (R8-A1, A2, FR-026).
-- [ ] T055 [P] Mobile écran E12 : avertissement propriétaire avec membres avant confirmation, 4 états, RTL, dans `apps/mobile/src/screens/DeleteAccount/__tests__/` (R8-A3).
-- [ ] T056 [P] E2E : `services/api/tests/e2e/test_account_deletion_e2e.py` et `apps/mobile/maestro/delete_account.yaml` (R8-A1 à A3).
+- [x] T053 [P] Unitaires : calcul de la date limite à 30 jours, règles propriétaire avec membres dans `services/api/tests/unit/test_account_deletion.py` (R8-A1, A3).
+- [x] T054 [P] Intégration : `POST /v1/me/deletion` (202, déconnexion, révocation des jetons, date limite renvoyée), purge effective par worker, `POST /v1/me/export` (202, contenu complet) dans `services/api/tests/integration/test_account_deletion_export.py` (R8-A1, A2, FR-026).
+- [ ] T055 [bloquée par T004] [P] Mobile écran E12 : avertissement propriétaire avec membres avant confirmation, 4 états, RTL, dans `apps/mobile/src/screens/DeleteAccount/__tests__/` (R8-A3).
+- [x] T056 [P] E2E : `services/api/tests/e2e/test_account_deletion_e2e.py` (Maestro `delete_account.yaml` bloqué par T004, voir decisions.md) (R8-A1 à A3).
 
 ### Implémentation
 - [ ] T057 `services/api/app/routers/account.py`, `services/workers/tasks/purge_deleted_accounts.py`, export asynchrone.
@@ -113,9 +113,9 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 8 : Récit 5 — Plusieurs fermes (P2)
 
 ### Tests RED
-- [ ] T059 [P] Intégration : seconde ferme, ferme active, fermes d'un membre avec rôle dans `services/api/tests/integration/test_multi_farm.py` (R5-A1, A3).
-- [ ] T060 [P] Mobile E7 : sélecteur, isolation des données entre fermes y compris hors ligne, 4 états, RTL, dans `apps/mobile/src/screens/FarmSwitcher/__tests__/` (R5-A2).
-- [ ] T061 [P] E2E : `apps/mobile/maestro/multi_farm.yaml` (R5-A1 à A3).
+- [x] T059 [P] Intégration : seconde ferme, ferme active, fermes d'un membre avec rôle dans `services/api/tests/integration/test_multi_farm.py` (R5-A1, A3).
+- [ ] T060 [bloquée par T004] [P] Mobile E7 : sélecteur, isolation des données entre fermes y compris hors ligne, 4 états, RTL, dans `apps/mobile/src/screens/FarmSwitcher/__tests__/` (R5-A2).
+- [ ] T061 [bloquée par T004] [P] E2E : `apps/mobile/maestro/multi_farm.yaml` (R5-A1 à A3).
 
 ### Implémentation
 - [ ] T062 `apps/mobile/src/screens/FarmSwitcher/` et filtrage local par `farm_id`.
@@ -123,12 +123,12 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 9 : Récit 6 — Invitation et rôles (P2)
 
 ### Tests RED
-- [ ] T063 [P] Unitaires : matrice des droits propriétaire/gestionnaire/ouvrier, gestionnaire sans suppression de ferme ni changement de propriétaire, propriétaire non retirable, dans `packages/domain/tests/roles.test.ts` et `services/api/tests/unit/test_roles.py` (R6-A2, FR-022).
-- [ ] T064 [P] Intégration : invitation (201, 409, 422, expiration 30 j), honorée à l'inscription du numéro, annulation, changement de rôle, retrait immédiat, attribution de parcelles, dans `services/api/tests/integration/test_invitations_members.py` (R6-A2 à A5).
-- [ ] T065 [P] Intégration : ouvrier ne voit que ses parcelles et aucun champ financier (API et règles PowerSync) dans `services/api/tests/integration/test_worker_visibility.py` (R6-A1).
-- [ ] T066 [P] Contrat invitations et membres dans `services/api/tests/contract/test_team_contract.py`.
-- [ ] T067 [P] Mobile E8, E9, E10 : équipe, invitation, accès parcelles, actions en attente hors ligne, 4 états, RTL, dans `apps/mobile/src/screens/{Team,Invite,WorkerAccess}/__tests__/`.
-- [ ] T068 [P] E2E : `services/api/tests/e2e/test_team_e2e.py` et `apps/mobile/maestro/team_invite.yaml` (R6-A1 à A5).
+- [x] T063 [P] Unitaires : matrice des droits propriétaire/gestionnaire/ouvrier, gestionnaire sans suppression de ferme ni changement de propriétaire, propriétaire non retirable, dans `packages/domain/tests/roles.test.ts` et `services/api/tests/unit/test_roles.py` (R6-A2, FR-022).
+- [x] T064 [P] Intégration : invitation (201, 409, 422, expiration 30 j), honorée à l'inscription du numéro, annulation, changement de rôle, retrait immédiat, attribution de parcelles, dans `services/api/tests/integration/test_invitations_members.py` (R6-A2 à A5).
+- [x] T065 [P] Intégration : ouvrier ne voit que ses parcelles et aucun champ financier (API et règles PowerSync) dans `services/api/tests/integration/test_worker_visibility.py` (R6-A1).
+- [x] T066 [P] Contrat invitations et membres dans `services/api/tests/contract/test_team_contract.py`.
+- [ ] T067 [bloquée par T004] [P] Mobile E8, E9, E10 : équipe, invitation, accès parcelles, actions en attente hors ligne, 4 états, RTL, dans `apps/mobile/src/screens/{Team,Invite,WorkerAccess}/__tests__/`.
+- [x] T068 [P] E2E : `services/api/tests/e2e/test_team_e2e.py` (Maestro `team_invite.yaml` bloqué par T004, voir decisions.md) (R6-A1 à A5).
 
 ### Implémentation
 - [ ] T069 `services/api/app/routers/{members.py,invitations.py}`, `services/workers/tasks/expire_invitations.py`, `infra/powersync/sync-rules.yaml`.

@@ -18,3 +18,11 @@ def login(client, phone=PHONE):
     r = client.post("/v1/auth/otp/verify", json={"phone": phone, "code": CODE})
     assert r.status_code == 200, r.text
     return r.json()
+
+
+def relogin(client, phone=PHONE):
+    """Second sign-in of the same number (other device): skips the resend delay."""
+    from tests.helpers import sql
+
+    sql("UPDATE otp_challenges SET last_sent_at = last_sent_at - interval '2 minutes'")
+    return login(client, phone)
