@@ -5,7 +5,13 @@ import pytest
 
 from tests.helpers import auth, op, sql
 from tests.integration._f2 import (
-    add_block, add_custom_crop, add_field, add_season, assign, new_user, reference_crop, square,
+    add_block,
+    add_field,
+    add_season,
+    assign,
+    new_user,
+    reference_crop,
+    square,
 )
 
 F2_PUTS = {

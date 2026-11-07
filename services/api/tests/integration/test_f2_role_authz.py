@@ -1,11 +1,15 @@
 """T006 - role authorization (403) and worker visibility (404) on F2 routes (guardrail 2, FR-020)."""
-import uuid
 
 import pytest
 
 from tests.helpers import auth, sql
 from tests.integration._f2 import (
-    add_custom_crop, add_field, add_season, assign, new_user, reference_crop, square,
+    add_field,
+    add_season,
+    assign,
+    new_user,
+    reference_crop,
+    square,
 )
 
 

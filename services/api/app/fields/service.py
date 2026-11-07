@@ -15,9 +15,6 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.field_rules import LIMITS as FIELD_LIMITS
-from app.domain.geometry import centroid, is_in_morocco
-from app.domain.season_rules import estimate_stage
 from app.domain.field_limits import (
     BLOCK_KINDS,
     CYCLES,
@@ -29,6 +26,9 @@ from app.domain.field_limits import (
     season_dates_error,
     valid_name,
 )
+from app.domain.field_rules import LIMITS as FIELD_LIMITS
+from app.domain.geometry import centroid, is_in_morocco
+from app.domain.season_rules import estimate_stage
 
 Data = Mapping[str, Any]
 FIELD_COLS = (

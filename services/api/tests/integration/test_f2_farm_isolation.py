@@ -5,7 +5,13 @@ import pytest
 
 from tests.helpers import auth, sql
 from tests.integration._f2 import (
-    add_block, add_custom_crop, add_field, add_season, new_user, reference_crop, square,
+    add_block,
+    add_custom_crop,
+    add_field,
+    add_season,
+    new_user,
+    reference_crop,
+    square,
 )
 
 
@@ -76,7 +82,7 @@ def test_given_a_non_member_when_calling_any_f2_route_then_404_identical_to_an_u
     ):
         real = call(client, token_for(w["owner_a"]), m, p_real, b)
         unknown = call(client, token_for(w["owner_a"]), m, p_ghost, b)
-        assert real.status_code == 404 != 403, f"{m} {p_real}"
+        assert real.status_code == 404, f"{m} {p_real}"
         assert real.status_code == unknown.status_code
         assert real.content == unknown.content, f"{m} {p_real}: body differs from unknown farm"
         assert {k: v for k, v in real.headers.items() if k not in ("date", "content-length")} == {

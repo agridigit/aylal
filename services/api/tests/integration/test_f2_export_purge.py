@@ -3,7 +3,14 @@ import asyncio
 
 from app.accounts.export import build_export
 from app.db.session import sessionmaker
-from tests.integration._f2 import add_block, add_custom_crop, add_field, add_season, assign, new_user
+from tests.integration._f2 import (
+    add_block,
+    add_custom_crop,
+    add_field,
+    add_season,
+    assign,
+    new_user,
+)
 
 
 def export_of(user):
