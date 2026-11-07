@@ -16,7 +16,7 @@ export function mergeFields(survivor: MergeField, others: readonly MergeField[],
   const queue = [0];
   while (queue.length) {
     const i = queue.shift()!;
-    all.forEach((f, j) => { if (!seen.has(j) && ringsTouch(all[i].ring, f.ring)) { seen.add(j); queue.push(j); } });
+    all.forEach((f, j) => { if (!seen.has(j) && ringsTouch((all[i] as MergeField).ring, f.ring)) { seen.add(j); queue.push(j); } });
   }
   if (seen.size !== all.length) return { ok: false, code: "merge_not_contiguous" };
 

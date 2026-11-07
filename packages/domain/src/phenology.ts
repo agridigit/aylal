@@ -19,7 +19,7 @@ export function estimateStage(
     value = Math.floor((Date.parse(today) - Date.parse(season.sowing_date)) / DAY_MS);
   }
   if (value < 0) return { stage: null, approximate };
-  let current = stages[0];
+  let current = stages[0] as Stage;
   for (const s of stages) if (value >= s.gdd_from) current = s;
   return { stage: current.key, approximate };
 }

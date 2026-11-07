@@ -11,7 +11,8 @@ function project(ring: readonly Pt[], lon0: number, lat0: number): Pt[] {
   return openRing(ring).map(([x, y]) => [(x - lon0) * c * M_PER_DEG, (y - lat0) * M_PER_DEG] as Pt);
 }
 
-const signed = (p: Pt[]) => p.reduce((s, a, i) => { const b = p[(i + 1) % p.length]; return s + (a[0] * b[1] - b[0] * a[1]); }, 0) / 2;
+const at = <T>(a: readonly T[], i: number): T => a[i] as T;
+const signed = (p: Pt[]) => p.reduce((s, a, i) => { const b = at(p, (i + 1) % p.length); return s + (a[0] * b[1] - b[0] * a[1]); }, 0) / 2;
 const cr = (o: Pt, a: Pt, b: Pt) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
 
 function triangulate(poly: Pt[]): Pt[][] {
@@ -21,7 +22,7 @@ function triangulate(poly: Pt[]): Pt[][] {
   while (p.length > 3 && guard-- > 0) {
     let clipped = false;
     for (let i = 0; i < p.length; i++) {
-      const a = p[(i + p.length - 1) % p.length], b = p[i], c = p[(i + 1) % p.length];
+      const a = at(p, (i + p.length - 1) % p.length), b = at(p, i), c = at(p, (i + 1) % p.length);
       if (cr(a, b, c) <= 0) continue;
       const inside = p.some((q) => q !== a && q !== b && q !== c && cr(a, b, q) >= 0 && cr(b, c, q) >= 0 && cr(c, a, q) >= 0);
       if (inside) continue;
@@ -32,7 +33,7 @@ function triangulate(poly: Pt[]): Pt[][] {
     }
     if (!clipped) p.splice(0, 1); // degenerate remainder
   }
-  if (p.length === 3) tris.push([p[0], p[1], p[2]]);
+  if (p.length === 3) tris.push([at(p, 0), at(p, 1), at(p, 2)]);
   return tris;
 }
 
@@ -40,11 +41,11 @@ function triangulate(poly: Pt[]): Pt[][] {
 function clipConvex(subject: Pt[], clip: Pt[]): Pt[] {
   let out = subject;
   for (let i = 0; i < clip.length && out.length; i++) {
-    const a = clip[i], b = clip[(i + 1) % clip.length];
+    const a = at(clip, i), b = at(clip, (i + 1) % clip.length);
     const input = out;
     out = [];
     for (let j = 0; j < input.length; j++) {
-      const cur = input[j], prev = input[(j + input.length - 1) % input.length];
+      const cur = at(input, j), prev = at(input, (j + input.length - 1) % input.length);
       const dc = cr(a, b, cur), dp = cr(a, b, prev);
       if (dc >= 0) {
         if (dp < 0) out.push(inter(prev, cur, dp, dc));
@@ -58,7 +59,7 @@ const inter = (p: Pt, q: Pt, dp: number, dc: number): Pt => { const t = dp / (dp
 
 function localFrame(a: readonly Pt[]): [number, number] {
   const p = openRing(a);
-  return [p[0][0], p[0][1]];
+  return [at(p, 0)[0], at(p, 0)[1]];
 }
 
 /** Intersection area (m2) of two lon/lat rings. */
@@ -81,9 +82,9 @@ export function ringsTouch(a: readonly Pt[], b: readonly Pt[]): boolean {
     return Math.hypot(p[0] - s[0] - t * dx, p[1] - s[1] - t * dy);
   };
   for (const [P, Q] of [[pa, pb], [pb, pa]] as [Pt[], Pt[]][])
-    for (const p of P) for (let j = 0; j < Q.length; j++) if (segDist(p, Q[j], Q[(j + 1) % Q.length]) <= TOUCH_EPS_M) return true;
+    for (const p of P) for (let j = 0; j < Q.length; j++) if (segDist(p, at(Q, j), at(Q, (j + 1) % Q.length)) <= TOUCH_EPS_M) return true;
   for (let i = 0; i < pa.length; i++) for (let j = 0; j < pb.length; j++) {
-    const s = pa[i], e = pa[(i + 1) % pa.length], c = pb[j], d = pb[(j + 1) % pb.length];
+    const s = at(pa, i), e = at(pa, (i + 1) % pa.length), c = at(pb, j), d = at(pb, (j + 1) % pb.length);
     if (cr(s, e, c) * cr(s, e, d) < 0 && cr(c, d, s) * cr(c, d, e) < 0) return true;
   }
   return intersectionAreaM2(a, b) > 0;

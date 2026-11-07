@@ -21,8 +21,8 @@ const same = (a: Pt, b: Pt) => a[0] === b[0] && a[1] === b[1];
 /** Drops the closing point and consecutive duplicates. */
 export function openRing(ring: readonly Pt[]): Pt[] {
   const out: Pt[] = [];
-  for (const p of ring) if (!out.length || !same(out[out.length - 1], p)) out.push([p[0], p[1]]);
-  while (out.length > 1 && same(out[0], out[out.length - 1])) out.pop();
+  for (const p of ring) if (!out.length || !same(out[out.length - 1] as Pt, p)) out.push([p[0], p[1]]);
+  while (out.length > 1 && same(out[0] as Pt, out[out.length - 1] as Pt)) out.pop();
   return out;
 }
 
@@ -45,7 +45,7 @@ export function selfCrossings(pts: readonly Pt[]): Pt[] {
   for (let i = 0; i < n; i++) {
     for (let j = i + 2; j < n; j++) {
       if (i === 0 && j === n - 1) continue;
-      const x = properCrossing(pts[i], pts[(i + 1) % n], pts[j], pts[(j + 1) % n]);
+      const x = properCrossing(pts[i] as Pt, pts[(i + 1) % n] as Pt, pts[j] as Pt, pts[(j + 1) % n] as Pt);
       if (x) out.push(x);
     }
   }
@@ -95,15 +95,15 @@ function distM(p: Pt, a: Pt, b: Pt, cosLat: number): number {
 
 function douglasPeucker(pts: readonly Pt[], tol: number): Pt[] {
   if (pts.length < 3) return pts.map((p) => [p[0], p[1]] as Pt);
-  const cosLat = Math.cos((pts[0][1] * Math.PI) / 180);
+  const cosLat = Math.cos(((pts[0] as Pt)[1] * Math.PI) / 180);
   const keep = new Array<boolean>(pts.length).fill(false);
   keep[0] = keep[pts.length - 1] = true;
   const stack: [number, number][] = [[0, pts.length - 1]];
   while (stack.length) {
-    const [s, e] = stack.pop()!;
+    const [s, e] = stack.pop() as [number, number];
     let max = -1, idx = -1;
     for (let i = s + 1; i < e; i++) {
-      const d = distM(pts[i], pts[s], pts[e], cosLat);
+      const d = distM(pts[i] as Pt, pts[s] as Pt, pts[e] as Pt, cosLat);
       if (d > max) { max = d; idx = i; }
     }
     if (idx >= 0 && max > tol) {
