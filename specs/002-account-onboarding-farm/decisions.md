@@ -24,3 +24,7 @@
 3. services/api/app/auth/access.py : une ferme supprimée (`Farm.deleted_at`) reste accessible. Joindre `Farm`, exiger `deleted_at IS NULL` dans `farm_role`/`farm_context`/`authorize`, et refuser les écritures dans `sync/admin._farm`.
 - Limite connue OTP : le verrou vit sur chaque défi ; tant qu'il est actif, `/otp/request` n'envoie rien et le conserve, mais une nouvelle demande après 1-2 échecs (hors verrou) remet le compteur à zéro. À fermer avec la limite d'envoi du récit 1.
 - Limite connue synchro : `authorize` s'exécute avant toute opération ; un même lot qui crée une ferme puis écrit une opération d'administration sur cette ferme (ex. invitation en file hors ligne) reçoit 404 pour tout le lot. À traiter aux récits 1/4 (scinder le lot côté client ou autoriser selon les créations du lot).
+
+## Niveaux de test des constats de sécurité 2 (T075 à T077)
+- Unitaire : non applicable. Le comportement testé vit dans des transactions SQL (verrou de ligne, UPDATE conditionnel, jointure `Farm`) et dans le routage HTTP ; la politique pure (`otp_policy`) est déjà couverte. E2E : couvert par l'intégration sur PostgreSQL réel via ASGI ; pas de parcours utilisateur nouveau.
+- Seuils de limitation fixés par les tests (à respecter au GREEN) : 429 avec `Retry-After` pour un renvoi immédiat ; plafond horaire par téléphone atteint avant 10 envois espacés de 2 min ; plafond horaire par IP atteint avant 60 envois vers des numéros distincts.

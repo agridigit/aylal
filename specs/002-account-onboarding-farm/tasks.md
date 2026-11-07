@@ -141,6 +141,13 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [ ] T073 `make check` vert (lint, typecheck, tests, couverture, visuel, taille APK, diagrammes, e2e).
 - [ ] T074 Documentation de fin de module (`/aylal.docs`) : `docs/modules/002-account-onboarding-farm/{ingenieur.md,agriculteur.fr.md,agriculteur.ar.md,diagrams/*.mmd,img/*}`, rendus par `make diagrams`.
 
+## Durcissement authentification 2 (constats de sécurité, decisions.md)
+
+- [x] T075 [P] RED intégration : verrou OTP par téléphone sur fenêtre, ancien défi invalidé, délai de renvoi, plafonds horaires téléphone/IP (429), dans `services/api/tests/integration/test_otp_hardening.py`.
+- [x] T076 [P] RED intégration : atomicité du compteur d'échecs et de la consommation (20 vérifications parallèles), dans `services/api/tests/integration/test_otp_atomicity.py`.
+- [x] T077 [P] RED intégration : ferme supprimée -> 404 REST et refus sync/admin, dans `services/api/tests/integration/test_deleted_farm_access.py`.
+- [ ] T078 GREEN : `routers/auth.py` (échecs par téléphone, invalidation, limites 429, UPDATE conditionnel / `with_for_update`), `auth/access.py`, `auth/farm_context.py`, `sync/admin.py` (`Farm.deleted_at IS NULL`).
+
 ## Dépendances
 
 Phase 1 -> Phase 2 (T006 et T008a RED avant T012 et T012b) -> Récit 1 -> Récits 2, 3 -> Récit 4 -> Récit 8 -> P2 (Récits 5, 6) -> Phase 10. T004 précède tout écran. Dans chaque récit : RED -> GREEN. Les tâches [P] d'un même bloc de tests s'exécutent en parallèle.
