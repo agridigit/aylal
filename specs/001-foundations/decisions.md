@@ -22,3 +22,9 @@
 - `make coverage` côté JS est limité à `@aylal/domain` (code métier, seuil 80 %) : `i18n` et `ui` n'embarquent pas `@vitest/coverage-v8` et ne contiennent pas de règle métier. Domaine : 93,8 % ; API : 88,55 %.
 - Porte `check-test-pyramid.sh` : pour `apps/*`, les tests vivent à côté du code (`src/**/__tests__`) et les parcours e2e dans `maestro/` ; la porte les reconnaît. Des tests d'intégration ont été ajoutés pour `domain`, `i18n`, `ui`.
 - Typage : `noUncheckedIndexedAccess` désactivé pour `packages/i18n` et `apps/mobile` (des tests existants indexent sans garde) ; `mypy` ignore `app/generated/models.py` (code généré) ; ruff : `PLW1510`, `B017` ignorés dans `tests/**`.
+
+## APK release : non mesuré (blocage constaté)
+- `apps/mobile` n'est pas encore une application Expo/React Native : ni `expo` ni `react-native` dans `package.json`, pas de projet natif, pas de script `build:android:release`.
+- L'image `aylal-android-build` ne contient que JDK 17 et pnpm, sans Android SDK. L'hôte Docker est aarch64 (Apple Silicon) : Google ne publie pas de build-tools Android pour Linux arm64 (aapt2 x86_64 seulement), donc `gradle assembleRelease` n'est pas fiable sans émulation x86_64 (QEMU), non validée ici.
+- Décision : rien n'est inventé. `make apk-size` affiche « NON MESURE » et échoue (code 1) tant que la chaîne n'existe pas ; le test `tests/report/test_apk_size.sh` (logique de seuil via APK_PATH) reste inchangé et vert.
+- À faire (T110/T111) : ajouter expo/react-native épinglés, `expo prebuild`, SDK Android épinglé dans le Dockerfile (plateforme linux/amd64), script `build:android:release`, puis mesurer.

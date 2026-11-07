@@ -6,6 +6,10 @@ limit_mb="${APK_LIMIT_MB:-40}"
 apk="${APK_PATH:-apps/mobile/android/app/build/outputs/apk/release/app-release.apk}"
 if [ ! -f "$apk" ]; then
   [ -f apps/mobile/package.json ] || { echo "apk-size: apps/mobile absent, no APK to measure" >&2; exit 1; }
+  if ! grep -q '"build:android:release"' apps/mobile/package.json; then
+    echo "apk-size: NON MESURE - apps/mobile n'a pas de projet natif ni de script build:android:release (voir specs/001-foundations/decisions.md). Ce n'est pas un succes." >&2
+    exit 1
+  fi
   pnpm --filter mobile build:android:release
 fi
 size=$(wc -c < "$apk" | tr -d ' ')
