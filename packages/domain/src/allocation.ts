@@ -17,3 +17,21 @@ export function allocate(total: number, areas: readonly number[]): number[] {
   }
   return shares.map((s) => s / 1000);
 }
+
+export interface BreakdownLine {
+  id: string;
+  share: number;
+  percent: number;
+}
+
+/** Display of the split: share per parcel and area percent; equal split when no area is known. */
+export function allocationBreakdown(
+  total: number,
+  parcels: readonly { id: string; area_ha: number | null }[],
+): BreakdownLine[] {
+  const known = parcels.every((p) => p.area_ha != null && p.area_ha > 0);
+  const areas = parcels.map((p) => (known ? (p.area_ha as number) : 1));
+  const shares = allocate(total, areas);
+  const sum = areas.reduce((a, b) => a + b, 0);
+  return parcels.map((p, i) => ({ id: p.id, share: shares[i]!, percent: Math.round(((areas[i]! / sum) * 100) * 100) / 100 }));
+}

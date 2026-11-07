@@ -13,6 +13,8 @@ def next_status(current: str, action: str, role: str) -> str | None:
     staff = role in STAFF
     if action == "mark_done":
         return ("validated" if staff else "pending_validation") if current == "planned" else None
+    if action == "reschedule":
+        return "planned" if current == "planned" else None
     if action == "validate":
         return "validated" if current == "pending_validation" and staff else None
     if action == "cancel":

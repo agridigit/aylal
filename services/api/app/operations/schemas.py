@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.generated.models import DoseUnit, OperationInput, ProductLine, Status
 
-__all__ = ["FreeProductRequest", "OperationInput", "OperationPatch", "ParseRequest", "RegistryExportRequest"]
+__all__ = ["FreeProductRequest", "OperationInput", "OperationPatch", "ParseRequest", "RegistryExportRequest", "RescheduleRequest"]
 
 
 class OperationPatch(BaseModel):
@@ -26,6 +26,13 @@ class OperationPatch(BaseModel):
     note: str | None = Field(default=None, max_length=500)
     label_photo_id: uuid.UUID | None = None
     status: Status | None = None  # ignored: the server decides the status
+
+
+class RescheduleRequest(BaseModel):
+    """New date of a planned operation; nothing else is accepted (the status is the server's)."""
+
+    model_config = ConfigDict(extra="forbid")
+    performed_on: dt.date
 
 
 class ParseRequest(BaseModel):

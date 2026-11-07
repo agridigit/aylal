@@ -38,6 +38,7 @@ export const MATRIX: Record<string, readonly Role[]> = {
   "operation.read": ALL,
   "operation.mark_done": ALL,
   "operation.cancel": ALL,
+  "operation.reschedule": ALL,
   "operation.validate": OWNER_MANAGER,
   "operation.correct": OWNER_MANAGER,
   "registry.read": OWNER_MANAGER,

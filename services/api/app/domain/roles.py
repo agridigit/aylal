@@ -35,6 +35,7 @@ MATRIX: dict[str, frozenset[str]] = {
     "operation.read": frozenset(ROLES),
     "operation.mark_done": frozenset(ROLES),
     "operation.cancel": frozenset(ROLES),
+    "operation.reschedule": frozenset(ROLES),
     "operation.validate": OWNER_MANAGER,
     "operation.correct": OWNER_MANAGER,
     "registry.read": OWNER_MANAGER,

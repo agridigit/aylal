@@ -4,8 +4,11 @@ The object key is generated here (`farms/{farm_id}/labels/{uuid}`), bound to (fa
 after 24 h when never attached. No key or URL is read from a client body. Recognition goes through an optional
 port (AYLAL_VISION_URL); when it is empty the recognizer is unavailable and the caller falls back to manual entry.
 """
+import asyncio
+import json
+import urllib.request
 import uuid
-from typing import Any
+from typing import Any, Protocol
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,6 +36,63 @@ def read_object(key: str) -> bytes:  # pragma: no cover - object storage adapter
 
 def recognizer_available() -> bool:
     return bool(get_settings().vision_url)
+
+
+class RecognizerUnavailable(Exception):
+    """The recognition provider is not configured or did not answer: the caller falls back to name search."""
+
+
+class LabelRecognizer(Protocol):
+    """Port: a photo in, candidate products out ({product_id, name, confidence}); never records anything."""
+
+    async def recognize(self, data: bytes) -> list[dict[str, Any]]: ...
+
+
+class _Unavailable:
+    async def recognize(self, data: bytes) -> list[dict[str, Any]]:
+        raise RecognizerUnavailable
+
+
+class HttpRecognizer:
+    """Adapter for an operator-configured provider (AYLAL_VISION_URL); nothing external is ever the default."""
+
+    def __init__(self, url: str) -> None:
+        self.url = url
+
+    def _post(self, data: bytes) -> list[dict[str, Any]]:
+        request = urllib.request.Request(self.url, data=data, headers={"Content-Type": "application/octet-stream"})
+        with urllib.request.urlopen(request, timeout=8) as response:
+            body = json.loads(response.read(1_000_000))
+        return list(body.get("candidates", [])) if isinstance(body, dict) else []
+
+    async def recognize(self, data: bytes) -> list[dict[str, Any]]:
+        try:
+            return await asyncio.to_thread(self._post, data)
+        except (OSError, ValueError) as e:
+            raise RecognizerUnavailable from e
+
+
+def get_recognizer() -> LabelRecognizer:
+    """FastAPI dependency: the configured provider, or an unavailable one when AYLAL_VISION_URL is empty."""
+    url = get_settings().vision_url
+    return HttpRecognizer(url) if url else _Unavailable()
+
+
+async def catalogue_candidates(session: AsyncSession, raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep only candidates that are products of the current (not expired) catalogue; names come from the catalogue."""
+    out: list[dict[str, Any]] = []
+    for item in raw[:10]:
+        try:
+            pid = uuid.UUID(str(item.get("product_id")))
+        except ValueError:
+            continue
+        name = (
+            await session.execute(text("SELECT name FROM phyto_products WHERE id = :i AND expired_at IS NULL"), {"i": pid})
+        ).scalar()
+        if name is not None:
+            confidence = item.get("confidence")
+            out.append({"product_id": str(pid), "name": name, "confidence": float(confidence) if isinstance(confidence, (int, float)) else None})
+    return out
 
 
 async def register_upload(session: AsyncSession, farm_id: uuid.UUID, user_id: uuid.UUID, size: int) -> uuid.UUID:

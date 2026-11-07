@@ -123,6 +123,7 @@ async def _dispatch(session: AsyncSession, user_id: uuid.UUID, op: dict[str, Any
     else:
         patch = _model(OperationPatch, fields)
         out = await service.correct(
-            session, farm_id, record_id, user_id, role, patch.model_dump(mode="json", exclude_unset=True, exclude={"status"})
+            session, farm_id, record_id, user_id, role, patch.model_dump(mode="json", exclude_unset=True, exclude={"status"}),
+            base_version=op.get("base_version"),
         )
     return {"op_id": str(op["op_id"]), "status": "applied", "server_version": out["server_version"]}

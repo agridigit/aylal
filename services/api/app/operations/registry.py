@@ -101,7 +101,8 @@ async def write_applications(
                     "dose": line.get("dose"), "unit": line.get("dose_unit"), "alloc": share,
                     "dar": uses.get("dar_days") if uses else None, "maxdose": uses.get("max_dose") if uses else None,
                     "cat": product["catalog_version_id"] if product else None, "operator": operator,
-                    "ouser": op.get("operator_user_id"), "warn": json.dumps(op.get("warnings") or []),
+                    "ouser": op.get("operator_user_id"),
+                    "warn": json.dumps([w for w in op.get("warnings") or [] if w.get("parcel_id") in (None, str(parcel["id"]))]),
                     "season": op.get("season_id"), "retain": retain,
                 },
             )

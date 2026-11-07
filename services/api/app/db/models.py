@@ -249,7 +249,7 @@ class Operation(Base):
     type: Mapped[str] = mapped_column(Text)
     performed_on: Mapped[dt.date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(Text)
-    author_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    author_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     operator_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     operator_name: Mapped[str | None] = mapped_column(Text)
     note: Mapped[str | None] = mapped_column(Text)
@@ -277,7 +277,7 @@ class OperationParcel(Base):
     farm_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
     operation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
     parcel_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
-    author_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    author_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     type: Mapped[str] = mapped_column(Text)
     performed_on: Mapped[dt.date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(Text)
@@ -332,7 +332,7 @@ class RegistryEntry(Base):
     operator_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     warnings: Mapped[Any] = mapped_column(JSONB, server_default="[]")
     season_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
-    recorded_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    recorded_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     recorded_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
     retain_until: Mapped[dt.date] = mapped_column(Date)
 
@@ -347,10 +347,11 @@ class OperationCorrection(Base):
     field: Mapped[str] = mapped_column(Text)
     before: Mapped[Any | None] = mapped_column(JSONB)
     after: Mapped[Any | None] = mapped_column(JSONB)
-    author_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    author_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     corrected_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
     source: Mapped[str] = mapped_column(Text)
     registry_entry_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    server_version: Mapped[int | None] = mapped_column(BigInteger)
 
 
 class LabelUpload(Base):

@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.allocation import allocate
 from app.domain.operation_limits import LIMITS, valid_dose, within_limit
 from app.domain.operation_rules import initial_status, is_overdue, next_status
+from app.domain.phyto_controls import phyto_warnings
 from app.operations import access, label, registry
 
 _LOCK = "SELECT pg_advisory_xact_lock(hashtextextended(CAST(:farm AS text), 0))"
@@ -116,10 +117,72 @@ def validate_limits(data: dict[str, Any], today: dt.date) -> None:
             raise OperationError(422, "validation", "product_lines")
 
 
-def warnings_for(data: dict[str, Any]) -> list[dict[str, Any]]:
-    """Warnings are always recomputed here; the client's are never believed."""
+async def _uses_of(session: AsyncSession, product_id: Any) -> list[dict[str, Any]]:
+    rows = (
+        await session.execute(
+            text("SELECT crop_slug, max_dose, dose_unit, dar_days, max_applications FROM phyto_product_uses WHERE product_id = :p"),
+            {"p": uuid.UUID(str(product_id))},
+        )
+    ).mappings().all()
+    return [{**dict(r), "max_dose": _num(r["max_dose"])} for r in rows]
+
+
+async def _applications_so_far(
+    session: AsyncSession, farm_id: uuid.UUID, parcel_id: uuid.UUID, product_id: Any, season_id: Any, exclude: Any,
+) -> int:
+    """Live (not reversed) applications of this product on the parcel in the campaign, other operations only."""
+    return int(
+        (
+            await session.execute(
+                text(
+                    "SELECT count(*) FROM registry_current WHERE farm_id = :f AND parcel_id = :p AND product_id = :prod"
+                    " AND season_id IS NOT DISTINCT FROM :s AND (CAST(:x AS uuid) IS NULL OR operation_id <> :x)"
+                ),
+                {"f": farm_id, "p": parcel_id, "prod": uuid.UUID(str(product_id)), "s": season_id, "x": exclude},
+            )
+        ).scalar_one()
+    )
+
+
+async def warnings_for(
+    session: AsyncSession, farm_id: uuid.UUID, data: dict[str, Any], parcels: list[dict[str, Any]],
+    *, exclude_operation: uuid.UUID | None = None,
+) -> list[dict[str, Any]]:
+    """Warnings are always recomputed here (never the client's), parcel by parcel and product line by product line."""
     lines = data.get("product_lines") or [data]
-    return [{"code": "free_product_unchecked"} for line in lines if line.get("free_product_name")][:1]
+    out: list[dict[str, Any]] = []
+    for parcel in parcels:
+        codes: list[str] = []
+        for line in lines:
+            product_id = line.get("product_id")
+            uses = await _uses_of(session, product_id) if product_id else []
+            so_far = (
+                await _applications_so_far(session, farm_id, parcel["id"], product_id, data.get("season_id"), exclude_operation)
+                if product_id else 0
+            )
+            for code in phyto_warnings({
+                "product_id": str(product_id) if product_id else None, "free_product_name": line.get("free_product_name"),
+                "uses": uses, "crop_slug": parcel.get("crop_slug"), "dose": line.get("dose"),
+                "dose_unit": line.get("dose_unit"), "applications_so_far": so_far,
+            }):
+                if code not in codes:
+                    codes.append(code)
+        out.extend({"code": c, "parcel_id": str(parcel["id"])} for c in codes)
+    return out
+
+
+async def _refresh_warnings(session: AsyncSession, op: dict[str, Any], parcels: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Recompute the warnings of an existing operation (other operations only) and store them on its lines."""
+    lines = _typed({"product_lines": op.get("product_lines") or []}).get("product_lines") or []
+    data = {**op, "product_lines": lines}
+    warnings = await warnings_for(session, op["farm_id"], data, parcels, exclude_operation=op["id"])
+    for parcel in parcels:
+        mine = [w for w in warnings if w["parcel_id"] == str(parcel["id"])]
+        await session.execute(
+            text("UPDATE operation_parcels SET warnings = CAST(:w AS jsonb) WHERE farm_id = :f AND operation_id = :o AND parcel_id = :p"),
+            {"w": json.dumps(mine), "f": op["farm_id"], "o": op["id"], "p": parcel["id"]},
+        )
+    return warnings
 
 
 async def _check_product(session: AsyncSession, data: dict[str, Any]) -> None:
@@ -158,7 +221,7 @@ async def create_operation(
     status = initial_status(data["performed_on"], today, role)
     await lock_farm(session, farm_id)
     await check_quotas(session, farm_id, data["performed_on"], status)
-    warnings = warnings_for(data)
+    warnings = await warnings_for(session, farm_id, data, parcels)
     await session.execute(
         text(
             "INSERT INTO operations (id, farm_id, type, performed_on, status, author_id, operator_user_id, operator_name,"
@@ -211,7 +274,7 @@ async def _write_lines(session: AsyncSession, op: dict[str, Any], parcels: list[
                 "prod": op["product_id"] or first.get("product_id"), "free": op["free_product_name"] or first.get("free_product_name"),
                 "alloc": share, "dose": op["dose"] if op["dose"] is not None else first.get("dose"),
                 "unit": op["dose_unit"] or first.get("dose_unit"), "area": parcel["area_ha"], "crop": parcel.get("crop_slug"),
-                "w": json.dumps(warnings),
+                "w": json.dumps([w for w in warnings if w.get("parcel_id") == str(parcel["id"])]),
             },
         )
 
@@ -237,7 +300,7 @@ def render(op: dict[str, Any], lines: list[dict[str, Any]], today: dt.date | Non
             "parcel_archived_at")})
         for line in lines
     ]
-    out["warnings"] = lines[0]["warnings"] if lines else []
+    out["warnings"] = [w for line in lines for w in line["warnings"]]
     return out
 
 
@@ -303,10 +366,10 @@ async def _parcels_of(session: AsyncSession, op: dict[str, Any]) -> list[dict[st
     return [dict(r) for r in rows]
 
 
-async def transition(
-    session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID, user_id: uuid.UUID, role: str, action: str
+async def _actor_operation(
+    session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID, user_id: uuid.UUID, role: str
 ) -> dict[str, Any]:
-    """mark_done, validate or cancel; the registry follows (application at completion, reversal at cancellation)."""
+    """The operation for an acting user: staff any, a worker only their own and only when every line is visible."""
     op = await access.load_operation(session, farm_id, operation_id)
     if op is None:
         raise OperationError(404, "not_found")
@@ -315,6 +378,41 @@ async def transition(
             raise OperationError(403, "forbidden")
         if not await access.can_see(session, farm_id, operation_id, user_id, role):
             raise OperationError(404, "not_found")
+    return op
+
+
+async def reschedule(
+    session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID, user_id: uuid.UUID, role: str,
+    new_date: dt.date, *, today: dt.date | None = None,
+) -> dict[str, Any]:
+    """Move a planned operation to a date that is not in the past; its reminder follows the new date."""
+    today = today or dt.date.today()
+    op = await _actor_operation(session, farm_id, operation_id, user_id, role)
+    if next_status(op["status"], "reschedule", role) is None:
+        raise OperationError(409, "invalid_transition")
+    if new_date < today or not within_limit("performed_on", new_date.isoformat(), today):
+        raise OperationError(422, "validation", "performed_on")
+    await session.execute(
+        text("UPDATE operations SET performed_on = :d, updated_at = now(), server_version = server_version + 1 WHERE id = :i AND farm_id = :f"),
+        {"d": new_date, "i": operation_id, "f": farm_id},
+    )
+    await session.execute(
+        text("UPDATE operation_parcels SET performed_on = :d, updated_at = now() WHERE farm_id = :f AND operation_id = :i"),
+        {"d": new_date, "i": operation_id, "f": farm_id},
+    )
+    await session.execute(text("DELETE FROM operation_reminders WHERE farm_id = :f AND operation_id = :i AND state <> 'done'"), {"f": farm_id, "i": operation_id})
+    await session.execute(
+        text("INSERT INTO operation_reminders (id, farm_id, operation_id, fire_on, state) VALUES (:r, :f, :i, :d, 'scheduled')"),
+        {"r": uuid.uuid4(), "f": farm_id, "i": operation_id, "d": new_date},
+    )
+    return await detail(session, farm_id, operation_id, user_id, role)
+
+
+async def transition(
+    session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID, user_id: uuid.UUID, role: str, action: str
+) -> dict[str, Any]:
+    """mark_done, validate or cancel; the registry follows (application at completion, reversal at cancellation)."""
+    op = await _actor_operation(session, farm_id, operation_id, user_id, role)
     new = next_status(op["status"], action, role)
     if new is None:
         denied = role not in access.STAFF and (action in ("validate", "correct") or op["status"] != "planned")
@@ -334,8 +432,9 @@ async def transition(
     if action == "mark_done":
         await session.execute(text("UPDATE operation_reminders SET state = 'done' WHERE farm_id = :f AND operation_id = :o"), {"f": farm_id, "o": operation_id})
         if op["type"] == "phyto":
-            lines = await access.lines_of(session, farm_id, operation_id, user_id, "owner")
-            await registry.write_applications(session, {**op, "warnings": lines[0]["warnings"] if lines else []}, await _parcels_of(session, op), user_id)
+            parcels = await _parcels_of(session, op)
+            warnings = await _refresh_warnings(session, op, parcels)
+            await registry.write_applications(session, {**op, "warnings": warnings}, parcels, user_id)
     elif action == "cancel":
         await session.execute(text("UPDATE operation_reminders SET state = 'dismissed' WHERE farm_id = :f AND operation_id = :o AND state = 'scheduled'"), {"f": farm_id, "o": operation_id})
         if previous in _DONE_STATES and op["type"] == "phyto":
@@ -351,7 +450,7 @@ _CORRECTABLE = (
 
 async def correct(
     session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID, user_id: uuid.UUID, role: str,
-    changes: dict[str, Any], *, source: str = "manual", today: dt.date | None = None,
+    changes: dict[str, Any], *, source: str = "manual", today: dt.date | None = None, base_version: int | None = None,
 ) -> dict[str, Any]:
     """Correct an operation (staff). Each change is logged; a done phyto treatment gets a reversal then a new application."""
     op = await access.load_operation(session, farm_id, operation_id)
@@ -395,19 +494,27 @@ async def correct(
         {**params, "_id": operation_id, "_farm": farm_id},
     )
     await _sync_lines(session, updated)
+    parcels = await _parcels_of(session, updated)
+    warnings = await _refresh_warnings(session, updated, parcels)
     if registry_phyto:
-        lines = await access.lines_of(session, farm_id, operation_id, user_id, "owner")
-        new_ids = await registry.write_applications(
-            session, {**updated, "warnings": lines[0]["warnings"] if lines else []}, await _parcels_of(session, updated), user_id
-        )
+        new_ids = await registry.write_applications(session, {**updated, "warnings": warnings}, parcels, user_id)
+    new_version = int(op["server_version"]) + 1
     for field, value in diff.items():
+        stale = base_version is not None and base_version < int(op["server_version"]) and (
+            await session.execute(
+                text("SELECT 1 FROM operation_corrections WHERE farm_id = :f AND operation_id = :o AND field = :field AND server_version > :bv LIMIT 1"),
+                {"f": farm_id, "o": operation_id, "field": field, "bv": base_version},
+            )
+        ).first() is not None
         await session.execute(
             text(
                 "INSERT INTO operation_corrections (id, farm_id, operation_id, field, before, after, author_id, source,"
-                " registry_entry_id) VALUES (:i, :f, :o, :field, CAST(:b AS jsonb), CAST(:a AS jsonb), :u, :src, :r)"
+                " registry_entry_id, server_version) VALUES (:i, :f, :o, :field, CAST(:b AS jsonb), CAST(:a AS jsonb), :u,"
+                " :src, :r, :sv)"
             ),
             {"i": uuid.uuid4(), "f": farm_id, "o": operation_id, "field": field, "b": json.dumps(op.get(field), default=str),
-             "a": json.dumps(value, default=str), "u": user_id, "src": source, "r": new_ids[0] if new_ids else None},
+             "a": json.dumps(value, default=str), "u": user_id, "src": "sync_conflict" if stale else source,
+             "r": new_ids[0] if new_ids else None, "sv": new_version},
         )
     return await detail(session, farm_id, operation_id, user_id, role)
 
@@ -437,4 +544,4 @@ async def check(
     if len(parcels) != len(data["parcel_ids"]):
         raise OperationError(404, "not_found")
     await _check_product(session, data)
-    return {"warnings": warnings_for(data)}
+    return {"warnings": await warnings_for(session, farm_id, data, parcels)}

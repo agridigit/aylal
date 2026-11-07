@@ -64,7 +64,7 @@
 - [x] T031c **Durcissement-RED anonymisation du compte supprimé** (sécurité) : `services/workers/tests/integration/test_f6_anonymise_account_data.py` (`SqlAccountRepo` réel : `registry_entries` par `recorded_by`/`operator_user_id`, `operations` par `author_id`/`operator_user_id`, `operation_corrections` par `author_id` perdent `operator_name` et identifiants de `note` ; produit, dose, dates conservés ; lignes des autres utilisateurs intactes).
 - [x] T031d **Durcissement-GREEN** : `registry.retain_until(..., recorded_on=)` avec la date serveur `recorded_at` et plus long `retain_until` de la chaîne (reversal/correction) ; `purge_expired_registry` filtré par chaîne et par `GREATEST(retain_until, recorded_at + durée)` ; `access.can_see` (non-staff) = toutes les lignes visibles, appliqué à `service.transition` et à `sync/operations.authorize` (put sur opération existante) ; migration 0007 : `anonymize_registry_operator` étendue à `recorded_by`, garde `corrections_guard` ouverte sous `aylal.registry_maintenance` pour l'anonymisation des corrections, anonymisation des `operations`, appelée par `SqlAccountRepo.purge_deleted_accounts` ; fait passer T031a à T031c.
 - [x] T031e **Durcissement-RED portée de l'anonymisation** (sécurité) : `services/workers/tests/integration/test_f6_anonymise_scope.py` (SQL réel : supprimer un AUTEUR/`recorded_by` laisse intacts `operator_user_id`/`operator_name` d'un opérateur distinct encore actif, mais met `author_id`/`recorded_by` à NULL et efface la note écrite par l'auteur ; supprimer l'OPÉRATEUR l'anonymise (« opérateur supprimé ») en gardant la note, l'auteur et `recorded_by` de l'autre ; ligne sans lien inchangée ; contenu réglementaire conservé ; exemption de `registry_guard`/`corrections_guard` étroite : UPDATE direct, autre colonne ou autre rôle refusé) ; `test_f6_anonymise_account_data.py` aligné au minimum (voir decisions.md).
-- [ ] T031f **Durcissement-GREEN portée de l'anonymisation** : migration `0008` : `anonymize_registry_operator` ne touche l'opérateur que si `operator_user_id = p_user` ; `author_id`/`recorded_by` (registry_entries, operations, operation_corrections) deviennent NULLables et sont mis à NULL quand ils valent `p_user` ; note d'opération effacée seulement si `author_id = p_user` ; `registry_guard`/`corrections_guard` autorisent en maintenance uniquement `operator_*` et `recorded_by` (resp. `author_id` et `before`/`after`) ; adapter modèles, accès/synchro (auteur NULL) et `downgrade` ; fait passer T031e.
+- [x] T031f **Durcissement-GREEN portée de l'anonymisation** : migration `0008` : `anonymize_registry_operator` ne touche l'opérateur que si `operator_user_id = p_user` ; `author_id`/`recorded_by` (registry_entries, operations, operation_corrections) deviennent NULLables et sont mis à NULL quand ils valent `p_user` ; note d'opération effacée seulement si `author_id = p_user` ; `registry_guard`/`corrections_guard` autorisent en maintenance uniquement `operator_*` et `recorded_by` (resp. `author_id` et `before`/`after`) ; adapter modèles, accès/synchro (auteur NULL) et `downgrade` ; fait passer T031e.
 
 ## Phase 3 : Récit 1 — Enregistrer une opération par son icône (P1) [US1]
 
@@ -79,9 +79,9 @@
 
 ### Implémentation GREEN (non-écran)
 
-- [ ] T036 [US1] GREEN création et lecture : `services/api/app/operations/service.py` (création, répartition, statut initial, éligibilité de rôle), `services/api/app/routers/operations.py` ; fait passer T033, T034.
-- [ ] T037 [US1] GREEN synchro écriture/lecture : `services/api/app/sync/operations.py` (`authorize` + `apply` via `access.py`, quota sous verrou, conflits champ par champ ; résolution de `label_photo_id` sur (id, farm_id, user_id), aucune clé client lue) ; fait passer T035 et T022a (voie sync).
-- [ ] T038 [P] [US1] GREEN view models mobiles : `apps/mobile/src/operations/viewModels/operationForm.ts`, `journal.ts` (SQLite local, indicateur « à envoyer ») ; fait passer T032.
+- [x] T036 [US1] GREEN création et lecture : `services/api/app/operations/service.py` (création, répartition, statut initial, éligibilité de rôle), `services/api/app/routers/operations.py` ; fait passer T033, T034.
+- [x] T037 [US1] GREEN synchro écriture/lecture : `services/api/app/sync/operations.py` (`authorize` + `apply` via `access.py`, quota sous verrou, conflits champ par champ ; résolution de `label_photo_id` sur (id, farm_id, user_id), aucune clé client lue) ; fait passer T035 et T022a (voie sync).
+- [x] T038 [P] [US1] GREEN view models mobiles : `apps/mobile/src/operations/viewModels/operationForm.ts`, `journal.ts` (SQLite local, indicateur « à envoyer ») ; fait passer T032.
 - [ ] T039 [US1] REFACTOR récit 1.
 
 ### Écrans (dépendent de T004 + fusion 004-design-system)
@@ -103,10 +103,10 @@
 
 ### Implémentation GREEN (non-écran)
 
-- [ ] T047 [US2] GREEN contrôles : `packages/domain/src/phyto-controls.ts`, `services/api/app/domain/phyto_controls.py`, intégration dans `services/api/app/operations/service.py` et `registry.py` ; fait passer T042, T043 (partie avertissements), T046.
+- [x] T047 [US2] GREEN contrôles : `packages/domain/src/phyto-controls.ts`, `services/api/app/domain/phyto_controls.py`, intégration dans `services/api/app/operations/service.py` et `registry.py` ; fait passer T042, T043 (partie avertissements), T046.
 - [ ] T048 [P] [US2] GREEN catalogue : `services/api/app/routers/phyto_products.py`, `services/workers/tasks/import_phyto_catalog.py` (import mensuel, `catalog_versions`, budget <= 3 Mo compressé) ; fait passer T043 (catalogue), T044.
-- [ ] T049 [P] [US2] GREEN étiquette : `services/api/app/operations/label.py` (port `LabelRecognizer`, repli ; clé générée serveur `farms/{farm_id}/labels/{uuid}`, émission de `label_photo_id`, vérification ferme + utilisateur, purge à 24 h) ; fait passer T045 et T022a (voie REST).
-- [ ] T050 [P] [US2] GREEN local : `apps/mobile/src/operations/localControls.ts`, `catalogCache.ts` (< 50 ms, date du catalogue) avec tests Jest `apps/mobile/src/operations/__tests__/localControls.test.ts` écrits avant (RED).
+- [x] T049 [P] [US2] GREEN étiquette : `services/api/app/operations/label.py` (port `LabelRecognizer`, repli ; clé générée serveur `farms/{farm_id}/labels/{uuid}`, émission de `label_photo_id`, vérification ferme + utilisateur, purge à 24 h) ; fait passer T045 et T022a (voie REST).
+- [x] T050 [P] [US2] GREEN local : `apps/mobile/src/operations/localControls.ts`, `catalogCache.ts` (< 50 ms, date du catalogue) avec tests Jest `apps/mobile/src/operations/__tests__/localControls.test.ts` écrits avant (RED).
 - [ ] T051 [US2] REFACTOR récit 2.
 
 ### Écrans (dépendent de T004 + fusion 004-design-system)
@@ -121,7 +121,7 @@
 - [x] T054 [P] [US3] RED unitaire R3-A1 à R3-A4 : vecteur `packages/domain/vectors/f6_harvest_date.json`, `packages/domain/tests/harvest-date.test.ts`, miroir `services/api/tests/unit/test_f6_harvest_date.py` (DAR le plus long restant, plusieurs produits, aucun traitement = « récoltable dès maintenant », ignore les écritures annulées du registre).
 - [x] T055 [P] [US3] RED intégration R3-A4 : `services/api/tests/integration/test_f6_harvest_date.py` (correction ou annulation -> recalcul via `registry_current` ; ouvrier : parcelle archivée/non attribuée -> 404, parité T013) et contrat `services/api/tests/contract/test_f6_harvest_contract.py`.
 - [x] T056 [US3] RED e2e (API) SC-003 : `services/api/tests/e2e/test_f6_harvest_date_e2e.py` (DAR 21 j -> J+21 ; deux produits -> le plus long).
-- [ ] T057 [US3] GREEN : `packages/domain/src/harvest-date.ts`, `services/api/app/domain/harvest_date.py`, route DAR dans `services/api/app/routers/operations.py`, calcul local `apps/mobile/src/operations/viewModels/harvestDate.ts` ; fait passer T054 à T056.
+- [x] T057 [US3] GREEN : `packages/domain/src/harvest-date.ts`, `services/api/app/domain/harvest_date.py`, route DAR dans `services/api/app/routers/operations.py`, calcul local `apps/mobile/src/operations/viewModels/harvestDate.ts` ; fait passer T054 à T056.
 - [ ] T058 [US3] [écran] RED puis GREEN F6-E5 `apps/mobile/src/screens/HarvestDate/` (+ `__tests__`, Maestro `apps/mobile/maestro/harvest_date.yaml`), 4 états, RTL ; dépend de T004 + fusion 004.
 
 ## Phase 6 : Récit 4 — Planifier et être rappelé (P1) [US4]
@@ -132,7 +132,7 @@
 - [x] T060 [P] [US4] RED intégration R4-A1, R4-A3, R4-A4 : `services/api/tests/integration/test_f6_planned.py` (planifiée, `mark_done` -> `done` compté dans journal, DAR et coûts, annulation, plafond 500 planifiées, ouvrier : ses propres planifiées seulement) et `services/api/tests/integration/test_f6_mark_overdue.py` (worker `mark_overdue_operations`).
 - [x] T061 [P] [US4] RED contrat R4 : `services/api/tests/contract/test_f6_planned_contract.py`.
 - [x] T062 [US4] RED e2e (API) R4-A2, R4-A3 : `services/api/tests/e2e/test_f6_planned_e2e.py`.
-- [ ] T063 [US4] GREEN : transitions dans `services/api/app/operations/service.py`, `services/workers/tasks/mark_overdue_operations.py`, `apps/mobile/src/operations/reminders.ts` ; fait passer T059 à T062.
+- [x] T063 [US4] GREEN : transitions dans `services/api/app/operations/service.py`, `services/workers/tasks/mark_overdue_operations.py`, `apps/mobile/src/operations/reminders.ts` ; fait passer T059 à T062.
 - [ ] T064 [US4] [écran] RED puis GREEN F6-E6 `apps/mobile/src/screens/PlannedOperations/` (+ `__tests__`, Maestro `apps/mobile/maestro/planned_reminder.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase 7 : Récit 5 — Dicter une opération (P1) [US5]

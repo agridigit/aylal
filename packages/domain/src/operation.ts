@@ -6,7 +6,7 @@ export const OPERATION_TYPES = [
 ] as const;
 export const OPERATION_STATUSES = ["planned", "done", "pending_validation", "validated", "cancelled"] as const;
 export type OperationStatus = (typeof OPERATION_STATUSES)[number];
-export type OperationAction = "mark_done" | "validate" | "cancel" | "correct";
+export type OperationAction = "mark_done" | "validate" | "cancel" | "correct" | "reschedule";
 
 const STAFF = ["owner", "manager"];
 
@@ -16,6 +16,8 @@ export function nextStatus(from: string, action: string, role: string): Operatio
   switch (action) {
     case "mark_done":
       return from === "planned" ? (staff ? "validated" : "pending_validation") : null;
+    case "reschedule":
+      return from === "planned" ? "planned" : null;
     case "validate":
       return from === "pending_validation" && staff ? "validated" : null;
     case "cancel":
@@ -71,3 +73,10 @@ export const OperationInput = z
   })
   .strict()
   .meta({ title: "OperationInput" });
+
+/** Move a planned operation to a new future date (strictly after today). */
+export function reschedule<T extends { status: string; performed_on: string }>(op: T, newDate: string, today: string): T {
+  if (op.status !== "planned") throw new Error("only a planned operation can be rescheduled");
+  if (newDate < today) throw new Error("a planned date must be in the future");
+  return { ...op, performed_on: newDate };
+}

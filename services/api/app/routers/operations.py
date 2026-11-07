@@ -2,7 +2,7 @@
 import base64
 import datetime as dt
 import uuid
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
 from fastapi.responses import JSONResponse
@@ -11,10 +11,11 @@ from sqlalchemy import text
 from app.auth.farm_context import NOT_FOUND, FarmContext, require
 from app.auth.rate_limit import check_rate_limit
 from app.config import get_settings
+from app.domain.harvest_date import earliest_harvest as earliest_harvest_of
 from app.domain.operation_limits import LIMITS
 from app.operations import label, service
 from app.operations.access import STAFF
-from app.operations.schemas import OperationInput, OperationPatch, ParseRequest
+from app.operations.schemas import OperationInput, OperationPatch, ParseRequest, RescheduleRequest
 
 router = APIRouter(prefix="/farms/{farm_id}")
 _LIMIT = Query(default=LIMITS["page_default"], ge=1, le=LIMITS["page_limit"])
@@ -24,6 +25,7 @@ _REQUIRE_OPERATION_CORRECT = require("operation.correct")
 _REQUIRE_OPERATION_CREATE = require("operation.create")
 _REQUIRE_OPERATION_MARK_DONE = require("operation.mark_done")
 _REQUIRE_OPERATION_READ = require("operation.read")
+_REQUIRE_OPERATION_RESCHEDULE = require("operation.reschedule")
 _REQUIRE_OPERATION_VALIDATE = require("operation.validate")
 
 
@@ -49,7 +51,8 @@ def _cursor(value: str | None) -> tuple[dt.date, uuid.UUID] | None:
 @router.get("/operations")
 async def list_operations(
     limit: int = _LIMIT,
-    cursor: str | None = None, parcel_id: uuid.UUID | None = None, type: str | None = None, status: str | None = None,
+    cursor: str | None = None, parcel_id: uuid.UUID | None = None, type: str | None = None,
+    status: Literal["planned", "done", "pending_validation", "validated", "cancelled"] | None = None,
     ctx: FarmContext = Depends(_REQUIRE_OPERATION_READ),
 ) -> dict[str, Any]:
     items, more = await service.list_page(
@@ -96,7 +99,10 @@ async def parse_operation(body: ParseRequest, ctx: FarmContext = Depends(_REQUIR
 
 
 @router.post("/operations/label", response_model=None)
-async def recognise_label(photo: UploadFile = _PHOTO, ctx: FarmContext = Depends(_REQUIRE_OPERATION_CREATE)) -> Any:
+async def recognise_label(
+    photo: UploadFile = _PHOTO, ctx: FarmContext = Depends(_REQUIRE_OPERATION_CREATE),
+    recognizer: label.LabelRecognizer = Depends(label.get_recognizer),
+) -> Any:
     await check_rate_limit(f"rl:label:{ctx.user_id}", 20)
     data = await photo.read(LIMITS["label_bytes"] + 1)
     if len(data) > LIMITS["label_bytes"]:
@@ -105,9 +111,11 @@ async def recognise_label(photo: UploadFile = _PHOTO, ctx: FarmContext = Depends
         raise HTTPException(status_code=422, detail={"code": "invalid_image"})
     label_id = await label.register_upload(ctx.session, ctx.farm_id, ctx.user_id, len(data))
     await ctx.session.commit()
-    if not label.recognizer_available():
+    try:
+        raw = await recognizer.recognize(data)
+    except (label.RecognizerUnavailable, TimeoutError, OSError):
         return JSONResponse(status_code=503, content={"code": "label_unavailable", "label_photo_id": str(label_id), "candidates": []})
-    return {"label_photo_id": str(label_id), "candidates": []}
+    return {"label_photo_id": str(label_id), "candidates": await label.catalogue_candidates(ctx.session, raw)}
 
 
 @router.get("/operations/{operation_id}")
@@ -152,6 +160,18 @@ async def cancel(operation_id: uuid.UUID, ctx: FarmContext = Depends(_REQUIRE_OP
     return await _act("cancel", operation_id, ctx)
 
 
+@router.post("/operations/{operation_id}/reschedule")
+async def reschedule(
+    operation_id: uuid.UUID, body: RescheduleRequest, ctx: FarmContext = Depends(_REQUIRE_OPERATION_RESCHEDULE)
+) -> dict[str, Any]:
+    try:
+        out = await service.reschedule(ctx.session, ctx.farm_id, operation_id, ctx.user_id, ctx.role, body.performed_on)
+    except service.OperationError as e:
+        raise _http(e) from e
+    await ctx.session.commit()
+    return out
+
+
 @router.post("/operations/{operation_id}/validate")
 async def validate(operation_id: uuid.UUID, ctx: FarmContext = Depends(_REQUIRE_OPERATION_VALIDATE)) -> dict[str, Any]:
     return await _act("validate", operation_id, ctx)
@@ -184,16 +204,10 @@ async def earliest_harvest(field_id: uuid.UUID, ctx: FarmContext = Depends(_harv
     rows = (
         await ctx.session.execute(
             text(
-                "SELECT performed_on, dar_days, product_name FROM registry_current WHERE farm_id = :f AND parcel_id = :p"
-                " ORDER BY performed_on DESC, id"
+                "SELECT id, entry_kind, supersedes_id, performed_on, dar_days, product_name FROM registry_current"
+                " WHERE farm_id = :f AND parcel_id = :p"
             ),
             {"f": ctx.farm_id, "p": field_id},
         )
     ).mappings().all()
-    known = [r for r in rows if r["dar_days"] is not None]
-    best = max(known, key=lambda r: r["performed_on"] + dt.timedelta(days=r["dar_days"]), default=None)
-    return {
-        "date": (best["performed_on"] + dt.timedelta(days=best["dar_days"])).isoformat() if best else None,
-        "unknown_dar": any(r["dar_days"] is None for r in rows),
-        "limiting_product": best["product_name"] if best else None,
-    }
+    return earliest_harvest_of([dict(r) for r in rows], dt.date.today())

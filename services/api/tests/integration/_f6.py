@@ -63,6 +63,7 @@ def routes(farm, operation, field, job):
         ("PATCH", f"{f}/operations/{operation}", {"note": "x"}),
         ("POST", f"{f}/operations/{operation}/done", None),
         ("POST", f"{f}/operations/{operation}/cancel", None),
+        ("POST", f"{f}/operations/{operation}/reschedule", {"performed_on": (TODAY + dt.timedelta(days=3)).isoformat()}),
         ("POST", f"{f}/operations/{operation}/validate", None),
         ("GET", f"{f}/operations/{operation}/corrections", None),
         ("POST", f"{f}/operations/check", op_body([field])),
