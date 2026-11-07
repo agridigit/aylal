@@ -51,15 +51,15 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T020 [P] [US1] Test de contrat `tests/platform/test_make_targets.sh` : vérifie l'existence et le comportement documenté de chaque cible de [contracts/make-targets.md](contracts/make-targets.md) (`up`, `down`, `test`, `test-api`, `test-domain`, `test-mobile`, `test-visual`, `e2e`, `lint`, `typecheck`, `coverage`, `check`, `diagrams`, `report`, `apk-size`) (FR-003)
-- [ ] T021 [P] [US1] Test d'intégration `tests/platform/test_services_healthy.sh` : après `make up`, les services `db`, `redis`, `minio`, `powersync`, `api`, `worker`, `proxy` sont `healthy` ; sinon le service non sain est nommé (AC1.1, FR-002)
-- [ ] T022 [P] [US1] Test d'intégration `tests/platform/test_failing_test_named.sh` : un test volontairement en échec dans un répertoire temporaire fait retourner un code != 0 à `make test` et son nom figure dans la sortie (AC1.3)
-- [ ] T023 [P] [US1] Test `tests/platform/test_no_host_deps.sh` : le dépôt n'invoque aucun outil hôte hors `docker`/`make` (analyse des cibles du `Makefile` et des scripts) (AC1.4, FR-001)
-- [ ] T024 [P] [US1] Test `tests/platform/test_coverage_gate.sh` : une couverture simulée < 80 % fait échouer `make coverage` (FR-004)
-- [ ] T025 [P] [US1] Test pytest `services/api/tests/contract/test_health_contract.py` : `GET /v1/health` conforme à `contracts/openapi.yaml` (AC1.1)
-- [ ] T026 [P] [US1] Test pytest `services/workers/tests/test_health_task.py` : la tâche de santé Arq répond (AC1.1)
-- [ ] T027 [P] [US1] Test `tests/platform/test_no_foreign_defaults.sh` : échec si un domaine ou service externe hors Maroc (Firebase, EAS, CDN de polices) est configuré par défaut (FR-019, R17)
-- [ ] T028 [US1] Lancer ces tests : ils DOIVENT échouer ; commit `test(foundations): red - platform`
+- [x] T020 [P] [US1] Test de contrat `tests/platform/test_make_targets.sh` : vérifie l'existence et le comportement documenté de chaque cible de [contracts/make-targets.md](contracts/make-targets.md) (`up`, `down`, `test`, `test-api`, `test-domain`, `test-mobile`, `test-visual`, `e2e`, `lint`, `typecheck`, `coverage`, `check`, `diagrams`, `report`, `apk-size`) (FR-003)
+- [x] T021 [P] [US1] Test d'intégration `tests/platform/test_services_healthy.sh` : après `make up`, les services `db`, `redis`, `minio`, `powersync`, `api`, `worker`, `proxy` sont `healthy` ; sinon le service non sain est nommé (AC1.1, FR-002)
+- [x] T022 [P] [US1] Test d'intégration `tests/platform/test_failing_test_named.sh` : un test volontairement en échec dans un répertoire temporaire fait retourner un code != 0 à `make test` et son nom figure dans la sortie (AC1.3)
+- [x] T023 [P] [US1] Test `tests/platform/test_no_host_deps.sh` : le dépôt n'invoque aucun outil hôte hors `docker`/`make` (analyse des cibles du `Makefile` et des scripts) (AC1.4, FR-001)
+- [x] T024 [P] [US1] Test `tests/platform/test_coverage_gate.sh` : une couverture simulée < 80 % fait échouer `make coverage` (FR-004)
+- [x] T025 [P] [US1] Test pytest `services/api/tests/contract/test_health_contract.py` : `GET /v1/health` conforme à `contracts/openapi.yaml` (AC1.1)
+- [x] T026 [P] [US1] Test pytest `services/workers/tests/test_health_task.py` : la tâche de santé Arq répond (AC1.1)
+- [x] T027 [P] [US1] Test `tests/platform/test_no_foreign_defaults.sh` : échec si un domaine ou service externe hors Maroc (Firebase, EAS, CDN de polices) est configuré par défaut (FR-019, R17)
+- [x] T028 [US1] Lancer ces tests : ils DOIVENT échouer ; commit `test(foundations): red - platform`
 
 ### Implémentation (GREEN)
 
