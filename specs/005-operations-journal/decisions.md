@@ -125,3 +125,12 @@ Aucune assertion de sécurité n'est affaiblie ; chaque correction est minimale.
 - **Lint des tests** : `F811` ignoré pour `tests/**` (`pyproject.toml`) : l'import d'une fixture pytest (`world`) puis sa réception en paramètre est l'idiome attendu ; aucune assertion modifiée.
 
 - **Taille APK** : mesurée à 50 480 024 octets (limite 41 943 040) lors de `E2E_SKIP=1 make check` ; aucun seuil relâché, aucune dérogation créée (décision humaine requise). Toutes les autres portes de `make check` précédant `apk-size` sont vertes.
+
+## Dérogation au budget APK (CPS §15)
+
+- Valeur : limite APK portée de 40 Mo à 52 Mo pour la branche `005-operations-journal` uniquement (`specs/005-operations-journal/apk-budget.env`). Le défaut de 40 Mo reste inchangé ailleurs ; plafond absolu d'une dérogation : 60 Mo. Budget accepté par le porteur du projet.
+- Mesure : `app-release.apk` = 50 480 024 o (limite par défaut 41 943 040 o).
+- Cause : `libmaplibre` déjà intégré à `main` par F2 (dérogation F2, voir `specs/003-fields-crops/decisions.md`, section « Dérogation au budget APK » et `specs/003-fields-crops/apk-budget.env`) ; F6 ajoute environ 0,6 Mo (expo-notifications, expo-image-picker, expo-sharing).
+- Alternatives écartées : retirer ou différer la carte (hors périmètre, contraire à F2) ; retirer les trois dépendances F6 (fonctions du périmètre : rappels, photos, partage d'export) ; compresser les `.so` (déplace la taille vers l'installation) ; leviers mineurs déjà évalués en F2, gain insuffisant.
+- Condition de réexamen : allègement de MapLibre, découpage en AAB (split par ABI/densité), ou re-mesure de la taille installée sur appareil réel.
+- Règle : chaque nouvelle fonctionnalité qui grossit l'APK doit re-justifier sa propre dérogation.
