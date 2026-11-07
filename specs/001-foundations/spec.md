@@ -215,3 +215,8 @@ Un prototype couvre : une carte de 50 parcelles, une saisie hors ligne puis sync
 - La relecture des textes par un locuteur natif de la darija est planifiée ; en F0, les textes sont provisoires mais complets dans les trois langues.
 - Un Android d'entrée de gamme de 2 Go de RAM est disponible pour les mesures du prototype.
 - La lecture vocale s'appuie sur les capacités de synthèse vocale de l'appareil en F0 ; les modèles vocaux darija hébergés au Maroc relèvent de F7.
+
+## Clarifications
+
+### Session 2026-11-07
+- Aucune ambiguïté bloquante : aucun marqueur [NEEDS CLARIFICATION] dans la spec. Les choix restants suivent les « Décisions prises » du CPS (section 19) : option la plus simple, gratuite et compatible hors ligne.
