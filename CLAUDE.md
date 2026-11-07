@@ -31,6 +31,7 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 - Toute règle métier vit dans `packages/domain` (TS) ou `services/api/app/domain` (Python), jamais dans un écran.
 - Hors ligne d'abord : SQLite local + PowerSync. Aucune donnée perdue.
 - Design : composants de `packages/ui` uniquement, jetons du design system AYLAL, RTL vérifié, 4 états par écran (chargement, vide, erreur, hors ligne).
+- Design de référence de l'app mobile : `docs/design/aylal-design-system.md` (Olivier, cartes élevées, icônes trait arrondi, jetons à deux niveaux, Unistyles). Tout écran ou composant s'y conforme.
 
 ## Documentation (à chaque fin de fonctionnalité)
 Dossier `docs/modules/<NNN-feature>/` :

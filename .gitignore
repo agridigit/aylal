@@ -20,3 +20,4 @@ __pycache__/
 packages/ui/test-results/
 .pnpm-store/
 storybook-static/
+.superpowers/
