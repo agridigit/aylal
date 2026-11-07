@@ -1,0 +1,17 @@
+flowchart TD
+    A[Ouvrir la carte de mes parcelles] --> B[Ajouter une parcelle]
+    B --> C{Comment dessiner ?}
+    C -- Sur l'image --> D[Toucher les coins]
+    C -- À pied --> E[Marcher le long de la limite]
+    D --> F{Le dessin se croise ?}
+    E --> F
+    F -- Oui --> G[Corriger ou recommencer]
+    G --> F
+    F -- Non --> H[Voir la surface en hectares]
+    H --> I[Donner un nom]
+    I --> J[Choisir la culture]
+    J --> K[Choisir l'irrigation et la serre]
+    K --> L[Parcelle enregistrée]
+    L --> M[Voir mes parcelles sur la carte]
+    L --> N[Découper ou fusionner]
+    L --> O[Démarrer une nouvelle campagne]

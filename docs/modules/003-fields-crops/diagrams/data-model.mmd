@@ -1,0 +1,61 @@
+erDiagram
+  FARMS ||--o{ PARCELS : possede
+  PARCELS ||--o{ SEASONS : "(farm_id, field_id)"
+  PARCELS ||--o{ FIELD_BLOCKS : "(farm_id, field_id)"
+  PARCELS ||--o| PARCELS : "merged_into_id"
+  CROPS ||--o{ SEASONS : crop_id
+  FARMS ||--o{ CROPS : "cultures libres (farm_id non NULL)"
+  FARMS ||--o{ FIELD_COMMANDS : recoit
+  PARCELS {
+    uuid id PK
+    uuid farm_id
+    string name
+    polygon geometry
+    numeric area_calc_ha "serveur"
+    numeric area_declared_ha
+    string irrigation
+    bool greenhouse
+    string status_summary "serveur F3"
+    timestamptz archived_at
+    timestamptz purge_after
+    uuid merged_into_id
+  }
+  SEASONS {
+    uuid id PK
+    uuid farm_id
+    uuid field_id
+    uuid crop_id
+    smallint planting_year
+    date sowing_date
+    date started_at
+    date ended_at
+    string stage_estimated
+    string stage_corrected
+    timestamptz parcel_archived_at "denormalise"
+  }
+  FIELD_BLOCKS {
+    uuid id PK
+    uuid farm_id
+    uuid field_id
+    string kind
+    polygon geometry
+    numeric area_calc_ha
+    timestamptz parcel_archived_at "denormalise"
+  }
+  CROPS {
+    uuid id PK
+    uuid farm_id "NULL = referentiel"
+    string slug
+    string cycle
+    string photo_key
+    jsonb stages
+    bool has_agronomy
+    bool validated
+  }
+  FIELD_COMMANDS {
+    uuid id PK
+    uuid farm_id
+    string kind
+    jsonb payload
+    jsonb result
+  }
