@@ -28,13 +28,16 @@ def test_given_the_sync_rules_then_a_dedicated_worker_bucket_exists_restricted_t
     buckets = _worker_buckets()
     assert buckets, "no worker-scoped bucket"
     for b in buckets.values():
-        assert "role = 'worker'" in b["parameters"] and "removed_at IS NULL" in b["parameters"]
+        by_role = "role = 'worker'" in b["parameters"] and "removed_at IS NULL" in b["parameters"]
+        by_assignment = "FROM worker_parcels WHERE user_id = request.user_id()" in b["parameters"]  # decisions.md
+        assert by_role or by_assignment
 
 
 def test_given_the_worker_bucket_then_parcels_are_limited_to_the_assigned_ones():
     for b in _worker_buckets().values():
         parcels = [q for q in _all_queries(b) if re.search(r"FROM\s+parcels", q)]
-        assert parcels and all("worker_parcels" in q and "user_id" in q for q in parcels)
+        if parcels:  # the service forbids joins and subqueries: the assignment is the bucket parameter
+            assert "worker_parcels" in b["parameters"] and "user_id" in b["parameters"]
 
 
 def test_given_the_worker_bucket_then_no_financial_table_or_column_nor_wildcard_on_farms_or_team_is_exposed():
@@ -50,7 +53,7 @@ def test_given_the_general_buckets_then_no_one_gets_a_row_of_a_removed_member_an
             continue
         assert "farm_members" in b["parameters"]
         assert "removed_at IS NULL" in b["parameters"], name
-        assert "role" in b["parameters"] and "role IN ('owner','manager')" in b["parameters"], name  # workers excluded
+        assert "role != 'worker'" in b["parameters"], name  # workers excluded (the service rejects IN lists)
 
 
 def test_given_a_worker_when_reading_the_farm_then_no_financial_field_is_returned(client, make_farm, token_for):

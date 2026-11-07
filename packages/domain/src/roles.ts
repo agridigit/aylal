@@ -16,6 +16,22 @@ export const MATRIX: Record<string, readonly Role[]> = {
   "record.write": ALL,
   "record.read_all": OWNER_MANAGER,
   "finance.read": OWNER_MANAGER,
+  // F2: writes belong to owner and manager; a worker only reads its assigned fields (vectors/f2_roles.json)
+  "field.read": ALL,
+  "field.create": OWNER_MANAGER,
+  "field.update": OWNER_MANAGER,
+  "field.archive": OWNER_MANAGER,
+  "field.restore": OWNER_MANAGER,
+  "field.merge": OWNER_MANAGER,
+  "field.split": OWNER_MANAGER,
+  "field.import": OWNER_MANAGER,
+  "season.read": ALL,
+  "season.start": OWNER_MANAGER,
+  "season.end": OWNER_MANAGER,
+  "season.update": OWNER_MANAGER,
+  "season.correct_stage": OWNER_MANAGER,
+  "block.read": ALL,
+  "crop.create_custom": OWNER_MANAGER,
 };
 
 export function can(role: string, action: string): boolean {

@@ -2,10 +2,48 @@
 import uuid
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Consent, Farm, FarmMember, TrialRecord, User
+
+_FIELD_SCOPE = (
+    "p.farm_id = ANY(:farms) AND (p.farm_id = ANY(:wide) OR (p.archived_at IS NULL AND EXISTS ("
+    "SELECT 1 FROM worker_parcels w WHERE w.parcel_id = p.id AND w.farm_id = p.farm_id AND w.user_id = :u)))"
+)
+
+
+async def _field_data(session: AsyncSession, user_id: uuid.UUID, roles: list[tuple[uuid.UUID, str]]) -> dict[str, Any]:
+    """Fields, seasons, blocks and free crops of the user's farms; a worker only gets the fields assigned to them."""
+    params = {
+        "u": user_id,
+        "farms": [f for f, _ in roles],
+        "wide": [f for f, r in roles if r != "worker"],
+    }
+
+    async def rows(sql: str) -> list[dict[str, Any]]:
+        return [r[0] for r in (await session.execute(text(f"SELECT to_jsonb(t) FROM ({sql}) t"), params)).all()]
+
+    fields = await rows(
+        "SELECT p.id, p.farm_id, p.name, ST_AsGeoJSON(p.geometry)::json AS geometry, p.area_calc_ha::float8 AS area_calc_ha,"
+        " p.area_declared_ha::float8 AS area_declared_ha, p.irrigation, p.greenhouse, p.soil, p.archived_at"
+        f" FROM parcels p WHERE {_FIELD_SCOPE} ORDER BY p.name, p.id"
+    )
+    seasons = await rows(
+        "SELECT s.id, s.farm_id, s.field_id, s.crop_id, s.variety, s.planting_year, s.sowing_date, s.started_at, s.ended_at,"
+        " s.stage_estimated, s.stage_corrected, s.destination FROM seasons s JOIN parcels p ON p.id = s.field_id"
+        f" AND p.farm_id = s.farm_id WHERE {_FIELD_SCOPE} ORDER BY s.started_at, s.id"
+    )
+    blocks = await rows(
+        "SELECT b.id, b.farm_id, b.field_id, b.name, b.kind, ST_AsGeoJSON(b.geometry)::json AS geometry,"
+        " b.area_calc_ha::float8 AS area_calc_ha FROM field_blocks b JOIN parcels p ON p.id = b.field_id"
+        f" AND p.farm_id = b.farm_id WHERE {_FIELD_SCOPE} ORDER BY b.id"
+    )
+    crops = await rows(
+        "SELECT c.id, c.farm_id, c.slug, c.name_ary, c.name_ar, c.name_fr, c.cycle FROM crops c"
+        " WHERE c.farm_id = ANY(:wide) ORDER BY c.slug, c.id"
+    )
+    return {"fields": fields, "seasons": seasons, "blocks": blocks, "crops": crops}
 
 
 async def build_export(session: AsyncSession, user_id: uuid.UUID) -> dict[str, Any]:
@@ -28,7 +66,9 @@ async def build_export(session: AsyncSession, user_id: uuid.UUID) -> dict[str, A
             .order_by(TrialRecord.created_at)
         )
     ).scalars().all()
+    data = await _field_data(session, user_id, [(f, r) for f, r in farms])
     return {
+        **data,
         "profile": {"phone": user.phone_e164, "display_name": user.display_name, "language": user.language},
         "consents": [
             {

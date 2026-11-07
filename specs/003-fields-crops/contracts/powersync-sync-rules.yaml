@@ -1,0 +1,31 @@
+# Extension de infra/powersync/sync-rules.yaml pour F2 (à fusionner ; lecture seule, l'écriture passe par POST /v1/sync/upload).
+# Valide pour le service PowerSync : AUCUNE jointure, AUCUNE sous-requête, aucune liste IN (...) ; chaque requête retourne
+# une colonne id et couvre tous les paramètres du seau. Les filtres « parcelle parente non archivée » et « ferme » reposent
+# donc sur des colonnes DÉNORMALISÉES, tenues à jour par le serveur (archivage/restauration de la parcelle, cascade) :
+#   - seasons.parcel_archived_at, field_blocks.parcel_archived_at : copie de parcels.archived_at de la parcelle parente
+#     (posée à l'archivage, remise à NULL à la restauration, dans la même transaction) ;
+#   - toute table enfant de parcelle future suit la même règle (champ field_id + parcel_archived_at).
+# L'ouvrier ne reçoit jamais field_commands, ni parcelle/enfant d'une parcelle archivée (FR-020).
+# Aucune donnée d'une autre ferme : tout est borné par bucket.farm_id ou par une attribution worker_parcels.
+bucket_definitions:
+  crops_reference:
+    data:
+      - SELECT * FROM crops WHERE farm_id IS NULL
+  farm_data:            # ajouts au seau gestionnaire/propriétaire existant (role != 'worker')
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role != 'worker' AND removed_at IS NULL
+    data:
+      - SELECT * FROM parcels WHERE farm_id = bucket.farm_id          # archivées incluses (restauration)
+      - SELECT * FROM seasons WHERE farm_id = bucket.farm_id
+      - SELECT * FROM field_blocks WHERE farm_id = bucket.farm_id
+      - SELECT * FROM crops WHERE farm_id = bucket.farm_id            # cultures libres de la ferme
+      - SELECT id, farm_id, kind, applied_at, result FROM field_commands WHERE farm_id = bucket.farm_id
+  farm_worker:          # ouvrier : cultures libres de sa ferme seulement
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
+    data:
+      - SELECT id, farm_id, slug, name_ary, name_ar, name_fr, cycle, photo_key FROM crops WHERE farm_id = bucket.farm_id
+  farm_worker_parcels:  # une partition par parcelle attribuée
+    parameters: SELECT parcel_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, name, geometry, area_calc_ha, area_declared_ha, irrigation, greenhouse, soil, status_summary FROM parcels WHERE id = bucket.parcel_id AND archived_at IS NULL
+      - SELECT id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, ended_at, stage_estimated, stage_corrected FROM seasons WHERE field_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, field_id, name, kind, geometry, area_calc_ha FROM field_blocks WHERE field_id = bucket.parcel_id AND archived_at IS NULL AND parcel_archived_at IS NULL

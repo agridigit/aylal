@@ -1,0 +1,20 @@
+sequenceDiagram
+  actor A as Agriculteur A (hors ligne)
+  actor B as Gestionnaire B
+  participant App as Mobile (SQLite local)
+  participant PS as PowerSync
+  participant API as /v1/sync/upload
+  participant DB as PostgreSQL
+  A->>App: dessine la parcelle (touches ou GPS)
+  App->>App: validation domaine (sommets, croisement, Maroc)
+  App->>App: INSERT parcels (UUID client) + file d'envoi
+  B->>API: modifie le nom (REST)
+  API->>DB: server_version 2, field_versions.name = 2
+  Note over App,API: retour du réseau
+  App->>API: lot d'opérations (base_version 1)
+  API->>API: authorize (rôle, ferme, 404/403)
+  API->>DB: verrou par ferme, plafond 500, aire PostGIS
+  API->>DB: resolve_field_conflicts, la dernière opération gagne
+  API->>DB: INSERT sync_conflicts (valeur écartée)
+  API-->>App: conflict_logged
+  PS-->>App: état serveur (area_calc_ha, server_version)

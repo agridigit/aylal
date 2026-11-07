@@ -1,0 +1,31 @@
+{
+  "draw": {
+    "taps": "المس كل ركن من أركان القطعة",
+    "gps": "امش على طول حدود القطعة",
+    "undo": "تراجع عن آخر نقطة",
+    "close": "إغلاق القطعة",
+    "crossing_help": "يجب ألا تتقاطع الخطوط. حرّك النقطة الخاطئة أو احذفها."
+  },
+  "gps": {
+    "precision": {
+      "good": "دقة GPS جيدة",
+      "medium": "دقة GPS متوسطة",
+      "poor": "دقة GPS ضعيفة، انتقل إلى مكان مكشوف"
+    },
+    "accuracy": "الدقة: {{meters}} م"
+  },
+  "errors": {
+    "self_intersection": "خطوط القطعة تتقاطع",
+    "too_few_vertices": "يلزم 3 نقاط على الأقل",
+    "too_many_vertices": "عدد النقاط كبير جدا",
+    "area_too_small": "القطعة صغيرة جدا",
+    "area_too_large": "القطعة كبيرة جدا",
+    "outside_morocco": "القطعة خارج المغرب",
+    "field_limit_reached": "تم بلوغ حد 500 قطعة",
+    "invalid_coordinates": "إحداثيات غير صالحة",
+    "not_a_polygon": "الشكل ليس مضلعا",
+    "block_outside_field": "الكتلة تتجاوز حدود القطعة",
+    "block_overlap": "هذه الكتلة تتداخل مع كتلة أخرى",
+    "merge_not_contiguous": "القطع غير متلاصقة"
+  }
+}

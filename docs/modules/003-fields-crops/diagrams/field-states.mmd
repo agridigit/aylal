@@ -1,0 +1,10 @@
+stateDiagram-v2
+  [*] --> Active: création
+  Active --> Archivee: archivage (purge_after = +90 j)
+  Archivee --> Active: restauration (plafond 500 revérifié)
+  Active --> Fusionnee: fusion (survivante garde campagnes et blocs)
+  Fusionnee --> Purgee: purge_after atteint
+  Archivee --> Purgee: purge_after atteint (worker)
+  Purgee --> [*]
+  note right of Archivee: 404 pour l'ouvrier (REST, synchro, export)
+  note right of Fusionnee: archivée avec merged_into_id

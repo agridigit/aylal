@@ -1,0 +1,29 @@
+flowchart LR
+  subgraph Mobile["apps/mobile (Expo)"]
+    Draw["drawSession / gpsWalk"]
+    Store["fieldStore (SQLite + PowerSync)"]
+    Map["mapData (GeoJSON local) + mapStyle"]
+    Off["offlineRegion"]
+  end
+  Dom["packages/domain<br/>area, geometry, overlap, season, merge"]
+  subgraph API["services/api (FastAPI)"]
+    R["routers: fields, seasons, blocks, crops"]
+    Sync["sync/fields: authorize + apply"]
+    Svc["fields/service + app/domain (miroir Python)"]
+  end
+  PG[("PostgreSQL + PostGIS")]
+  PS["PowerSync (sync-rules)"]
+  W["worker: purge_archived_fields, build_tiles"]
+  Tiles[("PMTiles au Maroc (MinIO + Caddy)<br/>non produit")]
+  Draw --> Store --> PS
+  Store -->|"/v1/sync/upload"| Sync
+  Dom -.règles et vecteurs partagés.-> Store
+  Dom -.JSON Schema -> Pydantic.-> Svc
+  R --> Svc --> PG
+  Sync --> Svc
+  PG --> PS --> Store
+  Store --> Map
+  Map --> Tiles
+  Off --> Tiles
+  W --> PG
+  W -->|make tiles| Tiles

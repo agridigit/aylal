@@ -13,6 +13,7 @@ export MAESTRO_URL ?= https://github.com/mobile-dev-inc/maestro/releases/latest/
 .PHONY: up down logs build apk e2e-mobile test-deps test-worker check-fast check-fast-cached check-cached e2e-cached test test-api test-domain test-mobile test-visual update-visual test-unit test-integration test-pyramid e2e e2e-api lint typecheck coverage apk-size check diagrams docs-index loop report clean
 
 up:            ## démarre toute la plateforme et attend que tout soit sain
+	@bash scripts/validate-sync-rules.sh
 	@$(DC) up -d --build --wait || { echo "make up: service non sain :" >&2; $(DC) ps -a --format '{{.Service}} {{.State}} {{.Health}}' | grep -v 'running healthy' | grep -v 'exited' >&2; $(DC) ps -a --format '{{.Service}} {{.State}} {{.Health}}' | grep 'exited' | grep -v ' 0$$' >&2; exit 1; }
 down:
 	$(TX) stop
@@ -53,6 +54,11 @@ e2e-mobile:    ## bout en bout mobile seul
 	bash scripts/e2e-mobile.sh
 apk:           ## construit l'APK release arm64 dans Docker -> apps/mobile/dist/app-release.apk
 	bash scripts/build-apk.sh
+tiles:         ## construit morocco.pmtiles en local (Docker + tippecanoe) ; AYLAL_TILES_SOURCE et AYLAL_TILES_BASE_URL requis
+	docker build -q -f infra/docker/tiles.Dockerfile -t aylal-tiles .
+	docker run --rm -e AYLAL_TILES_BASE_URL -e AYLAL_TILES_SOURCE=/in/source.geojsonl -v "$(AYLAL_TILES_SOURCE):/in/source.geojsonl:ro" -v "$(CURDIR)/dist/tiles:/out" aylal-tiles
+sync-rules:    ## refuse des règles PowerSync que le service rejette (parseur du service)
+	bash scripts/validate-sync-rules.sh
 test-deps:     ## refuse une app « façade » : dépendances réelles déclarées, aucun stub natif
 	$(TX) --no-deps js-test node scripts/check-real-deps.mjs
 e2e-api: export AYLAL_ENV=test
@@ -71,9 +77,9 @@ coverage:      ## seuil 80 % pytest et Vitest
 	$(TX) js-test pnpm -r --filter @aylal/domain test -- --coverage
 apk-size:      ## APK release <= 40 Mo
 	bash scripts/check-apk-size.sh
-check: test-deps test-pyramid lint typecheck test coverage test-visual apk-size diagrams e2e   ## porte de qualité utilisée par la boucle
+check: sync-rules test-deps test-pyramid lint typecheck test coverage test-visual apk-size diagrams e2e   ## porte de qualité utilisée par la boucle
 check-fast:    ## porte rapide de fin de groupe (sans APK, visuel, diagrammes ni e2e)
-check-fast: test-deps test-pyramid lint typecheck coverage test-worker test-domain test-mobile
+check-fast: sync-rules test-deps test-pyramid lint typecheck coverage test-worker test-domain test-mobile
 check-fast-cached: ## check-fast, sauté si check ou check-fast déjà vert sur le même commit
 	bash scripts/cached-gate.sh check-fast check-fast
 check-cached:  ## make check, sauté si déjà vert sur le même commit (docs seules -> diagrams)

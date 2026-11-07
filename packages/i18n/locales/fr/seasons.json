@@ -1,0 +1,8 @@
+{
+  "start": "Démarrer une campagne",
+  "close": "Clôturer la campagne",
+  "history": "Historique des campagnes",
+  "errors": {
+    "season_already_active": "Cette culture a déjà une campagne en cours sur cette parcelle"
+  }
+}

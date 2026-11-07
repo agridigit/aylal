@@ -130,3 +130,14 @@ def test_given_a_future_owner_when_creating_their_farm_via_sync_then_it_stays_al
     r = client.post("/v1/sync/upload", json={"ops": [o]}, headers=auth(token_for(user)))
     assert r.status_code == 200, r.text
     assert r.json()["results"][0]["status"] == "applied"
+
+
+def test_given_a_deleted_farm_when_the_owner_uploads_an_admin_write_then_404_and_nothing_is_written(
+    client, token_for, world
+):
+    """T008 - deleted_at joined in farm_role: admin writes on a deleted farm are refused."""
+    sql("UPDATE farms SET deleted_at = now() WHERE id=$1", world["farm"])
+    before = _farm_state(world)
+    r = client.post("/v1/sync/upload", json={"ops": [_admin_op("worker_parcels", world)]}, headers=auth(token_for(world["owner"])))
+    assert r.status_code == 404, r.text
+    assert _farm_state(world) == before

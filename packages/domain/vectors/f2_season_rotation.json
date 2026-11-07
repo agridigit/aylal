@@ -1,0 +1,108 @@
+[
+ {
+  "name": "rotation closes the previous crop",
+  "active": [
+   {
+    "id": "s1",
+    "crop_id": "wheat"
+   }
+  ],
+  "cropId": "olive",
+  "closeIds": [
+   "s1"
+  ],
+  "expected": {
+   "ok": true,
+   "closeIds": [
+    "s1"
+   ]
+  }
+ },
+ {
+  "name": "intercropping keeps both active",
+  "active": [
+   {
+    "id": "s1",
+    "crop_id": "olive"
+   }
+  ],
+  "cropId": "wheat",
+  "closeIds": [],
+  "expected": {
+   "ok": true,
+   "closeIds": []
+  }
+ },
+ {
+  "name": "same crop without closing is refused",
+  "active": [
+   {
+    "id": "s1",
+    "crop_id": "wheat"
+   }
+  ],
+  "cropId": "wheat",
+  "closeIds": [],
+  "expected": {
+   "ok": false,
+   "code": "season_already_active"
+  }
+ },
+ {
+  "name": "same crop closed in the same request is accepted",
+  "active": [
+   {
+    "id": "s1",
+    "crop_id": "wheat"
+   }
+  ],
+  "cropId": "wheat",
+  "closeIds": [
+   "s1"
+  ],
+  "expected": {
+   "ok": true,
+   "closeIds": [
+    "s1"
+   ]
+  }
+ },
+ {
+  "name": "unknown or foreign close id is ignored",
+  "active": [
+   {
+    "id": "s1",
+    "crop_id": "wheat"
+   }
+  ],
+  "cropId": "olive",
+  "closeIds": [
+   "zzz"
+  ],
+  "expected": {
+   "ok": true,
+   "closeIds": []
+  }
+ },
+ {
+  "name": "closing another crop does not free the requested crop",
+  "active": [
+   {
+    "id": "s1",
+    "crop_id": "wheat"
+   },
+   {
+    "id": "s2",
+    "crop_id": "olive"
+   }
+  ],
+  "cropId": "olive",
+  "closeIds": [
+   "s1"
+  ],
+  "expected": {
+   "ok": false,
+   "code": "season_already_active"
+  }
+ }
+]

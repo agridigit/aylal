@@ -14,6 +14,22 @@ MATRIX: dict[str, frozenset[str]] = {
     "record.write": frozenset(ROLES),
     "record.read_all": OWNER_MANAGER,
     "finance.read": OWNER_MANAGER,
+    # F2: every write belongs to owner and manager; a worker only reads its assigned fields
+    "field.read": frozenset(ROLES),
+    "field.import": OWNER_MANAGER,
+    "season.read": frozenset(ROLES),
+    "season.end": OWNER_MANAGER,
+    "season.correct_stage": OWNER_MANAGER,
+    "block.read": frozenset(ROLES),
+    "field.create": OWNER_MANAGER,
+    "field.update": OWNER_MANAGER,
+    "field.archive": OWNER_MANAGER,
+    "field.restore": OWNER_MANAGER,
+    "field.merge": OWNER_MANAGER,
+    "field.split": OWNER_MANAGER,
+    "season.start": OWNER_MANAGER,
+    "season.update": OWNER_MANAGER,
+    "crop.create_custom": OWNER_MANAGER,
 }
 
 

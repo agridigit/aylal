@@ -64,7 +64,7 @@ class Parcel(Base):
     farm_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farms.id"))
     name: Mapped[str] = mapped_column(Text)
     geometry: Mapped[Any] = mapped_column(Polygon())
-    vigor: Mapped[float]
+    vigor: Mapped[float | None]
 
 
 class TrialRecord(Base):

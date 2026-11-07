@@ -121,6 +121,7 @@ services:
       AYLAL_SMS_GATEWAY_URL: ${AYLAL_SMS_GATEWAY_URL:-}
       AYLAL_SMS_GATEWAY_KEY: ${AYLAL_SMS_GATEWAY_KEY:-}
       AYLAL_ENABLE_TEST_OTP: ${AYLAL_ENABLE_TEST_OTP:-}
+      AYLAL_TILES_BASE_URL: ${AYLAL_TILES_BASE_URL:-}
       # exact address of Caddy on the dedicated edge network; empty = forwarded headers ignored (fail closed)
       AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-172.29.77.2/32}
     networks:

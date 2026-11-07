@@ -1,0 +1,230 @@
+[
+ {
+  "name": "valid square",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.598999999999999,
+    33.57
+   ],
+   [
+    -7.598999999999999,
+    33.571
+   ],
+   [
+    -7.6,
+    33.571
+   ],
+   [
+    -7.6,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": true
+  }
+ },
+ {
+  "name": "open ring is closed automatically",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.598999999999999,
+    33.57
+   ],
+   [
+    -7.598999999999999,
+    33.571
+   ],
+   [
+    -7.6,
+    33.571
+   ]
+  ],
+  "expected": {
+   "ok": true
+  }
+ },
+ {
+  "name": "bow tie crosses once",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.598,
+    33.572
+   ],
+   [
+    -7.598,
+    33.57
+   ],
+   [
+    -7.6,
+    33.572
+   ],
+   [
+    -7.6,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "self_intersection",
+   "crossings": 1
+  }
+ },
+ {
+  "name": "two vertices",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.59,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "too_few_vertices"
+  }
+ },
+ {
+  "name": "three points with a duplicate are two distinct vertices",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.59,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "too_few_vertices"
+  }
+ },
+ {
+  "name": "longitude out of range",
+  "ring": [
+   [
+    200,
+    33.57
+   ],
+   [
+    200.001,
+    33.57
+   ],
+   [
+    200.001,
+    33.571
+   ],
+   [
+    200,
+    33.571
+   ],
+   [
+    200,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "invalid_coordinates"
+  }
+ },
+ {
+  "name": "latitude out of range",
+  "ring": [
+   [
+    -7.6,
+    95
+   ],
+   [
+    -7.598999999999999,
+    95
+   ],
+   [
+    -7.598999999999999,
+    95.001
+   ],
+   [
+    -7.6,
+    95.001
+   ],
+   [
+    -7.6,
+    95
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "invalid_coordinates"
+  }
+ },
+ {
+  "name": "collinear points have no area",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.599,
+    33.57
+   ],
+   [
+    -7.598,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "area_too_small"
+  }
+ },
+ {
+  "name": "under one square metre",
+  "ring": [
+   [
+    -7.6,
+    33.57
+   ],
+   [
+    -7.599995,
+    33.57
+   ],
+   [
+    -7.599995,
+    33.570005
+   ],
+   [
+    -7.6,
+    33.570005
+   ],
+   [
+    -7.6,
+    33.57
+   ]
+  ],
+  "expected": {
+   "ok": false,
+   "code": "area_too_small"
+  }
+ }
+]

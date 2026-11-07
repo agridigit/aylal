@@ -1,0 +1,31 @@
+{
+  "draw": {
+    "taps": "لمس كل ركن د القطعة",
+    "gps": "مشي فجنب حدود القطعة",
+    "undo": "رجع آخر نقطة",
+    "close": "سد القطعة",
+    "crossing_help": "الخطوط ما خاصهومش يتقاطعو. بدل بلاصة النقطة الغالطة ولا مسحها."
+  },
+  "gps": {
+    "precision": {
+      "good": "GPS مزيان",
+      "medium": "GPS وسط",
+      "poor": "GPS ضعيف، قرب لبلاصة مكشوفة"
+    },
+    "accuracy": "الدقة: {{meters}} م"
+  },
+  "errors": {
+    "self_intersection": "خطوط القطعة كيتقاطعو",
+    "too_few_vertices": "خاص 3 نقاط على الأقل",
+    "too_many_vertices": "بزاف د النقاط",
+    "area_too_small": "القطعة صغيرة بزاف",
+    "area_too_large": "القطعة كبيرة بزاف",
+    "outside_morocco": "القطعة برا المغرب",
+    "field_limit_reached": "وصلتي لحد 500 قطعة",
+    "invalid_coordinates": "إحداثيات ماشي صحاح",
+    "not_a_polygon": "الشكل ماشي مضلع",
+    "block_outside_field": "البلوك خارج من القطعة",
+    "block_overlap": "هاد البلوك داخل فبلوك آخر",
+    "merge_not_contiguous": "القطع ماشي ملصوقين"
+  }
+}

@@ -1,0 +1,160 @@
+[
+ {
+  "fn": "canStartSeason",
+  "name": "no active season",
+  "active": [],
+  "cropId": "olive",
+  "expected": "ok"
+ },
+ {
+  "fn": "canStartSeason",
+  "name": "another crop is active (intercropping)",
+  "active": [
+   {
+    "crop_id": "olive"
+   }
+  ],
+  "cropId": "wheat",
+  "expected": "ok"
+ },
+ {
+  "fn": "canStartSeason",
+  "name": "same crop already active",
+  "active": [
+   {
+    "crop_id": "olive"
+   },
+   {
+    "crop_id": "wheat"
+   }
+  ],
+  "cropId": "wheat",
+  "expected": "season_already_active"
+ },
+ {
+  "fn": "seasonDate",
+  "name": "perennial with planting year",
+  "cycle": "perennial",
+  "input": {
+   "planting_year": 2015
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": true
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "perennial next year is allowed",
+  "cycle": "perennial",
+  "input": {
+   "planting_year": 2027
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": true
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "perennial two years ahead is refused",
+  "cycle": "perennial",
+  "input": {
+   "planting_year": 2028
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "planting_year_out_of_range"
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "perennial before 1900 is refused",
+  "cycle": "perennial",
+  "input": {
+   "planting_year": 1899
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "planting_year_out_of_range"
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "perennial with a sowing date only",
+  "cycle": "perennial",
+  "input": {
+   "sowing_date": "2026-03-01"
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "wrong_date_kind"
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "annual with a sowing date",
+  "cycle": "annual",
+  "input": {
+   "sowing_date": "2026-03-01"
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": true
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "annual with a planting year only",
+  "cycle": "annual",
+  "input": {
+   "planting_year": 2020
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "wrong_date_kind"
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "annual with an impossible date",
+  "cycle": "annual",
+  "input": {
+   "sowing_date": "2026-02-30"
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "sowing_date_invalid"
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "both dates are never allowed",
+  "cycle": "annual",
+  "input": {
+   "planting_year": 2020,
+   "sowing_date": "2026-03-01"
+  },
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "both_dates_forbidden"
+  }
+ },
+ {
+  "fn": "seasonDate",
+  "name": "no date at all",
+  "cycle": "annual",
+  "input": {},
+  "today": "2026-11-07",
+  "expected": {
+   "ok": false,
+   "code": "date_required"
+  }
+ }
+]
