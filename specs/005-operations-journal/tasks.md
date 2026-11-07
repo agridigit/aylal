@@ -70,10 +70,10 @@
 
 ### Tests RED d'abord
 
-- [ ] T032 [P] [US1] RED unitaire R1-A1, R1-A3 : `packages/domain/tests/allocation.test.ts` (étendu : prorata, affichage de la répartition) et `apps/mobile/src/operations/__tests__/operationFormViewModel.test.ts` (seuls type, parcelle, date obligatoires ; répartition affichée ; 9 types).
-- [ ] T033 [P] [US1] RED intégration R1-A1, R1-A2, R1-A3, R1-A5 : `services/api/tests/integration/test_f6_operations_create.py` (création minimale 3 champs, 9 types, répartition au prorata, journal chronologique paginé, `applied_ops` idempotent) et `services/api/tests/integration/test_f6_offline_sync.py` (30 jours hors ligne, aucune perte, conflit champ par champ : deux versions dans `operation_corrections`, CL).
-- [ ] T034 [P] [US1] RED contrat R1 : `services/api/tests/contract/test_f6_operations_contract.py` (`POST/GET /v1/farms/{farm_id}/operations`, schémas et codes de `contracts/openapi.yaml`).
-- [ ] T035 [US1] RED bout en bout (API) R1-A2 : `services/api/tests/e2e/test_f6_offline_operations_e2e.py` (pile Docker complète : saisie locale -> `/v1/sync/upload` -> `operation_parcels` côté lecture, sans perte ; SC-004 : file de 30 jours d'opérations hors ligne (FR-016) rejouée sans perte ni doublon, idempotence par id client ; FR-015 : les opérations `done` sont lisibles par un point de lecture stable pour F8/F4, les `planned`/`cancelled` exclues).
+- [x] T032 [P] [US1] RED unitaire R1-A1, R1-A3 : `packages/domain/tests/allocation.test.ts` (étendu : prorata, affichage de la répartition) et `apps/mobile/src/operations/__tests__/operationFormViewModel.test.ts` (seuls type, parcelle, date obligatoires ; répartition affichée ; 9 types).
+- [x] T033 [P] [US1] RED intégration R1-A1, R1-A2, R1-A3, R1-A5 : `services/api/tests/integration/test_f6_operations_create.py` (création minimale 3 champs, 9 types, répartition au prorata, journal chronologique paginé, `applied_ops` idempotent) et `services/api/tests/integration/test_f6_offline_sync.py` (30 jours hors ligne, aucune perte, conflit champ par champ : deux versions dans `operation_corrections`, CL).
+- [x] T034 [P] [US1] RED contrat R1 : `services/api/tests/contract/test_f6_operations_contract.py` (`POST/GET /v1/farms/{farm_id}/operations`, schémas et codes de `contracts/openapi.yaml`).
+- [x] T035 [US1] RED bout en bout (API) R1-A2 : `services/api/tests/e2e/test_f6_offline_operations_e2e.py` (pile Docker complète : saisie locale -> `/v1/sync/upload` -> `operation_parcels` côté lecture, sans perte ; SC-004 : file de 30 jours d'opérations hors ligne (FR-016) rejouée sans perte ni doublon, idempotence par id client ; FR-015 : les opérations `done` sont lisibles par un point de lecture stable pour F8/F4, les `planned`/`cancelled` exclues).
 
 ### Implémentation GREEN (non-écran)
 
@@ -93,11 +93,11 @@
 
 ### Tests RED d'abord
 
-- [ ] T042 [P] [US2] RED unitaire R2-A3, R2-A4, R2-A5, R2-A7 + CL : vecteur `packages/domain/vectors/f6_phyto_controls.json`, `packages/domain/tests/phyto-controls.test.ts`, miroir `services/api/tests/unit/test_f6_phyto_controls.py` (avertissements `not_authorized_for_crop`, `dose_above_max`, `max_applications_reached`, `dar_unknown`, `free_product_unchecked` ; jamais bloquant ; contrôle par parcelle sur cultures différentes ; produit/dose jamais exigés ; conversion d'unité).
-- [ ] T043 [P] [US2] RED intégration R2-A1, R2-A3 à R2-A7 : `services/api/tests/integration/test_f6_phyto_controls.py` (le serveur **recalcule** et ignore les avertissements du client ; décompte par campagne et par produit ; avertissements conservés dans `registry_entries` ; produit libre « non contrôlé ») et `services/api/tests/integration/test_f6_catalog.py` (recherche par nom avec matière active, homologation expirée cachée mais conservée, date de version du catalogue).
-- [ ] T044 [P] [US2] RED contrat R2 : `services/api/tests/contract/test_f6_phyto_contract.py` (`/v1/phyto-products`, `/v1/farms/{farm_id}/phyto-products/free`, analyse d'étiquette).
-- [ ] T045 [P] [US2] RED intégration R2-A2 (port `LabelRecognizer`) : `services/api/tests/integration/test_f6_label_port.py` (`AYLAL_VISION_URL` vide -> indisponible, repli par nom ; reconnaissance proposée à confirmation, jamais enregistrée seule ; photo <= 3 Mo, signature JPEG/WebP).
-- [ ] T046 [US2] RED bout en bout (API) SC-002 : `services/api/tests/e2e/test_f6_phyto_warnings_e2e.py` (dose > max, culture non autorisée, applications max : 3 avertissements dans le registre).
+- [x] T042 [P] [US2] RED unitaire R2-A3, R2-A4, R2-A5, R2-A7 + CL : vecteur `packages/domain/vectors/f6_phyto_controls.json`, `packages/domain/tests/phyto-controls.test.ts`, miroir `services/api/tests/unit/test_f6_phyto_controls.py` (avertissements `not_authorized_for_crop`, `dose_above_max`, `max_applications_reached`, `dar_unknown`, `free_product_unchecked` ; jamais bloquant ; contrôle par parcelle sur cultures différentes ; produit/dose jamais exigés ; conversion d'unité).
+- [x] T043 [P] [US2] RED intégration R2-A1, R2-A3 à R2-A7 : `services/api/tests/integration/test_f6_phyto_controls.py` (le serveur **recalcule** et ignore les avertissements du client ; décompte par campagne et par produit ; avertissements conservés dans `registry_entries` ; produit libre « non contrôlé ») et `services/api/tests/integration/test_f6_catalog.py` (recherche par nom avec matière active, homologation expirée cachée mais conservée, date de version du catalogue).
+- [x] T044 [P] [US2] RED contrat R2 : `services/api/tests/contract/test_f6_phyto_contract.py` (`/v1/phyto-products`, `/v1/farms/{farm_id}/phyto-products/free`, analyse d'étiquette).
+- [x] T045 [P] [US2] RED intégration R2-A2 (port `LabelRecognizer`) : `services/api/tests/integration/test_f6_label_port.py` (`AYLAL_VISION_URL` vide -> indisponible, repli par nom ; reconnaissance proposée à confirmation, jamais enregistrée seule ; photo <= 3 Mo, signature JPEG/WebP).
+- [x] T046 [US2] RED bout en bout (API) SC-002 : `services/api/tests/e2e/test_f6_phyto_warnings_e2e.py` (dose > max, culture non autorisée, applications max : 3 avertissements dans le registre).
 
 ### Implémentation GREEN (non-écran)
 
@@ -116,9 +116,9 @@
 
 **Test indépendant** : plusieurs traitements aux DAR différents. **Dépend de** : Récit 2.
 
-- [ ] T054 [P] [US3] RED unitaire R3-A1 à R3-A4 : vecteur `packages/domain/vectors/f6_harvest_date.json`, `packages/domain/tests/harvest-date.test.ts`, miroir `services/api/tests/unit/test_f6_harvest_date.py` (DAR le plus long restant, plusieurs produits, aucun traitement = « récoltable dès maintenant », ignore les écritures annulées du registre).
-- [ ] T055 [P] [US3] RED intégration R3-A4 : `services/api/tests/integration/test_f6_harvest_date.py` (correction ou annulation -> recalcul via `registry_current` ; ouvrier : parcelle archivée/non attribuée -> 404, parité T013) et contrat `services/api/tests/contract/test_f6_harvest_contract.py`.
-- [ ] T056 [US3] RED e2e (API) SC-003 : `services/api/tests/e2e/test_f6_harvest_date_e2e.py` (DAR 21 j -> J+21 ; deux produits -> le plus long).
+- [x] T054 [P] [US3] RED unitaire R3-A1 à R3-A4 : vecteur `packages/domain/vectors/f6_harvest_date.json`, `packages/domain/tests/harvest-date.test.ts`, miroir `services/api/tests/unit/test_f6_harvest_date.py` (DAR le plus long restant, plusieurs produits, aucun traitement = « récoltable dès maintenant », ignore les écritures annulées du registre).
+- [x] T055 [P] [US3] RED intégration R3-A4 : `services/api/tests/integration/test_f6_harvest_date.py` (correction ou annulation -> recalcul via `registry_current` ; ouvrier : parcelle archivée/non attribuée -> 404, parité T013) et contrat `services/api/tests/contract/test_f6_harvest_contract.py`.
+- [x] T056 [US3] RED e2e (API) SC-003 : `services/api/tests/e2e/test_f6_harvest_date_e2e.py` (DAR 21 j -> J+21 ; deux produits -> le plus long).
 - [ ] T057 [US3] GREEN : `packages/domain/src/harvest-date.ts`, `services/api/app/domain/harvest_date.py`, route DAR dans `services/api/app/routers/operations.py`, calcul local `apps/mobile/src/operations/viewModels/harvestDate.ts` ; fait passer T054 à T056.
 - [ ] T058 [US3] [écran] RED puis GREEN F6-E5 `apps/mobile/src/screens/HarvestDate/` (+ `__tests__`, Maestro `apps/mobile/maestro/harvest_date.yaml`), 4 états, RTL ; dépend de T004 + fusion 004.
 
@@ -126,10 +126,10 @@
 
 **Test indépendant** : planifier pour demain, rappel, passage à « faite ». **Dépend de** : Récit 1.
 
-- [ ] T059 [P] [US4] RED unitaire R4-A1, R4-A4 : `packages/domain/tests/operation.test.ts` (date future -> `planned`, « en retard » dérivé, report/réaliser/annuler) et `apps/mobile/src/operations/__tests__/reminders.test.ts` (notifications locales programmées hors ligne, aucune dépendance push tiers).
-- [ ] T060 [P] [US4] RED intégration R4-A1, R4-A3, R4-A4 : `services/api/tests/integration/test_f6_planned.py` (planifiée, `mark_done` -> `done` compté dans journal, DAR et coûts, annulation, plafond 500 planifiées, ouvrier : ses propres planifiées seulement) et `services/api/tests/integration/test_f6_mark_overdue.py` (worker `mark_overdue_operations`).
-- [ ] T061 [P] [US4] RED contrat R4 : `services/api/tests/contract/test_f6_planned_contract.py`.
-- [ ] T062 [US4] RED e2e (API) R4-A2, R4-A3 : `services/api/tests/e2e/test_f6_planned_e2e.py`.
+- [x] T059 [P] [US4] RED unitaire R4-A1, R4-A4 : `packages/domain/tests/operation.test.ts` (date future -> `planned`, « en retard » dérivé, report/réaliser/annuler) et `apps/mobile/src/operations/__tests__/reminders.test.ts` (notifications locales programmées hors ligne, aucune dépendance push tiers).
+- [x] T060 [P] [US4] RED intégration R4-A1, R4-A3, R4-A4 : `services/api/tests/integration/test_f6_planned.py` (planifiée, `mark_done` -> `done` compté dans journal, DAR et coûts, annulation, plafond 500 planifiées, ouvrier : ses propres planifiées seulement) et `services/api/tests/integration/test_f6_mark_overdue.py` (worker `mark_overdue_operations`).
+- [x] T061 [P] [US4] RED contrat R4 : `services/api/tests/contract/test_f6_planned_contract.py`.
+- [x] T062 [US4] RED e2e (API) R4-A2, R4-A3 : `services/api/tests/e2e/test_f6_planned_e2e.py`.
 - [ ] T063 [US4] GREEN : transitions dans `services/api/app/operations/service.py`, `services/workers/tasks/mark_overdue_operations.py`, `apps/mobile/src/operations/reminders.ts` ; fait passer T059 à T062.
 - [ ] T064 [US4] [écran] RED puis GREEN F6-E6 `apps/mobile/src/screens/PlannedOperations/` (+ `__tests__`, Maestro `apps/mobile/maestro/planned_reminder.yaml`) ; dépend de T004 + fusion 004.
 

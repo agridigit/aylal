@@ -25,7 +25,7 @@ from tests.helpers import auth, sql
 
 TABLES = (
     "sync_conflicts, applied_ops, trial_records, worker_parcels, invitations, parcels,"
-    " farm_members, farms, refresh_tokens, consents, otp_challenges, users"
+    " farm_members, farms, refresh_tokens, consents, otp_challenges, users, phyto_products, catalog_versions"
 )
 DEFAULT_DB_URL = "postgresql://aylal:aylal_dev@db:5432/aylal"
 
