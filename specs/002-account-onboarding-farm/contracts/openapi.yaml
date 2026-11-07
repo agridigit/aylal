@@ -12,6 +12,7 @@ paths:
   /v1/me/consents/{purpose}: { delete: { summary: Retirer, responses: { "204": {description: ok} } } }
   /v1/me/export: { post: { summary: Export complet asynchrone, responses: { "202": {description: ok} } } }
   /v1/me/deletion: { post: { summary: Demander la suppression (30 j), responses: { "202": {description: ok} } } }
+  /v1/me/deletion/impact: { get: { summary: Fermes possédées avec d'autres membres, responses: { "200": {description: ok} } } }
   /v1/farms: { get: { summary: Mes fermes avec rôle, responses: { "200": {description: ok} } }, post: { summary: Créer (propriétaire = utilisateur courant), responses: { "201": {description: ok}, "422": {description: nom ou emplacement manquant} } } }
   /v1/farms/{farm_id}: { get: { summary: Détail, responses: { "200": {description: ok}, "404": {description: non membre ou inexistante} } }, patch: { summary: Modifier (propriétaire/gestionnaire), responses: { "200": {description: ok}, "403": {description: droit insuffisant}, "404": {description: non membre} } } }
   /v1/farms/{farm_id}/members: { get: { summary: Équipe, responses: { "200": {description: ok}, "404": {description: non membre} } } }

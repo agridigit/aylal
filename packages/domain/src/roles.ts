@@ -21,3 +21,15 @@ export const MATRIX: Record<string, readonly Role[]> = {
 export function can(role: string, action: string): boolean {
   return (MATRIX[action] ?? []).includes(role as Role);
 }
+
+export const INVITABLE_ROLES = ["manager", "worker"] as const;
+
+/** Only the owner removes members, and never an owner. */
+export function canRemoveMember(actor: string, target: string): boolean {
+  return can(actor, "member.remove") && target !== "owner";
+}
+
+/** Staff assigns parcels, to workers only. */
+export function canAssignParcelsTo(actor: string, target: string): boolean {
+  return can(actor, "parcels.assign") && target === "worker";
+}

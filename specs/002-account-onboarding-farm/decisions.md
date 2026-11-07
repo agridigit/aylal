@@ -61,3 +61,9 @@
   - Mobile : `apps/mobile/src/farms/activeFarm.ts` (`createActiveFarm(store{get,set,remove})` avec `set`, `resolve(farms)` retombant sur une ferme membre, `filterByFarm(rows, farmId|null)`).
 - Intégration réelle SqlAccountRepo / SqlInvitationRepo : `services/workers/tests/integration/test_sql_account_repo.py` contre la base de la pile (migrée par `migrate`), lignes créées et nettoyées par le test ; saute (skip) si la base est injoignable (limite : `make test-api` démarre la base via api-test avant le worker). Ce test échoue aussi à l'import tant que `expire_invitations` n'existe pas.
 - Hors périmètre de ces tests : données de `trial_records` écrites par l'utilisateur supprimé (anonymisation à décider au GREEN, notée ici) ; hébergement Maroc : aucune donnée sortante (aucun test réseau).
+
+# Décisions GREEN récits 8, 5, 6 (T057, T062, T069)
+
+- `infra/powersync/sync-rules.yaml` : le seau personnel `farm_data` (test F0 T037) devient le seau du personnel (propriétaire/gestionnaire, `removed_at IS NULL`) et `farm_worker` est ajouté pour l'ouvrier. Le contrat `specs/001-foundations/contracts/powersync-sync-rules.yaml` est aligné (le test d'identité T037 reste inchangé). Pas de seau `user_own` : les tests T065 exigent `farm_members` dans les paramètres de tout seau non ouvrier.
+- `current_user` vérifie `users.status` avec sa propre session (une session partagée ouvrirait la transaction que `sync/upload` démarre) ; un utilisateur absent de la table reste accepté (fixtures F0).
+- `POST /v1/me/export` renvoie l'`export_id` ; la génération asynchrone côté worker et la livraison du fichier restent à faire (`build_export` est prêt). Les enregistrements `trial_records` de l'utilisateur supprimé sont conservés (pas de FK), anonymisation à décider.

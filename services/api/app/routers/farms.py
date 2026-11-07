@@ -19,6 +19,7 @@ from app.auth.farm_context import NOT_FOUND, FarmContext, farm_context, require
 from app.db.models import Farm, FarmMember, Invitation, Parcel, User, WorkerParcel
 from app.db.session import get_session
 from app.domain.phone import normalize_phone
+from app.domain.roles import can_assign_parcels_to, can_remove_member
 from app.domain.validation import validate
 
 router = APIRouter(prefix="/farms")
@@ -196,7 +197,7 @@ async def remove_member(
     user_id: uuid.UUID, ctx: FarmContext = Depends(_MEMBER_REMOVE)
 ) -> Response:
     member = await _active_member(ctx.session, ctx.farm_id, user_id)
-    if member.role == "owner":
+    if not can_remove_member(ctx.role, member.role):
         raise HTTPException(status_code=403, detail="owner_not_removable")
     member.removed_at = func.now()
     await ctx.session.execute(
@@ -213,7 +214,7 @@ async def assign_parcels(
     user_id: uuid.UUID, body: ParcelAssignment, ctx: FarmContext = Depends(_PARCELS_ASSIGN)
 ) -> dict[str, Any]:
     member = await _active_member(ctx.session, ctx.farm_id, user_id)
-    if member.role != "worker":
+    if not can_assign_parcels_to(ctx.role, member.role):
         raise HTTPException(status_code=422, detail="not_a_worker")
     wanted = set(body.parcel_ids)
     if wanted:

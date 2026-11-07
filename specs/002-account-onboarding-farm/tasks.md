@@ -105,7 +105,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T056 [P] E2E : `services/api/tests/e2e/test_account_deletion_e2e.py` (Maestro `delete_account.yaml` bloqué par T004, voir decisions.md) (R8-A1 à A3).
 
 ### Implémentation
-- [ ] T057 `services/api/app/routers/account.py`, `services/workers/tasks/purge_deleted_accounts.py`, export asynchrone.
+- [x] T057 `services/api/app/routers/account.py`, `services/workers/tasks/purge_deleted_accounts.py`, export asynchrone.
 - [ ] T058 `apps/mobile/src/screens/DeleteAccount/`, `apps/mobile/src/screens/Settings/` (langue, code d'accès, déconnexion, E11 ; tests écrits avant dans `apps/mobile/src/screens/Settings/__tests__/`), textes `account.json`.
 
 **Point de contrôle P1** : tous les scénarios P1 couverts par au moins un test, `make test` vert.
@@ -131,7 +131,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T068 [P] E2E : `services/api/tests/e2e/test_team_e2e.py` (Maestro `team_invite.yaml` bloqué par T004, voir decisions.md) (R6-A1 à A5).
 
 ### Implémentation
-- [ ] T069 `services/api/app/routers/{members.py,invitations.py}`, `services/workers/tasks/expire_invitations.py`, `infra/powersync/sync-rules.yaml`.
+- [x] T069 `services/api/app/routers/{members.py,invitations.py}`, `services/workers/tasks/expire_invitations.py`, `infra/powersync/sync-rules.yaml`.
 - [ ] T070 `apps/mobile/src/screens/{Team,Invite,WorkerAccess}/`, textes `team.json`.
 
 ## Phase 10 : Finition

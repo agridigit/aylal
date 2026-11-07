@@ -13,7 +13,7 @@ from app.auth import current_user, issue_token, sessions
 from app.auth.otp import TEST_CODE, ConsoleSender, check_code, hash_code, new_code
 from app.auth.tokens import ACCESS_TTL
 from app.config import get_settings
-from app.db.models import FarmMember, OtpChallenge, RefreshToken, User
+from app.db.models import Farm, FarmMember, Invitation, OtpChallenge, RefreshToken, User
 from app.db.session import get_session
 from app.domain.otp_policy import (
     OTP_LOCK_SECONDS,
@@ -24,6 +24,7 @@ from app.domain.otp_policy import (
     register_failure,
 )
 from app.domain.phone import normalize_phone
+from app.domain.roles import INVITABLE_ROLES
 
 router = APIRouter(prefix="/auth")
 OTP_TTL = dt.timedelta(minutes=5)
@@ -200,6 +201,7 @@ async def verify_code(
         user = User(id=uuid.uuid4(), phone_e164=phone, status="pending")
         session.add(user)
         await session.flush()
+    await _honor_invitations(session, user, now)
     family = uuid.uuid4()
     raw = sessions.new_token()
     session.add(
@@ -208,6 +210,31 @@ async def verify_code(
     payload = await _session_payload(session, user, raw)
     await session.commit()
     return payload
+
+
+async def _honor_invitations(session: AsyncSession, user: User, now: dt.datetime) -> None:
+    """Single-use: each pending, unexpired invitation of the verified number is consumed once."""
+    pending = (
+        await session.execute(
+            select(Invitation)
+            .join(Farm, Farm.id == Invitation.farm_id)
+            .where(
+                Invitation.phone_e164 == user.phone_e164, Invitation.status == "pending",
+                Invitation.expires_at > now, Farm.deleted_at.is_(None),
+            )
+            .with_for_update(of=Invitation)
+        )
+    ).scalars().all()
+    for inv in pending:
+        inv.status = "accepted"
+        if inv.role not in INVITABLE_ROLES:  # owner is never granted through an invitation
+            continue
+        member = await session.get(FarmMember, (inv.farm_id, user.id))
+        if member is None:
+            session.add(FarmMember(farm_id=inv.farm_id, user_id=user.id, role=inv.role))
+        elif member.removed_at is not None:
+            member.removed_at, member.role = None, inv.role
+    await session.flush()
 
 
 async def _session_payload(session: AsyncSession, user: User, refresh: str) -> dict[str, Any]:

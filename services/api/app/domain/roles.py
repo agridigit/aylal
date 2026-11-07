@@ -19,3 +19,15 @@ MATRIX: dict[str, frozenset[str]] = {
 
 def can(role: str, action: str) -> bool:
     return role in MATRIX.get(action, frozenset())
+
+INVITABLE_ROLES = ("manager", "worker")  # owner is never invitable
+
+
+def can_remove_member(actor: str, target: str) -> bool:
+    """Only the owner removes members, and never an owner."""
+    return can(actor, "member.remove") and target != "owner"
+
+
+def can_assign_parcels_to(actor: str, target: str) -> bool:
+    """Staff assigns parcels, to workers only."""
+    return can(actor, "parcels.assign") and target == "worker"

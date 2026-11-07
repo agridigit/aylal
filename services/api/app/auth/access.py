@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.tokens import verify_token
 from app.config import get_settings
-from app.db.models import Farm, FarmMember
+from app.db.models import Farm, FarmMember, User
+from app.db.session import sessionmaker
 
 Role = Literal["owner", "manager", "worker"]
 WRITE_ROLES = {"owner", "manager"}  # trial-record writers (a worker records only via F2 parcels)
@@ -18,7 +19,11 @@ async def current_user(authorization: str | None = Header(default=None)) -> uuid
     if authorization and authorization.lower().startswith("bearer "):
         claims = verify_token(authorization[7:].strip(), get_settings().jwt_secret)
         if claims:
-            return uuid.UUID(claims["sub"])
+            user_id = uuid.UUID(claims["sub"])
+            async with sessionmaker() as own:  # own session: never opens a transaction on the request's
+                status = (await own.execute(select(User.status).where(User.id == user_id))).scalar_one_or_none()
+            if status != "deletion_requested":  # a deletion request ends every session
+                return user_id
     raise HTTPException(status_code=401, detail="unauthorized")
 
 
