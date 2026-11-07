@@ -158,11 +158,11 @@
 ### Implémentation (GREEN)
 
 - [x] T086 [US2] Créer `packages/i18n/package.json`, `packages/i18n/src/index.ts` (i18next, repli `fr`) et `packages/i18n/locales/{ary,ary-Latn,ar,fr}.json` selon `contracts/i18n-contract.md` (textes provisoires mais complets)
-- [ ] T087 [US2] Implémenter l'écran `apps/mobile/src/screens/Home/` (4 états via `packages/ui`, RTL, sélecteur de langue, bouton de lecture vocale) et `apps/mobile/app/_layout.tsx`, `apps/mobile/app/index.tsx` [FR-006]
+- [x] T087 [US2] Implémenter l'écran `apps/mobile/src/screens/Home/` (4 états via `packages/ui`, RTL, sélecteur de langue, bouton de lecture vocale) et `apps/mobile/app/_layout.tsx`, `apps/mobile/app/index.tsx` [FR-006]
 - [x] T088 [P] [US2] Implémenter `apps/mobile/src/voice/speak.ts` (expo-speech)
 - [x] T089 [P] [US2] Implémenter `apps/mobile/src/perf/startupMark.ts` (Hermes, marque de démarrage)
-- [ ] T090 [P] [US2] Implémenter la persistance de `locale`/`theme` dans `app_settings` : `apps/mobile/src/settings/appSettings.ts`
-- [ ] T091 [US2] Commit `feat(foundations): green - home screen` ; REFACTOR `refactor(foundations): home screen`
+- [x] T090 [P] [US2] Implémenter la persistance de `locale`/`theme` dans `app_settings` : `apps/mobile/src/settings/appSettings.ts`
+- [x] T091 [US2] Commit `feat(foundations): green - home screen` ; REFACTOR `refactor(foundations): home screen`
 
 **Point de contrôle** : accueil validé en 4 langues, 4 états, RTL.
 
