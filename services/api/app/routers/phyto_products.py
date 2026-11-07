@@ -27,7 +27,8 @@ async def search_products(
         await session.execute(
             text(
                 "SELECT p.id, p.name, p.registration_no, p.holder, p.active_ingredients, p.expired_at IS NOT NULL AS expired"
-                " FROM phyto_products p WHERE p.expired_at IS NULL AND (p.name_normalized LIKE :prefix ESCAPE '\\'"
+                " FROM phyto_products p WHERE p.expired_at IS NULL AND p.catalog_version_id = ("
+                "SELECT id FROM catalog_versions ORDER BY imported_at DESC, id LIMIT 1) AND (p.name_normalized LIKE :prefix ESCAPE '\\'"
                 " OR p.name_normalized LIKE :infix ESCAPE '\\' OR EXISTS (SELECT 1 FROM jsonb_array_elements(p.active_ingredients) a"
                 " WHERE lower(a->>'name') LIKE :infix ESCAPE '\\'))"
                 " AND (CAST(:crop AS text) IS NULL OR EXISTS (SELECT 1 FROM phyto_product_uses u WHERE u.product_id = p.id"
