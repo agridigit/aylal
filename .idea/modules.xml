@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/aylal.iml" filepath="$PROJECT_DIR$/.idea/aylal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/aylal-api.iml" filepath="$PROJECT_DIR$/.idea/aylal-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/aylal-workers.iml" filepath="$PROJECT_DIR$/.idea/aylal-workers.iml" />
     </modules>
   </component>
 </project>

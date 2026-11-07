@@ -103,10 +103,10 @@
 - [x] T053 [P] [US3] Implémenter `services/api/app/auth/` : jeton d'essai et contrôle ferme/rôle (`owner`/`editor`/`viewer`) (FR-018)
 - [x] T054 [US3] Implémenter `services/api/app/sync/apply.py` (envoi idempotent via `applied_ops`, validation partagée, résolution de `packages/domain` répliquée selon R6, écriture `sync_conflicts`) et `services/api/app/routers/sync.py` (dont `POST /sync/conflicts/{id}/acknowledge` : résolution du conflit vers `sync_conflicts.farm_id`, contrôle membre `editor`/`owner` de cette ferme, 404 si autre ferme, fait passer T040a)
 - [x] T055 [P] [US3] Créer `infra/powersync/sync-rules.yaml` (copie conforme du contrat) et brancher `powersync` dans `docker-compose.yml`
-- [x] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
+- [ ] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
 - [x] T057 [US3] Créer le shell mobile `apps/mobile/{package.json,app.json,babel.config.js,jest.config.js}` et `apps/mobile/src/sync/{db.ts,connector.ts,syncState.ts,encryptionKey.ts,storageWarning.ts}` (PowerSync + SQLCipher, expo-secure-store)
 - [x] T058 [P] [US3] Implémenter `apps/mobile/src/telemetry/telemetry.ts` (anonyme, désactivable, `telemetry_enabled`)
-- [x] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
+- [ ] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
 - [x] T060 [US3] Commit `feat(foundations): green - offline sync` ; REFACTOR `refactor(foundations): offline sync`
 
 **Point de contrôle** : 1 000 enregistrements / 30 jours : 0 perte, 0 doublon.
