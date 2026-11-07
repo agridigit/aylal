@@ -178,9 +178,9 @@
 
 ### Implémentation (GREEN)
 
-- [ ] T097 [US5] Créer `infra/docker/mermaid.Dockerfile` et compléter `scripts/render-diagrams.sh` (rendu SVG + PNG, ignore les rendus à jour, nomme le fichier invalide) ; brancher `make diagrams`
-- [ ] T098 [P] [US5] Ajouter les fixtures `tests/diagrams/fixtures/{valid,invalid}/*.mmd`
-- [ ] T099 [US5] Commit `feat(foundations): green - diagrams` ; REFACTOR `refactor(foundations): diagrams`
+- [x] T097 [US5] Créer `infra/docker/mermaid.Dockerfile` et compléter `scripts/render-diagrams.sh` (rendu SVG + PNG, ignore les rendus à jour, nomme le fichier invalide) ; brancher `make diagrams`
+- [x] T098 [P] [US5] Ajouter les fixtures `tests/diagrams/fixtures/{valid,invalid}/*.mmd`
+- [x] T099 [US5] Commit `feat(foundations): green - diagrams` ; REFACTOR `refactor(foundations): diagrams`
 
 ## Phase 8 : Récit 6 — Prototype et mesures sur Android 2 Go (P2)
 
