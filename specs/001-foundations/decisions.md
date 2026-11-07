@@ -34,3 +34,8 @@
 - L'API n'expose pas de JWKS : PowerSync valide les jetons HS256 avec une clé inline dérivée de `AYLAL_JWT_SECRET` (entrypoint compose). Sans secret, clé aléatoire (aucun jeton valide).
 - `@powersync/op-sqlite` abandonné (incompatible avec `@powersync/react-native` 2.4 qui embarque l'adaptateur op-sqlite).
 - Identité ferme/utilisateur : constantes du seed, builds E2E uniquement. Opération rejetée par l'API : reste en file (pas de perte), à traiter en F suivante.
+
+## T110 : device_measures sur émulateur
+- `device_measures.yaml` : ajout de `- back` entre `home.openMap` et `home.openShowcase` (l'écran Map n'a pas de bouton vers la démo ; la navigation de la spec revient à l'accueil). Commentaire « NON EXÉCUTABLE ICI » retiré.
+- Mesures PROVISOIRES (émulateur aylal-2go, pas l'appareil 2 Go réel) : démarrage = du chargement JS à l'affichage de l'accueil ; carte = du tap à l'écran Map monté ; fps = compteur requestAnimationFrame côté JS pendant l'animation de la démo.
+- `Map.tsx` reste la vue existante (testID `map.parcels.N`, pas de MapLibre natif ni fond de carte distant) ; les 50 parcelles viennent d'un jeu local dans les builds E2E uniquement, la lecture de la table locale `parcels` reste à brancher.

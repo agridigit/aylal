@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNetworkState } from "expo-network";
 import { Home } from "../src/screens/Home/Home";
 import { debugStateFrom } from "../src/screens/Home/debugState";
+import { mapOpenTimer } from "../src/perf/measureSession";
 import { useLocale } from "./_layout";
 
 const E2E_DEBUG = process.env.EXPO_PUBLIC_E2E === "1";
@@ -24,6 +25,11 @@ export default function Index() {
       onRetry={() => {}}
       onAddItem={() => {}}
       onOpenTrialRecord={() => router.push("/trial-record")}
+      onOpenMap={E2E_DEBUG ? () => {
+            mapOpenTimer.start();
+            router.push("/map");
+          } : undefined}
+      onOpenShowcase={E2E_DEBUG ? () => router.push("/showcase") : undefined}
     />
   );
 }

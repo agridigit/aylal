@@ -61,4 +61,14 @@ PY
 
 # E2E_NO_BUILD=1 reuses an existing APK (local iteration only; make check always rebuilds).
 if [ "${E2E_NO_BUILD:-}" = "1" ] && [ -f "$APK" ]; then echo "e2e: APK existant réutilisé ($APK)"; else make apk; fi
-$DC --profile e2e run --rm -e ADB_SERVER_HOST=host.docker.internal e2e e2e-run "$APK" "$FLOWS"
+# Fresh logcat so the exported measures come from this run only (provisional emulator values, T110).
+"$ADB" logcat -c || true
+rc=0
+$DC --profile e2e run --rm -e ADB_SERVER_HOST=host.docker.internal e2e e2e-run "$APK" "$FLOWS" || rc=$?
+MEASURES_DIR="docs/modules/001-foundations/measures"
+line="$("$ADB" logcat -d 2>/dev/null | grep 'AYLAL_MEASURES ' | tail -1 | sed 's/.*AYLAL_MEASURES //' | tr -d '\r')"
+if [ -n "$line" ]; then
+  mkdir -p "$MEASURES_DIR"
+  printf '%s\n' "$line" | python3 -m json.tool > "$MEASURES_DIR/emulator-aylal-2go.json" && echo "e2e: mesures provisoires -> $MEASURES_DIR/emulator-aylal-2go.json"
+fi
+exit "$rc"
