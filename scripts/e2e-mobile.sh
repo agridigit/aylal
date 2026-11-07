@@ -44,7 +44,7 @@ done
 # Dev token enabled and one shared JWT secret (API signs, PowerSync verifies); both for this test run only. Idempotent.
 mkdir -p .aylal/e2e
 SECRET_FILE=".aylal/e2e/jwt-secret"
-[ -s "$SECRET_FILE" ] || { umask 077; openssl rand -hex 32 > "$SECRET_FILE"; }
+[ -s "$SECRET_FILE" ] || { umask 077; head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > "$SECRET_FILE"; }
 export AYLAL_ENABLE_DEV_TOKEN=1 AYLAL_JWT_SECRET="$(cat "$SECRET_FILE")"
 make up
 $DC exec -T api python - <<'PY'
@@ -66,9 +66,9 @@ if [ "${E2E_NO_BUILD:-}" = "1" ] && [ -f "$APK" ]; then echo "e2e: APK existant 
 rc=0
 $DC --profile e2e run --rm -e ADB_SERVER_HOST=host.docker.internal e2e e2e-run "$APK" "$FLOWS" || rc=$?
 MEASURES_DIR="docs/modules/001-foundations/measures"
-line="$("$ADB" logcat -d 2>/dev/null | grep 'AYLAL_MEASURES ' | tail -1 | sed 's/.*AYLAL_MEASURES //' | tr -d '\r')"
+line="$({ "$ADB" logcat -d 2>/dev/null | grep 'AYLAL_MEASURES ' | tail -1 | sed 's/.*AYLAL_MEASURES //' | tr -d '\r'; } || true)"
 if [ -n "$line" ]; then
   mkdir -p "$MEASURES_DIR"
-  printf '%s\n' "$line" | python3 -m json.tool > "$MEASURES_DIR/emulator-aylal-2go.json" && echo "e2e: mesures provisoires -> $MEASURES_DIR/emulator-aylal-2go.json"
+  printf '%s\n' "$line" > "$MEASURES_DIR/emulator-aylal-2go.json" && echo "e2e: mesures provisoires -> $MEASURES_DIR/emulator-aylal-2go.json"
 fi
 exit "$rc"
