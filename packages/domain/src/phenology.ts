@@ -28,3 +28,18 @@ export function estimateStage(
 export function displayStage(season: { stage_estimated?: string | null; stage_corrected?: string | null }): string | null {
   return season.stage_corrected ?? season.stage_estimated ?? null;
 }
+
+/** Recomputes the estimate only; the farmer's correction is never touched. */
+export function reestimateStage<S extends { sowing_date?: string | null; stage_estimated?: string | null; stage_corrected?: string | null }>(
+  crop: { cycle: string; stages?: readonly Stage[] },
+  season: S,
+  today: string,
+  gdd?: number | null,
+): S {
+  return { ...season, stage_estimated: estimateStage(crop, season, today, gdd).stage };
+}
+
+/** Advice needs validated agronomy coefficients and stages; free crops have none. */
+export function adviceEnabled(crop: { has_agronomy?: boolean; stages?: readonly Stage[] }): boolean {
+  return crop.has_agronomy === true && (crop.stages?.length ?? 0) > 0;
+}

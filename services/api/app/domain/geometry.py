@@ -4,6 +4,7 @@ import math
 AUTHALIC_RADIUS_M = 6371007.2
 MIN_VERTICES, MAX_VERTICES, MAX_IMPORT_FEATURES = 3, 500, 200
 MIN_AREA_M2 = 1.0
+MAX_IMPORT_VERTICES_TOTAL = 20000
 SIMPLIFY_TOLERANCE_M = 1.5
 OVERLAP_WARN_RATIO = 0.01
 BLOCK_OVERFLOW_RATIO = 0.01
@@ -68,6 +69,9 @@ def self_crossings(pts) -> list[list[float]]:
 
 
 def validate_ring(inp) -> dict:
+    # Raw length cap before any O(n^2) work (DoS): 500 vertices plus the closing point.
+    if len(inp) > MAX_VERTICES + 1:
+        return {"ok": False, "code": "too_many_vertices"}
     for p in inp:
         try:
             ok = len(p) >= 2 and math.isfinite(p[0]) and math.isfinite(p[1]) and abs(p[0]) <= 180 and abs(p[1]) <= 90
@@ -154,6 +158,8 @@ def import_features(geojson: dict) -> dict:
             entities.append((index, None, props))
     if len(entities) > MAX_IMPORT_FEATURES:
         raise ValueError("too_many_features")
+    if sum(len(open_ring(r)) for _, r, _ in entities if r is not None) > MAX_IMPORT_VERTICES_TOTAL:
+        raise ValueError("too_many_vertices_total")
     result: dict = {"valid": [], "rejected": []}
     for index, ring, props in entities:
         if ring is None:

@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from arq import cron
 from arq.connections import RedisSettings
 
+from tasks.build_tiles import build_tiles
 from tasks.expire_invitations import expire_invitations
 from tasks.purge_deleted_accounts import purge_deleted, purge_pending
 from tasks.send_otp import send_otp
@@ -21,7 +22,7 @@ def _redis_settings() -> RedisSettings:
 
 
 class WorkerSettings:
-    functions = [health, send_otp, purge_pending, purge_deleted, expire_invitations]
+    functions = [health, send_otp, purge_pending, purge_deleted, expire_invitations, build_tiles]
     cron_jobs = [
         cron(purge_pending, minute=0),
         cron(purge_deleted, hour=3, minute=0),

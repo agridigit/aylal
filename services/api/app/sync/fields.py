@@ -17,12 +17,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.access import farm_role
 from app.auth.farm_context import NOT_FOUND
 from app.db.models import AppliedOp
+from app.domain.conflict import resolve_field_conflicts
 from app.domain.roles import can
 from app.fields import service
 from app.fields.service import FieldError
 
 F2_TABLES = ("parcels", "seasons", "field_blocks", "crops", "field_commands")
 Result = dict[str, Any]
+_PASSTHROUGH_CODES = {"outside_morocco", "area_too_large", "field_limit_reached"}
+_FIELD_ATTRS = ("name", "geometry", "irrigation", "greenhouse", "soil", "area_declared_ha", "gps_accuracy_m", "source")
 _ACTION = {
     "parcels": "field.update", "seasons": "season.update", "field_blocks": "field.split",
     "crops": "crop.create_custom", "field_commands": "field.merge",
@@ -95,7 +98,7 @@ async def apply_op(session: AsyncSession, user_id: uuid.UUID, op: dict[str, Any]
         async with session.begin_nested():  # an op that fails leaves no partial write
             result = await _dispatch(session, user_id, op)
     except FieldError as e:
-        result = _rejected(op_id, "not_found" if e.status == 404 else "forbidden" if e.status == 403 else "conflict" if e.status == 409 else "validation", e.field)
+        result = _rejected(op_id, "not_found" if e.status == 404 else "forbidden" if e.status == 403 else "conflict" if e.status == 409 else e.code if e.code in _PASSTHROUGH_CODES else "validation", e.field)
     session.add(AppliedOp(op_id=op_id, record_id=op["record_id"], result=result))
     return result
 
@@ -113,7 +116,7 @@ async def _dispatch(session: AsyncSession, user_id: uuid.UUID, op: dict[str, Any
         elif existing is None:
             await service.create_field(session, farm_id, user_id, data, rid)
         else:
-            await service.update_field(session, farm_id, rid, data)
+            return await _update_field_with_conflicts(session, op, ok)
     elif table == "seasons":
         if kind == "delete":
             raise FieldError(403, "seasons_are_never_deleted")
@@ -142,6 +145,37 @@ async def _dispatch(session: AsyncSession, user_id: uuid.UUID, op: dict[str, Any
     else:
         return await _command(session, user_id, op, existing, ok)
     return ok
+
+
+async def _update_field_with_conflicts(session: AsyncSession, op: dict[str, Any], ok: Result) -> Result:
+    """Field-by-field merge: a contested field goes to the op arriving last, the loser is logged."""
+    farm_id, rid, data = op["farm_id"], op["record_id"], op["fields"]
+    current = await service.get_field(session, farm_id, rid)
+    versions = (await session.execute(
+        text("SELECT field_versions FROM parcels WHERE id = :i AND farm_id = :f"), {"i": rid, "f": farm_id}
+    )).scalar_one()
+    changes = {k: data[k] for k in _FIELD_ATTRS if k in data}
+    resolved = resolve_field_conflicts(
+        {"server_version": current["server_version"], "fields": current, "field_versions": dict(versions or {})},
+        {"changes": changes, "base_version": op["base_version"], "author_id": op["author_id"]},
+    )
+    await service.update_field(session, farm_id, rid, data)
+    await session.execute(
+        text("UPDATE parcels SET field_versions = CAST(:v AS jsonb) WHERE id = :i AND farm_id = :f"),
+        {"v": json.dumps(resolved["field_versions"]), "i": rid, "f": farm_id},
+    )
+    for c in resolved["conflicts"]:
+        await session.execute(
+            text(
+                "INSERT INTO sync_conflicts (id, farm_id, record_id, field, discarded_value, kept_value,"
+                " discarded_by, base_version, server_version)"
+                " VALUES (:id, :f, :r, :field, CAST(:d AS jsonb), CAST(:k AS jsonb), :by, :bv, :sv)"
+            ),
+            {"id": uuid.uuid4(), "f": farm_id, "r": rid, "field": c["field"],
+             "d": json.dumps(c["discarded_value"], default=str), "k": json.dumps(c["kept_value"], default=str),
+             "by": c["discarded_by"], "bv": c["base_version"], "sv": c["server_version"]},
+        )
+    return {**ok, "status": "conflict_logged"} if resolved["conflicts"] else ok
 
 
 async def _command(session: AsyncSession, user_id: uuid.UUID, op: dict[str, Any], existing: Any, ok: Result) -> Result:

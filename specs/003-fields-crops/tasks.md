@@ -50,9 +50,9 @@
 - [x] T026 [P] E2E service `services/api/tests/e2e/test_field_draw_e2e.py` : créer par touches puis par GPS, vérifier surface, croisement refusé, synchro au retour du réseau (R1-A1 à A5).
 
 ### Implémentation (non-écran)
-- [ ] T027 `services/api/app/routers/fields.py` (create, patch, archive) et règles serveur ; fait passer T023 ; alimente T005, T006.
-- [ ] T028 [P] `services/api/app/sync/fields.py` (apply `parcels`) ; fait passer T024.
-- [ ] T029 [P] Mobile : `apps/mobile/src/fields/{drawSession.ts,gpsWalk.ts}` (expo-location, précision, simplification) ; fait passer T022.
+- [x] T027 `services/api/app/routers/fields.py` (create, patch, archive) et règles serveur ; fait passer T023 ; alimente T005, T006.
+- [x] T028 [P] `services/api/app/sync/fields.py` (apply `parcels`) ; fait passer T024.
+- [x] T029 [P] Mobile : `apps/mobile/src/fields/{drawSession.ts,gpsWalk.ts}` (expo-location, précision, simplification) ; fait passer T022.
 - [ ] T030 [P] i18n `packages/i18n/locales/{ary,ar,fr}/fields.json` (dessin, erreurs de croisement, précision GPS).
 
 ### Écrans (dépendent de T004)
@@ -69,9 +69,9 @@
 - [x] T037 [P] E2E service `services/api/tests/e2e/test_crop_choice_e2e.py` : une parcelle pour chacune des 16 cultures et une culture libre (R2-A1 à A5).
 
 ### Implémentation (non-écran)
-- [ ] T038 `services/api/app/routers/crops.py` et routes de campagne initiale dans `services/api/app/routers/seasons.py` ; fait passer T035 ; alimente T005, T006.
-- [ ] T039 [P] Seed des 16 cultures (valeurs de stade marquées « non validées ») dans `services/api/alembic/versions/0004_fields_crops.py` et photos WebP < 400 Ko au total dans `apps/mobile/assets/crops/` ; `packages/i18n/locales/{ary,ar,fr}/crops.json`.
-- [ ] T040 [P] `services/api/app/sync/fields.py` (apply `seasons`, `crops` libres).
+- [x] T038 `services/api/app/routers/crops.py` et routes de campagne initiale dans `services/api/app/routers/seasons.py` ; fait passer T035 ; alimente T005, T006.
+- [x] T039 [P] Seed des 16 cultures (valeurs de stade marquées « non validées ») dans `services/api/alembic/versions/0004_fields_crops.py` et photos WebP < 400 Ko au total dans `apps/mobile/assets/crops/` ; `packages/i18n/locales/{ary,ar,fr}/crops.json`.
+- [x] T040 [P] `services/api/app/sync/fields.py` (apply `seasons`, `crops` libres).
 
 ### Écrans (dépendent de T004)
 - [ ] T041 [écran] [P] [dépend de T004] Tests RED écrans F2-E3 fiche/formulaire et F2-E4 liste illustrée : 16 cultures avec photo, culture libre, variété facultative, année ou date selon le cycle, correction de stade, 4 états, RTL, dans `apps/mobile/src/screens/{FieldForm,CropPicker}/__tests__/` (R2-A1 à A5).
@@ -86,7 +86,7 @@
 - [x] T046 [P] E2E service `services/api/tests/e2e/test_irrigation_greenhouse_e2e.py` (R3-A1, R3-A2).
 
 ### Implémentation (non-écran)
-- [ ] T047 Champs `irrigation`, `greenhouse`, `soil` dans `services/api/app/routers/fields.py` et schémas ; fait passer T044 à T046 ; clés i18n dans `fields.json`.
+- [x] T047 Champs `irrigation`, `greenhouse`, `soil` dans `services/api/app/routers/fields.py` et schémas ; fait passer T044 à T046 ; clés i18n dans `fields.json`.
 
 ### Écrans (dépendent de T004)
 - [ ] T048 [écran] [P] [dépend de T004] Tests RED écran F2-E3 (sélecteur d'irrigation et serre visibles sur la fiche, 4 états, RTL) dans `apps/mobile/src/screens/FieldForm/__tests__/irrigation.test.tsx` et Maestro `apps/mobile/maestro/field_irrigation.yaml` (R3-A1, R3-A2).
@@ -139,9 +139,9 @@
 
 ## Phase 8b : Plafond de ressources géométriques (correctif sécurité DoS)
 
-- [ ] T075 [P] Tests RED unitaires : longueur BRUTE de l'anneau > MAX_VERTICES+1 refusée `too_many_vertices` avant `self_crossings` ; total de sommets d'un import > 20 000 -> `too_many_vertices_total`, dans `services/api/tests/unit/test_f2_geometry_resource_cap.py` et `packages/domain/tests/geometry-resource-cap.test.ts`.
-- [ ] T076 GREEN : contrôle de longueur brute dans `validate_ring`/`validateRing` avant déduplication et crossings ; constante `MAX_IMPORT_VERTICES_TOTAL = 20000` et erreur `too_many_vertices_total` dans `import_features`/`importFeatures` (`services/api/app/domain/geometry.py`, `packages/domain/src/geometry.ts`).
-- [ ] T077 [P] Tests RED intégration `services/api/tests/integration/test_f2_geometry_resource_cap.py` et E2E `services/api/tests/e2e/test_geometry_resource_cap_e2e.py` : POST parcelle et sync put avec anneau géant -> 422 / opération non appliquée, rapide, sans timeout.
+- [x] T075 [P] Tests RED unitaires : longueur BRUTE de l'anneau > MAX_VERTICES+1 refusée `too_many_vertices` avant `self_crossings` ; total de sommets d'un import > 20 000 -> `too_many_vertices_total`, dans `services/api/tests/unit/test_f2_geometry_resource_cap.py` et `packages/domain/tests/geometry-resource-cap.test.ts`.
+- [x] T076 GREEN : contrôle de longueur brute dans `validate_ring`/`validateRing` avant déduplication et crossings ; constante `MAX_IMPORT_VERTICES_TOTAL = 20000` et erreur `too_many_vertices_total` dans `import_features`/`importFeatures` (`services/api/app/domain/geometry.py`, `packages/domain/src/geometry.ts`).
+- [x] T077 [P] Tests RED intégration `services/api/tests/integration/test_f2_geometry_resource_cap.py` et E2E `services/api/tests/e2e/test_geometry_resource_cap_e2e.py` : POST parcelle et sync put avec anneau géant -> 422 / opération non appliquée, rapide, sans timeout.
 - [x] T078 Les routes parcelles et la synchro refusent déjà un anneau géant (`check_polygon` plafonne la longueur brute, 422 `geometry_vertices`) ; T077 est donc un test de non-régression (déjà vert), aucun code requis.
 
 ## Phase 9 : Finition

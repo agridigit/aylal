@@ -3,6 +3,7 @@ from app.domain.geometry import area_ha, centroid, is_in_morocco, rings_touch, v
 
 LIMITS = {"MIN_VERTICES": 3, "MAX_VERTICES": 500, "MAX_AREA_HA": 5000, "MAX_FIELDS_PER_FARM": 500, "MAX_NAME_LENGTH": 80}
 IMAGERY_MIN_AREA_HA = 0.3
+IRRIGATION_MODES = ("rainfed", "gravity", "sprinkler", "drip", "pivot")
 
 
 def can_create_field(current_count: int) -> dict:
@@ -31,7 +32,16 @@ def validate_field(inp: dict) -> dict:
     declared = inp.get("area_declared_ha")
     if declared is not None and not declared > 0:
         return {"ok": False, "code": "area_declared_invalid"}
-    return {"ok": True, "ring": r["ring"], "area_ha": ha}
+    irrigation = inp.get("irrigation")
+    if irrigation is not None and irrigation not in IRRIGATION_MODES:
+        return {"ok": False, "code": "irrigation_invalid"}
+    greenhouse = inp.get("greenhouse")
+    if greenhouse is not None and not isinstance(greenhouse, bool):
+        return {"ok": False, "code": "greenhouse_invalid"}
+    return {
+        "ok": True, "ring": r["ring"], "area_ha": ha, "area_declared_ha": declared,
+        "irrigation": irrigation, "greenhouse": bool(greenhouse),
+    }
 
 
 def merge_fields(survivor: dict, others: list, seasons: list) -> dict:

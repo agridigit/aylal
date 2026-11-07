@@ -14,6 +14,9 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.field_rules import LIMITS as FIELD_LIMITS
+from app.domain.geometry import centroid, is_in_morocco
+from app.domain.season_rules import estimate_stage
 from app.domain.field_limits import (
     BLOCK_KINDS,
     CYCLES,
@@ -28,12 +31,12 @@ from app.domain.field_limits import (
 
 Data = Mapping[str, Any]
 FIELD_COLS = (
-    "id, farm_id, name, ST_AsGeoJSON(geometry)::json AS geometry, area_calc_ha, area_declared_ha, irrigation,"
+    "id, farm_id, name, ST_AsGeoJSON(geometry)::json AS geometry, area_calc_ha::float8 AS area_calc_ha, area_declared_ha::float8 AS area_declared_ha, irrigation,"
     " greenhouse, soil, source, gps_accuracy_m, status_summary, created_by, archived_at, purge_after,"
     " merged_into_id, server_version, updated_at"
 )
 BLOCK_COLS = (
-    "id, farm_id, field_id, name, kind, ST_AsGeoJSON(geometry)::json AS geometry, area_calc_ha,"
+    "id, farm_id, field_id, name, kind, ST_AsGeoJSON(geometry)::json AS geometry, area_calc_ha::float8 AS area_calc_ha,"
     " archived_at, server_version, updated_at"
 )
 SEASON_COLS = (
@@ -106,6 +109,8 @@ async def check_polygon(session: AsyncSession, geojson: object, field: str = "ge
         raise _bad(field, "geometry_too_few_points")
     if len(ring) - 1 > MAX_VERTICES or len(ring) - 1 < MIN_VERTICES:
         raise _bad(field, "geometry_vertices")
+    if not is_in_morocco(centroid(ring)):
+        raise _bad(field, "outside_morocco")
     payload = json.dumps(geojson)
     row = await _one(
         session,
@@ -118,6 +123,8 @@ async def check_polygon(session: AsyncSession, geojson: object, field: str = "ge
         raise _bad(field, "geometry_self_intersecting")
     if row["ha"] <= 0:
         raise _bad(field, "geometry_area_zero")
+    if row["ha"] > FIELD_LIMITS["MAX_AREA_HA"]:
+        raise _bad(field, "area_too_large")
     return payload
 
 
@@ -185,6 +192,10 @@ async def create_field(
     if "name" not in values:
         raise _bad("name")
     geometry = await check_polygon(session, data.get("geometry"))
+    count = await _one(session, "SELECT count(*) AS n FROM parcels WHERE farm_id = :f AND archived_at IS NULL", f=farm_id)
+    assert count is not None
+    if count["n"] >= FIELD_LIMITS["MAX_FIELDS_PER_FARM"]:
+        raise _bad("geometry", "field_limit_reached")
     field_id = field_id or uuid.uuid4()
     values.setdefault("greenhouse", False)
     values.setdefault("source", "draw_taps")
@@ -490,6 +501,7 @@ async def create_season(
     if bad:
         raise _bad(bad)
     season_id = season_id or uuid.uuid4()
+    estimated = estimate_stage(crop, {"sowing_date": sowing.isoformat() if sowing else None}, dt.date.today().isoformat())["stage"]
     close_ids = data.get("close_ids") or []
     if close_ids:
         try:
@@ -508,11 +520,11 @@ async def create_season(
         raise FieldError(409, "season_already_active")
     await session.execute(
         text(
-            "INSERT INTO seasons (id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, destination)"
-            " VALUES (:id, :f, :fi, :c, :variety, :py, :sd, :st, :dest)"
+            "INSERT INTO seasons (id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, destination, stage_estimated)"
+            " VALUES (:id, :f, :fi, :c, :variety, :py, :sd, :st, :dest, :est)"
         ),
         {"id": season_id, "f": farm_id, "fi": field_id, "c": crop["id"], "variety": _variety(data).get("variety"),
-         "py": planting, "sd": sowing, "st": started, "dest": data.get("destination")},
+         "py": planting, "sd": sowing, "st": started, "dest": data.get("destination"), "est": estimated},
     )
     return await get_season(session, farm_id, field_id, season_id)
 

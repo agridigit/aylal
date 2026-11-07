@@ -49,3 +49,13 @@ def estimate_stage(crop: dict, season: dict, today: str, gdd: float | None = Non
 
 def display_stage(season: dict):
     return season.get("stage_corrected") or season.get("stage_estimated")
+
+
+def reestimate_stage(crop: dict, season: dict, today: str, gdd: float | None = None) -> dict:
+    """Recompute the estimate only; the farmer's correction is never touched."""
+    return {**season, "stage_estimated": estimate_stage(crop, season, today, gdd)["stage"]}
+
+
+def advice_enabled(crop: dict) -> bool:
+    """Advice needs validated agronomy and stages; free crops have none."""
+    return crop.get("has_agronomy") is True and bool(crop.get("stages"))

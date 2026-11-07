@@ -6,6 +6,7 @@ export type { Pt };
 export const MIN_VERTICES = 3;
 export const MAX_VERTICES = 500;
 export const MAX_IMPORT_FEATURES = 200;
+export const MAX_IMPORT_VERTICES_TOTAL = 20000;
 export const MIN_AREA_M2 = 1;
 export const SIMPLIFY_TOLERANCE_M = 1.5;
 /** Versioned national extent (bounding box, lon/lat). */
@@ -53,6 +54,8 @@ export function selfCrossings(pts: readonly Pt[]): Pt[] {
 }
 
 export function validateRing(input: readonly Pt[]): RingResult {
+  // Raw length cap before any O(n^2) work (DoS): 500 vertices plus the closing point.
+  if (input.length > MAX_VERTICES + 1) return { ok: false, code: "too_many_vertices" };
   for (const p of input) {
     if (!Array.isArray(p) || p.length < 2 || !Number.isFinite(p[0]) || !Number.isFinite(p[1]) || Math.abs(p[0]) > 180 || Math.abs(p[1]) > 90) {
       return { ok: false, code: "invalid_coordinates" };
@@ -139,6 +142,9 @@ export function importFeatures(geojson: any): ImportResult {
     else entities.push({ index, ring: null, properties });
   });
   if (entities.length > MAX_IMPORT_FEATURES) throw new Error("too_many_features");
+  let total = 0;
+  for (const e of entities) total += e.ring ? openRing(e.ring).length : 0;
+  if (total > MAX_IMPORT_VERTICES_TOTAL) throw new Error("too_many_vertices_total");
   const result: ImportResult = { valid: [], rejected: [] };
   for (const e of entities) {
     if (!e.ring) { result.rejected.push({ index: e.index, reason: "not_a_polygon" }); continue; }
