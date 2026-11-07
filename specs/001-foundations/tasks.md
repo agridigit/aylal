@@ -36,12 +36,12 @@
 
 ### Implémentation (GREEN)
 
-- [ ] T014 Créer `packages/domain/package.json`, `packages/domain/tsconfig.json`, `packages/domain/vitest.config.ts` (seuil de couverture 80 % bloquant)
-- [ ] T015 [P] Implémenter les schémas Zod dans `packages/domain/src/schemas/trial_record.ts`, `parcel.ts`, `farm.ts` avec les contraintes de data-model.md citées : « title obligatoire après trim, 1..120 », « note <= 2000 », « quantity >= 0, <= 1 000 000 », « vigor dans [0,1] », « geometry polygone fermé valide »
-- [ ] T016 [P] Implémenter la résolution de conflits pure dans `packages/domain/src/conflict.ts` (champ par champ, ordre d'arrivée serveur, `field_versions`, jamais `updated_at`)
-- [ ] T017 Implémenter l'export JSON Schema `packages/domain/src/export-json-schema.ts` et le script `scripts/gen-pydantic.sh` générant `services/api/app/generated/*.py` (via conteneur)
-- [ ] T018 Implémenter l'enveloppe de validation Python `services/api/app/domain/validation.py` utilisant les modèles générés
-- [ ] T019 Commit `feat(foundations): green - shared validation` ; REFACTOR éventuel `refactor(foundations): shared validation`
+- [x] T014 Créer `packages/domain/package.json`, `packages/domain/tsconfig.json`, `packages/domain/vitest.config.ts` (seuil de couverture 80 % bloquant)
+- [x] T015 [P] Implémenter les schémas Zod dans `packages/domain/src/schemas/trial_record.ts`, `parcel.ts`, `farm.ts` avec les contraintes de data-model.md citées : « title obligatoire après trim, 1..120 », « note <= 2000 », « quantity >= 0, <= 1 000 000 », « vigor dans [0,1] », « geometry polygone fermé valide »
+- [x] T016 [P] Implémenter la résolution de conflits pure dans `packages/domain/src/conflict.ts` (champ par champ, ordre d'arrivée serveur, `field_versions`, jamais `updated_at`)
+- [x] T017 Implémenter l'export JSON Schema `packages/domain/src/export-json-schema.ts` et le script `scripts/gen-pydantic.sh` générant `services/api/app/generated/*.py` (via conteneur)
+- [x] T018 Implémenter l'enveloppe de validation Python `services/api/app/domain/validation.py` utilisant les modèles générés
+- [x] T019 Commit `feat(foundations): green - shared validation` ; REFACTOR éventuel `refactor(foundations): shared validation`
 
 **Point de contrôle** : validation partagée verte en TS et Python.
 

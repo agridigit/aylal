@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "geometry": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "Polygon"
+        },
+        "coordinates": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "PolygonGeometry"
+    },
+    "vigor": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "required": [
+    "name",
+    "geometry",
+    "vigor"
+  ],
+  "title": "ParcelCreate"
+}
