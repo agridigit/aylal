@@ -4,7 +4,7 @@ import uuid
 import pytest
 
 from tests.helpers import auth, sql
-from tests.integration._f6 import TODAY, add_operation, op_body, routes, call, world  # noqa: F401
+from tests.integration._f6 import TODAY, add_operation, call, op_body, routes, world  # noqa: F401
 
 
 def _scenarios(w):

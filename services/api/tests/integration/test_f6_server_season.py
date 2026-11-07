@@ -4,7 +4,6 @@ import uuid
 import pytest
 
 from tests.helpers import auth, sql
-from tests.integration._f2 import add_season
 from tests.integration._f6 import TODAY, op_body, sync_op, world  # noqa: F401
 from tests.integration._f6_phyto import add_catalog, add_product, codes, crops, grow
 

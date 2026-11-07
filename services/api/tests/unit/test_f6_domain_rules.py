@@ -1,7 +1,7 @@
 """T007 - shared F6 domain rules (allocation, units, status machine) mirror the TS vectors."""
-from datetime import date
 import json
 import os
+from datetime import date
 from pathlib import Path
 
 import pytest

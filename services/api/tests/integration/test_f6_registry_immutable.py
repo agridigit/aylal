@@ -1,5 +1,4 @@
 """T018 - G4: the registry is append-only; corrections are compensating entries; the snapshot is frozen."""
-import datetime as dt
 import uuid
 
 import pytest

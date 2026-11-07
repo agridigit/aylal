@@ -122,7 +122,7 @@ def test_given_responses_then_label_photo_key_and_file_keys_are_never_exposed(cl
     created = _rest(client, token_for, w, "owner", w["farm_a"], w["a1"], label_photo_id=lid)
     assert created.status_code == 201, created.text
     h = auth(token_for(w["owner"]))
-    for path in (f"/operations", f"/operations/{created.json()['id']}"):
+    for path in ("/operations", f"/operations/{created.json()['id']}"):
         assert "label_photo_key" not in client.get(f"/v1/farms/{w['farm_a']}{path}", headers=h).text
 
 

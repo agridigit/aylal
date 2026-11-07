@@ -6,8 +6,8 @@ import uuid
 import pytest
 
 from tests.helpers import auth, sql
-from tests.integration._f6 import add_operation, op_body, sync_op, world  # noqa: F401
 from tests.integration._f2 import assign, new_user
+from tests.integration._f6 import add_operation, op_body, sync_op, world  # noqa: F401
 
 TODAY = dt.date.today()
 

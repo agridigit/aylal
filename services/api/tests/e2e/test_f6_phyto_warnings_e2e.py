@@ -1,7 +1,7 @@
 """T046 - SC-002: dose above max, crop not authorised and max applications: 3 warnings land in the registry."""
 import httpx
 
-from tests.e2e._f6 import BASE, body, field_with_crop, owner_with_farm, unique_phone, product
+from tests.e2e._f6 import BASE, body, field_with_crop, owner_with_farm, product, unique_phone
 
 PHONE = unique_phone()
 

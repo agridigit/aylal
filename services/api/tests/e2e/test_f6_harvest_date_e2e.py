@@ -3,7 +3,7 @@ import datetime as dt
 
 import httpx
 
-from tests.e2e._f6 import BASE, TODAY, body, field_with_crop, owner_with_farm, unique_phone, product
+from tests.e2e._f6 import BASE, TODAY, body, field_with_crop, owner_with_farm, product, unique_phone
 
 PHONE = unique_phone()
 

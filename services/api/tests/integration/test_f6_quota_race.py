@@ -4,7 +4,6 @@ import pathlib
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
-import pytest
 from fastapi.testclient import TestClient
 
 from tests.helpers import auth, sql
@@ -46,7 +45,7 @@ def test_given_one_slot_left_in_the_yearly_quota_when_two_rest_requests_race_the
     w = world
     _seed_ops(w["farm_a"], w["owner"], w["a1"], 19_999, "validated")
     codes = _race(2, _rest(w, token_for(w["owner"]), lambda: op_body([w["a1"]])))
-    assert sorted(codes)[0] == 201 and codes.count(201) == 1, codes
+    assert min(codes) == 201 and codes.count(201) == 1, codes
     assert sql("SELECT count(*) FROM operations WHERE farm_id=$1", w["farm_a"])[0][0] == 20_000
 
 

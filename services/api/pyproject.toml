@@ -57,5 +57,6 @@ fail_under = 80
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
 
 [tool.ruff.lint.per-file-ignores]
-# tests : subprocess sans check explicite et pytest.raises(Exception) volontaires
-"tests/**" = ["PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167", "ASYNC221"]
+# tests : subprocess sans check explicite et pytest.raises(Exception) volontaires ;
+# F811 : une fixture pytest importée (ex. `world`) puis reçue en paramètre est l'idiome attendu
+"tests/**" = ["F811", "PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167", "ASYNC221"]

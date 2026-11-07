@@ -1,6 +1,5 @@
 """Review finding 2: rescheduling takes the farm lock and re-checks the quotas when the year changes."""
 import datetime as dt
-import uuid
 
 import pytest
 

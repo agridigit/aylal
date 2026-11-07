@@ -4,7 +4,7 @@ import uuid
 
 import httpx
 
-from tests.e2e._f6 import BASE, TODAY, field_with_crop, owner_with_farm, unique_phone, product
+from tests.e2e._f6 import BASE, TODAY, field_with_crop, owner_with_farm, product, unique_phone
 from tests.helpers import sql
 
 PHONE = unique_phone()

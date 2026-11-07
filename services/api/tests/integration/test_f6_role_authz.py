@@ -1,5 +1,4 @@
 """T011 - G1: 403 per role, worker visibility, forced worker status, no physical deletion."""
-import uuid
 
 import pytest
 
