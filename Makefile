@@ -1,9 +1,11 @@
-# AYLAL — toutes les commandes passent par Docker Compose
+# AYLAL — toutes les commandes passent par Docker Compose (contrat : specs/001-foundations/contracts/make-targets.md)
 DC := docker compose
-.PHONY: up down logs build test test-api test-domain test-mobile test-unit test-integration test-pyramid e2e e2e-api lint typecheck coverage check diagrams docs-index loop report clean
+# Maestro est téléchargé à la construction de l'image e2e uniquement (jamais un défaut d'exécution).
+export MAESTRO_URL ?= https://github.com/mobile-dev-inc/maestro/releases/latest/download/maestro.zip
+.PHONY: up down logs build test test-api test-domain test-mobile test-visual update-visual test-unit test-integration test-pyramid e2e e2e-api lint typecheck coverage apk-size check diagrams docs-index loop report clean
 
-up:            ## démarre toute la plateforme
-	$(DC) up -d --build
+up:            ## démarre toute la plateforme et attend que tout soit sain
+	@$(DC) up -d --build --wait || { echo "make up: service non sain :" >&2; $(DC) ps -a --format '{{.Service}} {{.State}} {{.Health}}' | grep -v 'running healthy' | grep -v 'exited' >&2; $(DC) ps -a --format '{{.Service}} {{.State}} {{.Health}}' | grep 'exited' | grep -v ' 0$$' >&2; exit 1; }
 down:
 	$(DC) down
 logs:
@@ -14,10 +16,15 @@ build:
 test: test-api test-domain test-mobile   ## tous les tests unitaires et d'intégration
 test-api:
 	$(DC) --profile test run --rm api-test
+	$(DC) run --rm --no-deps worker pytest -q
 test-domain:
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test
 test-mobile:
 	$(DC) --profile test run --rm js-test pnpm --filter mobile test
+test-visual:   ## captures Storybook 3 thèmes x 2 sens contre les références
+	$(DC) --profile visual run --rm visual
+update-visual: ## régénère les références (revue obligatoire)
+	$(DC) --profile visual run --rm visual pnpm --filter @aylal/ui test:visual -- --update-snapshots
 test-unit:     ## tests unitaires seuls
 	$(DC) --profile test run --rm api-test pytest -q tests/unit
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/unit
@@ -26,8 +33,10 @@ test-integration: ## tests d'intégration seuls (dont contrats)
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/integration
 test-pyramid:  ## chaque module a ses tests unitaires, d'intégration et de bout en bout
 	bash scripts/check-test-pyramid.sh
-e2e: e2e-api   ## tous les tests de bout en bout
-	$(DC) --profile e2e run --rm e2e
+e2e: e2e-api   ## bout en bout (KVM requis, sauf E2E_SKIP=1)
+	@if [ "$(E2E_SKIP)" = "1" ]; then echo "AVERTISSEMENT : e2e mobile ignoré (E2E_SKIP=1)" >&2; \
+	elif [ ! -e /dev/kvm ]; then echo "make e2e: KVM absent (/dev/kvm) : l'émulateur Android est impossible. Utilisez une machine Linux avec KVM ou E2E_SKIP=1 (écart signalé)." >&2; exit 1; \
+	else $(DC) --profile e2e run --rm --device /dev/kvm e2e; fi
 e2e-api:
 	$(DC) --profile test run --rm api-test pytest -q tests/e2e
 lint:
@@ -36,10 +45,12 @@ lint:
 typecheck:
 	$(DC) --profile test run --rm js-test pnpm -r typecheck
 	$(DC) --profile test run --rm api-test mypy app
-coverage:
+coverage:      ## seuil 80 % pytest et Vitest
 	$(DC) --profile test run --rm api-test pytest --cov=app --cov-fail-under=80
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- --coverage
-check: test-pyramid lint typecheck test coverage diagrams   ## porte de qualité utilisée par la boucle
+apk-size:      ## APK release <= 40 Mo
+	bash scripts/check-apk-size.sh
+check: test-pyramid lint typecheck test coverage test-visual apk-size diagrams e2e   ## porte de qualité utilisée par la boucle
 
 diagrams:      ## rend docs/**/diagrams/*.mmd en SVG + PNG
 	bash scripts/render-diagrams.sh
@@ -48,7 +59,7 @@ docs-index:
 
 loop:          ## boucle Spec Kit autonome sur toutes les fonctionnalités
 	bash scripts/speckit-loop.sh
-report:
-	bash scripts/report.sh
+report:        ## STRICT=1 : échec si un seuil est non tenu
+	STRICT=$(STRICT) bash scripts/report.sh
 clean:
 	$(DC) down -v --remove-orphans

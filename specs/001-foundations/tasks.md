@@ -63,12 +63,12 @@
 
 ### Implémentation (GREEN)
 
-- [ ] T029 [US1] Compléter `docker-compose.yml` : services `db` (PostgreSQL 16 + PostGIS, `wal_level=logical`, `scram-sha-256`), `redis`, `minio`, `minio-init`, `powersync`, `api`, `worker`, `proxy`, `storybook`, profils `test` (`api-test`, `js-test`, `visual`) et `e2e`, chacun avec `healthcheck` et `depends_on: condition: service_healthy` (AC1.1, FR-002)
-- [ ] T030 [P] [US1] Implémenter `services/api/app/main.py`, `services/api/app/config.py`, `services/api/app/routers/health.py` (`/v1/health`, schéma de openapi.yaml)
-- [ ] T031 [P] [US1] Implémenter `services/workers/worker.py` et la tâche de santé
-- [ ] T032 [US1] Compléter `Makefile` : cibles de make-targets.md, `make up` = `docker compose up -d --build --wait` nommant le service non sain, `make test` = `test-api` + `test-domain` + `test-mobile` nommant le test fautif, `make check` (lint, typecheck, test, coverage, test-visual, apk-size, diagrams, e2e), message explicite si KVM absent sauf `E2E_SKIP=1` (AC1.2, AC1.3, R9)
-- [ ] T033 [P] [US1] Implémenter `scripts/check-apk-size.sh` (seuil 40 Mo, R18) et brancher `make apk-size`
-- [ ] T034 [P] [US1] Configurer Ruff/mypy dans `services/api/pyproject.toml`, ESLint dans `eslint.config.js` racine, seuil `--cov-fail-under=80` pytest et seuils Vitest (FR-004)
+- [x] T029 [US1] Compléter `docker-compose.yml` : services `db` (PostgreSQL 16 + PostGIS, `wal_level=logical`, `scram-sha-256`), `redis`, `minio`, `minio-init`, `powersync`, `api`, `worker`, `proxy`, `storybook`, profils `test` (`api-test`, `js-test`, `visual`) et `e2e`, chacun avec `healthcheck` et `depends_on: condition: service_healthy` (AC1.1, FR-002)
+- [x] T030 [P] [US1] Implémenter `services/api/app/main.py`, `services/api/app/config.py`, `services/api/app/routers/health.py` (`/v1/health`, schéma de openapi.yaml)
+- [x] T031 [P] [US1] Implémenter `services/workers/worker.py` et la tâche de santé
+- [x] T032 [US1] Compléter `Makefile` : cibles de make-targets.md, `make up` = `docker compose up -d --build --wait` nommant le service non sain, `make test` = `test-api` + `test-domain` + `test-mobile` nommant le test fautif, `make check` (lint, typecheck, test, coverage, test-visual, apk-size, diagrams, e2e), message explicite si KVM absent sauf `E2E_SKIP=1` (AC1.2, AC1.3, R9)
+- [x] T033 [P] [US1] Implémenter `scripts/check-apk-size.sh` (seuil 40 Mo, R18) et brancher `make apk-size`
+- [x] T034 [P] [US1] Configurer Ruff/mypy dans `services/api/pyproject.toml`, ESLint dans `eslint.config.js` racine, seuil `--cov-fail-under=80` pytest et seuils Vitest (FR-004)
 - [ ] T035 [US1] Commit `feat(foundations): green - platform` ; REFACTOR `refactor(foundations): platform`
 
 **Point de contrôle** : `make up` sain, `make test` nomme un test en échec.

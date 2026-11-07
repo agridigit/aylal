@@ -26,3 +26,9 @@ line-length = 100
 
 [tool.mypy]
 strict = true
+
+[tool.coverage.run]
+omit = ["app/generated/check_fresh.py"]   # outil CI de fraîcheur, pas du code métier
+
+[tool.coverage.report]
+fail_under = 80
