@@ -2,3 +2,10 @@
 - `E2E_SKIP=1 make check` rouge uniquement à cause de `apk-size` : APK release non constructible (apps/mobile sans expo/react-native ni projet natif ; image android-build sans SDK ; hôte aarch64). Détail : specs/001-foundations/decisions.md.
 - Non réalisé : T110 (Android 2 Go), T111, T115, T116 (docs). Branche laissée telle quelle, non fusionnée.
 - Aussi : e2e Maestro non exécutés (pas de KVM sur macOS) ; reviewer refusé par le classificateur auto (revue de groupe faite à la main).
+
+## F1 002-account-onboarding-farm — bloquée (2026-11-07)
+- Backend, domaine, worker, sync et mobile non-écran : faits et verts (API 420, JS 135+131+31+23, e2e-api 8, couverture pytest 94 %).
+- Porte design T004 (principe 10) : maquettes HD arabe/français des écrans P1/P2 à valider par un humain avant tout code d'écran. Écrans bloqués : T027, T028, T032, T034, T036, T037(écran), T041, T044, T049, T052, T055, T058, T060, T061, T062, T067, T070. Référence design : docs/design/aylal-design-system.md (Olivier, Unistyles) ; les maquettes se font dans Storybook (docs/design/002-account-onboarding-farm/).
+- apk-size NON MESURE (build APK arm64 bloqué dans android-build) ; test-visual et e2e Maestro non exécutés.
+- Ouverts hors écran : T017/T018 (tests de règles PowerSync par rôle), T071 (refactor), T074 (docs).
+- Non fusionnée : F2 à F9 dépendent de F1 (comptes/fermes) et ne sont pas démarrées (F2 : specify+clarify faits dans .worktrees/003-fields-crops).
