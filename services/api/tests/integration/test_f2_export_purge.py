@@ -40,3 +40,22 @@ def test_given_owner_and_worker_when_exporting_then_fields_seasons_blocks_follow
     assert [f["id"] for f in part["fields"]] == [str(mine)]
     assert {s["field_id"] for s in part["seasons"]} == {str(mine)}
     assert {b["field_id"] for b in part["blocks"]} == {str(mine)}
+
+
+def test_given_an_archived_assigned_field_when_exporting_then_the_worker_gets_nothing_of_it_but_managers_do(make_farm):
+    from tests.helpers import sql
+
+    owner, manager, worker = new_user(), new_user(), new_user()
+    farm = make_farm({owner: "owner", manager: "manager", worker: "worker"})
+    field = add_field(farm, "Gone")
+    assign(farm, worker, field)
+    add_season(farm, field)
+    add_block(farm, field)
+    sql("UPDATE parcels SET archived_at = now(), purge_after = now() + interval '90 days' WHERE id=$1", field)
+
+    part = export_of(worker)
+    assert part["fields"] == [] and part["seasons"] == [] and part["blocks"] == []
+    for boss in (owner, manager):
+        full = export_of(boss)
+        assert [f["id"] for f in full["fields"]] == [str(field)]
+        assert len(full["seasons"]) == 1 and len(full["blocks"]) == 1
