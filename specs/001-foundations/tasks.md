@@ -103,10 +103,10 @@
 - [x] T053 [P] [US3] Implémenter `services/api/app/auth/` : jeton d'essai et contrôle ferme/rôle (`owner`/`editor`/`viewer`) (FR-018)
 - [x] T054 [US3] Implémenter `services/api/app/sync/apply.py` (envoi idempotent via `applied_ops`, validation partagée, résolution de `packages/domain` répliquée selon R6, écriture `sync_conflicts`) et `services/api/app/routers/sync.py` (dont `POST /sync/conflicts/{id}/acknowledge` : résolution du conflit vers `sync_conflicts.farm_id`, contrôle membre `editor`/`owner` de cette ferme, 404 si autre ferme, fait passer T040a)
 - [x] T055 [P] [US3] Créer `infra/powersync/sync-rules.yaml` (copie conforme du contrat) et brancher `powersync` dans `docker-compose.yml`
-- [ ] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
+- [x] T056 [P] [US3] Implémenter la graine déterministe `services/api/app/db/seed.py` (compte d'essai, 1 ferme, 50 parcelles)
 - [x] T057 [US3] Créer le shell mobile `apps/mobile/{package.json,app.json,babel.config.js,jest.config.js}` et `apps/mobile/src/sync/{db.ts,connector.ts,syncState.ts,encryptionKey.ts,storageWarning.ts}` (PowerSync + SQLCipher, expo-secure-store)
 - [x] T058 [P] [US3] Implémenter `apps/mobile/src/telemetry/telemetry.ts` (anonyme, désactivable, `telemetry_enabled`)
-- [ ] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
+- [x] T059 [P] [US3] Implémenter l'écran de saisie d'essai `apps/mobile/src/screens/TrialRecord/` avec indicateur « non envoyé » (clés i18n uniquement, composants de `packages/ui` une fois US4 disponible, voir Dépendances)
 - [x] T060 [US3] Commit `feat(foundations): green - offline sync` ; REFACTOR `refactor(foundations): offline sync`
 
 **Point de contrôle** : 1 000 enregistrements / 30 jours : 0 perte, 0 doublon.
@@ -144,16 +144,16 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T076 [P] [US2] Test Vitest `packages/i18n/tests/completeness.test.ts` : toutes les clés présentes en `ary`, `ary-Latn`, `ar`, `fr`, aucune valeur vide ; échec nommant la clé manquante (AC2.2, SC-004, cas limite clé manquante)
-- [ ] T077 [P] [US2] Test Vitest `packages/i18n/tests/fallback.test.ts` : langue d'appareil non prise en charge -> repli `fr` ; changement de langue à tout moment (cas limite, FR-007)
-- [ ] T078 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.i18n.test.tsx` : tous les textes de l'accueil dans chaque langue, aucun texte en dur (analyse de chaînes littérales), aucune clé manquante (AC2.2)
-- [ ] T079 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.rtl.test.tsx` : `ar` et `ary` en graphie arabe -> `I18nManager.isRTL`, direction de lecture, icônes directionnelles et alignements en miroir ; `ary-Latn` et `fr` en LTR (AC2.3, FR-008)
-- [ ] T080 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.states.test.tsx` : états chargement (squelette), vide (illustration + action), erreur (message + solution), hors ligne (indicateur) ; jamais d'écran vide (AC2.4, FR-009)
-- [ ] T081 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.touch.test.tsx` : chaque bouton >= 48 dp (AC2.5, FR-010)
-- [ ] T082 [P] [US2] Test Jest `apps/mobile/src/voice/__tests__/speak.test.ts` : lecture vocale du contenu dans la langue choisie via la synthèse de l'appareil (FR-011, R13)
-- [ ] T083 [P] [US2] Test Jest `apps/mobile/src/perf/__tests__/startupMark.test.ts` : la marque de démarrage est émise à l'affichage de l'accueil (AC2.1)
-- [ ] T084 [P] [US2] Test E2E Maestro `apps/mobile/maestro/home_languages.yaml` : ouverture < 3 s, bascule darija/arabe/français, les 4 états atteignables (AC2.1 à AC2.4)
-- [ ] T085 [US2] Lancer : T076 à T083 DOIVENT échouer ; commit `test(foundations): red - home screen`
+- [x] T076 [P] [US2] Test Vitest `packages/i18n/tests/completeness.test.ts` : toutes les clés présentes en `ary`, `ary-Latn`, `ar`, `fr`, aucune valeur vide ; échec nommant la clé manquante (AC2.2, SC-004, cas limite clé manquante)
+- [x] T077 [P] [US2] Test Vitest `packages/i18n/tests/fallback.test.ts` : langue d'appareil non prise en charge -> repli `fr` ; changement de langue à tout moment (cas limite, FR-007)
+- [x] T078 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.i18n.test.tsx` : tous les textes de l'accueil dans chaque langue, aucun texte en dur (analyse de chaînes littérales), aucune clé manquante (AC2.2)
+- [x] T079 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.rtl.test.tsx` : `ar` et `ary` en graphie arabe -> `I18nManager.isRTL`, direction de lecture, icônes directionnelles et alignements en miroir ; `ary-Latn` et `fr` en LTR (AC2.3, FR-008)
+- [x] T080 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.states.test.tsx` : états chargement (squelette), vide (illustration + action), erreur (message + solution), hors ligne (indicateur) ; jamais d'écran vide (AC2.4, FR-009)
+- [x] T081 [P] [US2] Test Jest `apps/mobile/src/screens/Home/__tests__/Home.touch.test.tsx` : chaque bouton >= 48 dp (AC2.5, FR-010)
+- [x] T082 [P] [US2] Test Jest `apps/mobile/src/voice/__tests__/speak.test.ts` : lecture vocale du contenu dans la langue choisie via la synthèse de l'appareil (FR-011, R13)
+- [x] T083 [P] [US2] Test Jest `apps/mobile/src/perf/__tests__/startupMark.test.ts` : la marque de démarrage est émise à l'affichage de l'accueil (AC2.1)
+- [x] T084 [P] [US2] Test E2E Maestro `apps/mobile/maestro/home_languages.yaml` : ouverture < 3 s, bascule darija/arabe/français, les 4 états atteignables (AC2.1 à AC2.4)
+- [x] T085 [US2] Lancer : T076 à T083 DOIVENT échouer ; commit `test(foundations): red - home screen`
 
 ### Implémentation (GREEN)
 
