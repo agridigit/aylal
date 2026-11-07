@@ -106,7 +106,7 @@
 ### Implémentation GREEN (non-écran)
 
 - [x] T047 [US2] GREEN contrôles : `packages/domain/src/phyto-controls.ts`, `services/api/app/domain/phyto_controls.py`, intégration dans `services/api/app/operations/service.py` et `registry.py` ; fait passer T042, T043 (partie avertissements), T046.
-- [ ] T048 [P] [US2] GREEN catalogue : `services/api/app/routers/phyto_products.py`, `services/workers/tasks/import_phyto_catalog.py` (import mensuel, `catalog_versions`, budget <= 3 Mo compressé) ; fait passer T043 (catalogue), T044.
+- [x] T048 [P] [US2] GREEN catalogue : `services/api/app/routers/phyto_products.py`, `services/workers/tasks/import_phyto_catalog.py` (import mensuel, `catalog_versions`, budget <= 3 Mo compressé) ; fait passer T043 (catalogue), T044.
 - [x] T049 [P] [US2] GREEN étiquette : `services/api/app/operations/label.py` (port `LabelRecognizer`, repli ; clé générée serveur `farms/{farm_id}/labels/{uuid}`, émission de `label_photo_id`, vérification ferme + utilisateur, purge à 24 h) ; fait passer T045 et T022a (voie REST).
 - [x] T050 [P] [US2] GREEN local : `apps/mobile/src/operations/localControls.ts`, `catalogCache.ts` (< 50 ms, date du catalogue) avec tests Jest `apps/mobile/src/operations/__tests__/localControls.test.ts` écrits avant (RED).
 - [ ] T051 [US2] REFACTOR récit 2.
@@ -144,7 +144,7 @@
 - [x] T065 [P] [US5] RED unitaire R5-A1 à R5-A4 : vecteur `packages/domain/vectors/f6_dictation.json`, `packages/domain/tests/dictation-parse.test.ts` (pré-remplissage, champs ambigus signalés sans être devinés, phrase non comprise -> formulaire vide, sans confirmation rien n'est enregistré).
 - [x] T066 [P] [US5] RED intégration R5 : `services/api/tests/integration/test_f6_dictation.py` (texte <= 500 car., audio jamais envoyé, port `VoiceParser` indisponible -> repli, limite 60/h/utilisateur, aucune opération créée par l'analyse) et contrat `services/api/tests/contract/test_f6_dictation_contract.py`.
 - [x] T067 [US5] RED e2e (API) R5-A4 : `services/api/tests/e2e/test_f6_dictation_e2e.py`.
-- [ ] T068 [US5] GREEN : `packages/domain/src/dictation-parse.ts`, `services/api/app/operations/parse.py` (port `VoiceParser`), route d'analyse ; fait passer T065 à T067.
+- [x] T068 [US5] GREEN : `packages/domain/src/dictation-parse.ts`, `services/api/app/operations/parse.py` (port `VoiceParser`), route d'analyse ; fait passer T065 à T067.
 - [ ] T069 [US5] [écran] RED puis GREEN F6-E7 `apps/mobile/src/screens/Dictation/` (+ `__tests__`, Maestro `apps/mobile/maestro/dictation.yaml`), confirmation obligatoire ; dépend de T004 + fusion 004.
 
 ## Phase 8 : Récit 6 — Exporter le registre (P2) [US6]
@@ -154,7 +154,7 @@
 - [x] T070 [P] [US6] RED unitaire R6-A1, R6-A4 : `services/api/tests/unit/test_f6_registry_columns.py` (mêmes colonnes PDF/XLSX : date, parcelle, culture, produit, matière active, dose, surface, opérateur, avertissements, « non contrôlé », écritures corrigées ; empreinte SHA-256 en pied).
 - [x] T071 [P] [US6] RED intégration R6-A1 à R6-A5, SC-005 : `services/api/tests/integration/test_f6_registry_export.py` (période/parcelle, <= 10 000 lignes, <= 5 ans, 1 export actif/ferme, 403 ouvrier, 404 inter-ferme, URL signée courte MinIO) et contrat `services/api/tests/contract/test_f6_registry_contract.py`.
 - [x] T072 [US6] RED e2e (API) : `services/api/tests/e2e/test_f6_registry_export_e2e.py` (worker, PDF et XLSX produits, 10 000 lignes < 60 s).
-- [ ] T073 [US6] GREEN : `services/api/app/operations/export_job.py`, `services/workers/tasks/build_registry_export.py`, `services/api/app/routers/registry.py`, `apps/mobile/src/operations/share.ts` ; clés d'export générées serveur, URL signée après contrôle ferme ; fait passer T070 à T072 et T022a (voie export).
+- [x] T073 [US6] GREEN : `services/api/app/operations/export_job.py`, `services/workers/tasks/build_registry_export.py`, `services/api/app/routers/registry.py`, `apps/mobile/src/operations/share.ts` ; clés d'export générées serveur, URL signée après contrôle ferme ; fait passer T070 à T072 et T022a (voie export).
 - [ ] T074 [US6] [écran] RED puis GREEN F6-E11 `apps/mobile/src/screens/RegistryExport/` (+ `__tests__`, Maestro `apps/mobile/maestro/registry_export.yaml`), partage WhatsApp ; dépend de T004 + fusion 004.
 
 ## Phase 9 : Récit 7 — Validation par le gestionnaire (P2) [US7]
@@ -163,7 +163,7 @@
 
 - [x] T075 [P] [US7] RED intégration R7-A1 à R7-A4 : `services/api/tests/integration/test_f6_validation_corrections.py` (ouvrier -> `pending_validation` avec opérateur ouvrier ; validation manager/owner ; ouvrier 403 ; correction -> `reversal` + `application` et historique auteur/date/avant/après ; l'ouvrier ne voit que ses lignes) et contrat `services/api/tests/contract/test_f6_validation_contract.py`.
 - [x] T076 [US7] RED e2e (API) : `services/api/tests/e2e/test_f6_worker_validation_e2e.py`.
-- [ ] T077 [US7] GREEN : routes validate/correct/corrections dans `services/api/app/routers/operations.py`, `services/api/app/operations/service.py` ; fait passer T075, T076.
+- [x] T077 [US7] GREEN : routes validate/correct/corrections dans `services/api/app/routers/operations.py`, `services/api/app/operations/service.py` ; fait passer T075, T076.
 - [ ] T078 [US7] [écran] RED puis GREEN F6-E9 `apps/mobile/src/screens/ManagerValidation/`, F6-E10 `apps/mobile/src/screens/CorrectionHistory/` (+ `__tests__`, Maestro `apps/mobile/maestro/worker_validation.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase finale : Finition

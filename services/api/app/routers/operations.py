@@ -13,7 +13,7 @@ from app.auth.rate_limit import check_rate_limit
 from app.config import get_settings
 from app.domain.harvest_date import earliest_harvest as earliest_harvest_of
 from app.domain.operation_limits import LIMITS
-from app.operations import label, service
+from app.operations import label, parse, service
 from app.operations.access import STAFF
 from app.operations.schemas import OperationInput, OperationPatch, ParseRequest, RescheduleRequest
 
@@ -91,11 +91,20 @@ async def check_operation(body: OperationInput, ctx: FarmContext = Depends(_REQU
 
 
 @router.post("/operations/parse", response_model=None)
-async def parse_operation(body: ParseRequest, ctx: FarmContext = Depends(_REQUIRE_OPERATION_CREATE)) -> Any:
+async def parse_operation(
+    body: ParseRequest, ctx: FarmContext = Depends(_REQUIRE_OPERATION_CREATE),
+    parser: parse.VoiceParser = Depends(parse.get_voice_parser),
+) -> Any:
     await check_rate_limit(f"rl:parse:{ctx.user_id}", 60)
+    unavailable = JSONResponse(status_code=503, content={"code": "parse_unavailable"})
     if not get_settings().nlu_url:
-        return JSONResponse(status_code=503, content={"code": "parse_unavailable"})
-    return JSONResponse(status_code=503, content={"code": "parse_unavailable"})  # the NLU port is wired with the dictation story
+        return unavailable
+    parcels = await parse.visible_parcels(ctx.session, ctx.farm_id, ctx.user_id, ctx.role)
+    try:
+        raw = await parser.parse(body.text, parcels=parcels)
+    except (parse.ParserUnavailable, TimeoutError, OSError, ValueError, KeyError):
+        return unavailable
+    return parse.sanitise(raw, {p["id"] for p in parcels})
 
 
 @router.post("/operations/label", response_model=None)

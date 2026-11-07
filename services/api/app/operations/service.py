@@ -61,6 +61,13 @@ def _num(value: Any) -> Any:
     return float(value) if isinstance(value, Decimal) else value
 
 
+def _json_default(value: Any) -> Any:
+    """History values stay JSON numbers (Decimal -> int or float), never strings."""
+    if isinstance(value, Decimal):
+        return int(value) if value == value.to_integral_value() else float(value)
+    return str(value)
+
+
 def _clean(row: dict[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for key, value in row.items():
@@ -545,8 +552,8 @@ async def correct(
                 " registry_entry_id, server_version) VALUES (:i, :f, :o, :field, CAST(:b AS jsonb), CAST(:a AS jsonb), :u,"
                 " :src, :r, :sv)"
             ),
-            {"i": uuid.uuid4(), "f": farm_id, "o": operation_id, "field": field, "b": json.dumps(op.get(field), default=str),
-             "a": json.dumps(value, default=str), "u": user_id, "src": "sync_conflict" if stale else source,
+            {"i": uuid.uuid4(), "f": farm_id, "o": operation_id, "field": field, "b": json.dumps(op.get(field), default=_json_default),
+             "a": json.dumps(value, default=_json_default), "u": user_id, "src": "sync_conflict" if stale else source,
              "r": new_ids[0] if new_ids else None, "sv": new_version},
         )
     return await detail(session, farm_id, operation_id, user_id, role)

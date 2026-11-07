@@ -5,12 +5,14 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from sqlalchemy import text
 
 from app.auth.farm_context import NOT_FOUND, FarmContext, require
 from app.domain.operation_limits import LIMITS
-from app.operations import exports, registry
+from app.operations import exports, queue, registry
 from app.operations.schemas import RegistryExportRequest
 from app.operations.service import OperationError
+from app.operations.storage import ObjectStorage, get_storage
 
 router = APIRouter(prefix="/farms/{farm_id}/registry")
 _FROM = Query(default=None, alias="from")
@@ -58,12 +60,22 @@ async def request_export(
     except OperationError as e:
         raise _http(e) from e
     await ctx.session.commit()
+    try:
+        await queue.enqueue_registry_export(out["id"])
+    except Exception as e:  # the job would stay queued and block the farm's slot: fail it and free the slot
+        await ctx.session.execute(text("UPDATE export_jobs SET state = 'failed' WHERE id = :i"), {"i": out["id"]})
+        await ctx.session.commit()
+        raise HTTPException(status_code=503, detail={"code": "export_unavailable"}) from e
     return out
 
 
 @router.get("/exports/{job_id}")
-async def export_status(job_id: uuid.UUID, ctx: FarmContext = Depends(_REQUIRE_REGISTRY_EXPORT)) -> dict[str, Any]:
+async def export_status(
+    job_id: uuid.UUID, response: Response, ctx: FarmContext = Depends(_REQUIRE_REGISTRY_EXPORT),
+    storage: ObjectStorage = Depends(get_storage),
+) -> dict[str, Any]:
+    response.headers["Cache-Control"] = "no-store"
     try:
-        return await exports.job_status(ctx.session, ctx.farm_id, job_id)
+        return await exports.job_status(ctx.session, ctx.farm_id, job_id, ctx.user_id, storage)
     except OperationError as e:
         raise _http(e) from e

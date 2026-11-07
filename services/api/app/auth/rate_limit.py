@@ -7,7 +7,7 @@ from app.config import get_settings
 
 async def check_rate_limit(key: str, limit: int, window_seconds: int = 3600) -> None:
     """Count one hit on `key`; raise 429 + Retry-After once more than `limit` hits fall in the window."""
-    client = redis.from_url(get_settings().redis_url)  # one client per call: callers live on different event loops
+    client = redis.from_url(get_settings().redis_url)  # type: ignore[no-untyped-call]  # one client per call: callers live on different event loops
     try:
         async with client.pipeline(transaction=True) as pipe:
             pipe.incr(key)
