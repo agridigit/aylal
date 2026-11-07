@@ -94,3 +94,11 @@ Audit de `apps/mobile/dist/app-release.apk` (49 921 377 o, arm64-v8a, R8 actif) 
 Symboles de debug : déjà retirés par AGP (pas de `doNotStrip`) ; `.eh_frame` est nécessaire aux exceptions C++. Pas de bibliothèque en double (une seule `libc++_shared.so`, une seule ABI).
 
 Conclusion mesurée : le maximum réaliste de tous les leviers non risqués est d'environ 0,6 à 0,9 Mo (49,9 -> environ 49,1 Mo) pour un objectif de 40 Mo (-9,9 Mo). Aucun levier conforme au CPS et à la constitution ne comble l'écart. La compression des `.so` reste écartée (elle déplacerait la taille vers l'installation, voir plus haut). Seuil non relâché, carte non retirée, aucun test modifié : `apk-size` reste rouge à 49,9 Mo ; décision humaine requise (amender le budget CPS §15 pour F2, ou retirer/différer la carte vectorielle).
+
+## Dérogation au budget APK (CPS §15)
+
+- Valeur : limite APK portée de 40 Mo à 52 Mo pour la branche `003-fields-crops` uniquement (`specs/003-fields-crops/apk-budget.env`). Le défaut de 40 Mo reste inchangé ailleurs ; plafond absolu d'une dérogation : 60 Mo.
+- Mesures : `app-release.apk` = 49 921 377 o (49,9 Mo, arm64-v8a, R8 actif) ; `libmaplibre.so` = 10,85 Mo, la carte vectorielle en dépend (voir audit ci-dessus).
+- Alternatives écartées : retirer ou différer la carte (contraire au périmètre de F2) ; compresser les `.so` (déplace la taille vers l'installation) ; exclure `libgifimage`/`libnative-filters` (gain 1,2 %, risque de plantage non vérifiable) ; autres leviers, gain total estimé 0,6 à 0,9 Mo, insuffisant.
+- Décision : poursuite avec dérogation, choisie par le porteur (gouvernance de la constitution : écart de seuil justifié dans decisions.md).
+- Condition de réexamen : allègement futur de MapLibre ou découpage en AAB (split par ABI/densité) ; la taille installée reste à re-mesurer sur appareil réel.
