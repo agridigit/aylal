@@ -1,5 +1,10 @@
 """F2 geometry rules (pure). Mirror of packages/domain/src/{geometry,area,overlap,block}.ts."""
 import math
+from typing import Any
+
+Point = Any
+Ring = Any
+Json = dict[str, Any]
 
 AUTHALIC_RADIUS_M = 6371007.2
 MIN_VERTICES, MAX_VERTICES, MAX_IMPORT_FEATURES = 3, 500, 200
@@ -13,7 +18,7 @@ M_PER_DEG = 111_194.9
 TOUCH_EPS_M = 0.05
 
 
-def area_m2(ring) -> float:
+def area_m2(ring: Ring) -> float:
     n = len(ring)
     if n < 3:
         return 0.0
@@ -25,7 +30,7 @@ def area_m2(ring) -> float:
     return abs(total) * AUTHALIC_RADIUS_M**2 / 2
 
 
-def area_ha(ring) -> float:
+def area_ha(ring: Ring) -> float:
     return area_m2(ring) / 10_000
 
 
@@ -33,7 +38,7 @@ def display_area_ha(ha: float) -> float:
     return math.floor(ha * 100 + 0.5 + 1e-9) / 100
 
 
-def open_ring(ring) -> list[list[float]]:
+def open_ring(ring: Ring) -> list[list[float]]:
     out: list[list[float]] = []
     for p in ring:
         if not out or out[-1][0] != p[0] or out[-1][1] != p[1]:
@@ -43,11 +48,11 @@ def open_ring(ring) -> list[list[float]]:
     return out
 
 
-def _cross(o, a, b) -> float:
-    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+def _cross(o: Point, a: Point, b: Point) -> float:
+    return float((a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]))
 
 
-def _proper_crossing(a, b, c, d):
+def _proper_crossing(a: Point, b: Point, c: Point, d: Point) -> list[float] | None:
     d1, d2, d3, d4 = _cross(a, b, c), _cross(a, b, d), _cross(c, d, a), _cross(c, d, b)
     if d1 * d2 < 0 and d3 * d4 < 0:
         t = d3 / (d3 - d4)
@@ -55,9 +60,9 @@ def _proper_crossing(a, b, c, d):
     return None
 
 
-def self_crossings(pts) -> list[list[float]]:
+def self_crossings(pts: Ring) -> list[list[float]]:
     n = len(pts)
-    out = []
+    out: list[list[float]] = []
     for i in range(n):
         for j in range(i + 2, n):
             if i == 0 and j == n - 1:
@@ -68,7 +73,7 @@ def self_crossings(pts) -> list[list[float]]:
     return out
 
 
-def validate_ring(inp) -> dict:
+def validate_ring(inp: Ring) -> Json:
     # Raw length cap before any O(n^2) work (DoS): 500 vertices plus the closing point.
     if len(inp) > MAX_VERTICES + 1:
         return {"ok": False, "code": "too_many_vertices"}
@@ -94,17 +99,17 @@ def validate_ring(inp) -> dict:
     return {"ok": True, "ring": ring, "area_ha": m2 / 10_000}
 
 
-def is_in_morocco(point) -> bool:
+def is_in_morocco(point: Point) -> bool:
     e = MOROCCO_EXTENT
-    return e["min_lon"] <= point[0] <= e["max_lon"] and e["min_lat"] <= point[1] <= e["max_lat"]
+    return bool(e["min_lon"] <= point[0] <= e["max_lon"] and e["min_lat"] <= point[1] <= e["max_lat"])
 
 
-def centroid(ring) -> list[float]:
+def centroid(ring: Ring) -> list[float]:
     r = open_ring(ring)
     return [sum(p[0] for p in r) / len(r), sum(p[1] for p in r) / len(r)]
 
 
-def _dist_m(p, a, b, cos_lat) -> float:
+def _dist_m(p: Point, a: Point, b: Point, cos_lat: float) -> float:
     ax, ay, bx, by = a[0] * cos_lat * M_PER_DEG, a[1] * M_PER_DEG, b[0] * cos_lat * M_PER_DEG, b[1] * M_PER_DEG
     px, py = p[0] * cos_lat * M_PER_DEG, p[1] * M_PER_DEG
     dx, dy = bx - ax, by - ay
@@ -115,7 +120,7 @@ def _dist_m(p, a, b, cos_lat) -> float:
     return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
 
 
-def _douglas_peucker(pts, tol) -> list[list[float]]:
+def _douglas_peucker(pts: Ring, tol: float) -> list[list[float]]:
     if len(pts) < 3:
         return [[p[0], p[1]] for p in pts]
     cos_lat = math.cos(math.radians(pts[0][1]))
@@ -135,7 +140,7 @@ def _douglas_peucker(pts, tol) -> list[list[float]]:
     return [[p[0], p[1]] for p, k in zip(pts, keep, strict=True) if k]
 
 
-def simplify_track(points, tol: float = SIMPLIFY_TOLERANCE_M) -> list[list[float]]:
+def simplify_track(points: Ring, tol: float = SIMPLIFY_TOLERANCE_M) -> list[list[float]]:
     out = _douglas_peucker(points, tol)
     while len(out) > MAX_VERTICES:
         tol *= 2
@@ -143,8 +148,8 @@ def simplify_track(points, tol: float = SIMPLIFY_TOLERANCE_M) -> list[list[float
     return out
 
 
-def import_features(geojson: dict) -> dict:
-    entities = []
+def import_features(geojson: Json) -> Json:
+    entities: list[tuple[int, Any, Any]] = []
     for index, f in enumerate(geojson.get("features") or []):
         g = (f or {}).get("geometry") or {}
         props = (f or {}).get("properties") or {}
@@ -160,7 +165,7 @@ def import_features(geojson: dict) -> dict:
         raise ValueError("too_many_features")
     if sum(len(open_ring(r)) for _, r, _ in entities if r is not None) > MAX_IMPORT_VERTICES_TOTAL:
         raise ValueError("too_many_vertices_total")
-    result: dict = {"valid": [], "rejected": []}
+    result: Json = {"valid": [], "rejected": []}
     for index, ring, props in entities:
         if ring is None:
             result["rejected"].append({"index": index, "reason": "not_a_polygon"})
@@ -175,18 +180,18 @@ def import_features(geojson: dict) -> dict:
 
 # ---- planar helpers (overlap, contiguity, block containment) ----
 
-def _project(ring, lon0, lat0):
+def _project(ring: Ring, lon0: float, lat0: float) -> list[list[float]]:
     c = math.cos(math.radians(lat0))
     return [[(p[0] - lon0) * c * M_PER_DEG, (p[1] - lat0) * M_PER_DEG] for p in open_ring(ring)]
 
 
-def _signed(p) -> float:
-    return sum(a[0] * p[(i + 1) % len(p)][1] - p[(i + 1) % len(p)][0] * a[1] for i, a in enumerate(p)) / 2
+def _signed(p: Ring) -> float:
+    return float(sum(a[0] * p[(i + 1) % len(p)][1] - p[(i + 1) % len(p)][0] * a[1] for i, a in enumerate(p)) / 2)
 
 
-def _triangulate(poly):
+def _triangulate(poly: Ring) -> list[list[Point]]:
     p = list(reversed(poly)) if _signed(poly) < 0 else list(poly)
-    tris = []
+    tris: list[list[Point]] = []
     guard = len(p) * len(p) + 10
     while len(p) > 3 and guard > 0:
         guard -= 1
@@ -208,13 +213,13 @@ def _triangulate(poly):
     return tris
 
 
-def _inter(p, q, dp, dc):
+def _inter(p: Point, q: Point, dp: float, dc: float) -> list[float]:
     t = dp / (dp - dc)
     return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
 
 
-def _clip_convex(subject, clip):
-    out = subject
+def _clip_convex(subject: Ring, clip: Ring) -> list[Point]:
+    out: list[Point] = list(subject)
     for i in range(len(clip)):
         if not out:
             break
@@ -232,18 +237,18 @@ def _clip_convex(subject, clip):
     return out
 
 
-def intersection_area_m2(a, b) -> float:
+def intersection_area_m2(a: Ring, b: Ring) -> float:
     first = open_ring(a)[0]
     pa, pb = _project(a, first[0], first[1]), _project(b, first[0], first[1])
     subject = list(reversed(pa)) if _signed(pa) < 0 else pa
     return sum(abs(_signed(c)) if len(c) >= 3 else 0.0 for c in (_clip_convex(subject, t) for t in _triangulate(pb)))
 
 
-def rings_touch(a, b) -> bool:
+def rings_touch(a: Ring, b: Ring) -> bool:
     first = open_ring(a)[0]
     pa, pb = _project(a, first[0], first[1]), _project(b, first[0], first[1])
 
-    def seg_dist(p, s, e):
+    def seg_dist(p: Point, s: Point, e: Point) -> float:
         dx, dy = e[0] - s[0], e[1] - s[1]
         l2 = dx * dx + dy * dy
         t = 0.0 if l2 == 0 else max(0.0, min(1.0, ((p[0] - s[0]) * dx + (p[1] - s[1]) * dy) / l2))
@@ -261,11 +266,11 @@ def rings_touch(a, b) -> bool:
     return intersection_area_m2(a, b) > 0
 
 
-def overlap_warnings(ring, others) -> list[str]:
+def overlap_warnings(ring: Ring, others: Any) -> list[str]:
     mine = area_m2(ring)
     return [o["id"] for o in others if intersection_area_m2(ring, o["ring"]) > OVERLAP_WARN_RATIO * min(mine, area_m2(o["ring"]))]
 
 
-def block_inside_field(block, field) -> bool:
+def block_inside_field(block: Ring, field: Ring) -> bool:
     total = area_m2(block)
     return total > 0 and (total - intersection_area_m2(block, field)) / total <= BLOCK_OVERFLOW_RATIO

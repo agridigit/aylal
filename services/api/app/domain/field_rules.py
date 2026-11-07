@@ -1,12 +1,15 @@
 """F2 field rules (pure). Mirror of packages/domain/src/{field,merge}.ts."""
+from typing import Any
+
 from app.domain.geometry import area_ha, centroid, is_in_morocco, rings_touch, validate_ring
 
 LIMITS = {"MIN_VERTICES": 3, "MAX_VERTICES": 500, "MAX_AREA_HA": 5000, "MAX_FIELDS_PER_FARM": 500, "MAX_NAME_LENGTH": 80}
+Json = dict[str, Any]
 IMAGERY_MIN_AREA_HA = 0.3
 IRRIGATION_MODES = ("rainfed", "gravity", "sprinkler", "drip", "pivot")
 
 
-def can_create_field(current_count: int) -> dict:
+def can_create_field(current_count: int) -> Json:
     if current_count < LIMITS["MAX_FIELDS_PER_FARM"]:
         return {"ok": True}
     return {"ok": False, "code": "field_limit_reached"}
@@ -16,7 +19,7 @@ def imagery_suitable(area: float, under_greenhouse: bool) -> bool:
     return area >= IMAGERY_MIN_AREA_HA and not under_greenhouse
 
 
-def validate_field(inp: dict) -> dict:
+def validate_field(inp: Json) -> Json:
     name = inp.get("name")
     name = name.strip() if isinstance(name, str) else ""
     if not 1 <= len(name) <= LIMITS["MAX_NAME_LENGTH"]:
@@ -44,7 +47,7 @@ def validate_field(inp: dict) -> dict:
     }
 
 
-def merge_fields(survivor: dict, others: list, seasons: list) -> dict:
+def merge_fields(survivor: Json, others: list[Json], seasons: list[Json]) -> Json:
     if not others:
         return {"ok": False, "code": "merge_needs_two_fields"}
     allf = [survivor, *others]
@@ -59,7 +62,7 @@ def merge_fields(survivor: dict, others: list, seasons: list) -> dict:
         return {"ok": False, "code": "merge_not_contiguous"}
     ids = {f["id"] for f in allf}
     mine = [s for s in seasons if s["field_id"] in ids]
-    by_crop: dict[str, list] = {}
+    by_crop: dict[str, list[Json]] = {}
     for s in mine:
         if s["ended_at"] is None:
             by_crop.setdefault(s["crop_id"], []).append(s)

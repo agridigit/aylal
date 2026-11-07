@@ -1,12 +1,15 @@
 """F2 season, crop and phenology rules (pure). Mirror of packages/domain/src/{season,phenology}.ts."""
 import datetime as dt
+from typing import Any
+
+Json = dict[str, Any]
 
 
-def can_start_season(active, crop_id: str) -> str:
+def can_start_season(active: list[Json], crop_id: str) -> str:
     return "season_already_active" if any(s["crop_id"] == crop_id for s in active) else "ok"
 
 
-def plan_season_start(active, crop_id: str, close_ids) -> dict:
+def plan_season_start(active: list[Json], crop_id: str, close_ids: Any) -> Json:
     """Rotation: close only the requested active seasons; the new crop may not stay active twice."""
     closing = set(close_ids)
     if any(s["id"] not in closing and s["crop_id"] == crop_id for s in active):
@@ -14,7 +17,7 @@ def plan_season_start(active, crop_id: str, close_ids) -> dict:
     return {"ok": True, "closeIds": [s["id"] for s in active if s["id"] in closing]}
 
 
-def season_date(crop: dict, inp: dict, today: str) -> dict:
+def season_date(crop: Json, inp: Json, today: str) -> Json:
     year, sowing = inp.get("planting_year"), inp.get("sowing_date")
     if year is not None and sowing is not None:
         return {"ok": False, "code": "both_dates_forbidden"}
@@ -35,7 +38,7 @@ def season_date(crop: dict, inp: dict, today: str) -> dict:
     return {"ok": True}
 
 
-def estimate_stage(crop: dict, season: dict, today: str, gdd: float | None = None) -> dict:
+def estimate_stage(crop: Json, season: Json, today: str, gdd: float | None = None) -> Json:
     stages = sorted(crop.get("stages") or [], key=lambda s: s["gdd_from"])
     if not stages:
         return {"stage": None, "approximate": False}
@@ -55,15 +58,15 @@ def estimate_stage(crop: dict, season: dict, today: str, gdd: float | None = Non
     return {"stage": current["key"], "approximate": approximate}
 
 
-def display_stage(season: dict):
+def display_stage(season: Json) -> Any:
     return season.get("stage_corrected") or season.get("stage_estimated")
 
 
-def reestimate_stage(crop: dict, season: dict, today: str, gdd: float | None = None) -> dict:
+def reestimate_stage(crop: Json, season: Json, today: str, gdd: float | None = None) -> Json:
     """Recompute the estimate only; the farmer's correction is never touched."""
     return {**season, "stage_estimated": estimate_stage(crop, season, today, gdd)["stage"]}
 
 
-def advice_enabled(crop: dict) -> bool:
+def advice_enabled(crop: Json) -> bool:
     """Advice needs validated agronomy and stages; free crops have none."""
     return crop.get("has_agronomy") is True and bool(crop.get("stages"))
