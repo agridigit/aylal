@@ -57,6 +57,8 @@ async def authorize(session: AsyncSession, user_id: uuid.UUID, ops: list[dict[st
             raise NOT_FOUND
         if op["kind"] == "patch" and existing is None:
             raise NOT_FOUND
+        if existing is not None and role not in access.STAFF and not await access.can_see(session, farm_id, op["record_id"], user_id, role):
+            raise NOT_FOUND
         ids = _uuids(op["fields"].get("parcel_ids")) if op["kind"] == "put" and existing is None else None
         if ids:
             pending = [p for p in ids if not (role in access.STAFF and (farm_id, p) in created)]

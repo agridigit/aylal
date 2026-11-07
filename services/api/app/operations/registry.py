@@ -22,13 +22,29 @@ _COPY = (
 )
 
 
-def retain_until(performed_on: dt.date, years: int | None = None) -> dt.date:
-    """performed_on + the retention period (default AYLAL_REGISTRY_RETENTION_YEARS, 5 years)."""
-    target = performed_on.year + (years if years is not None else get_settings().registry_retention_years)
+def _plus_years(day: dt.date, years: int) -> dt.date:
     try:
-        return performed_on.replace(year=target)
+        return day.replace(year=day.year + years)
     except ValueError:  # 29 February
-        return performed_on.replace(year=target, day=28)
+        return day.replace(year=day.year + years, day=28)
+
+
+def retain_until(performed_on: dt.date, *, recorded_on: dt.date, years: int | None = None) -> dt.date:
+    """max(performed_on, recorded_on) + the retention period (default AYLAL_REGISTRY_RETENTION_YEARS, 5 years).
+
+    A backdated operation never shortens the legal retention: it runs from the server recording date at least.
+    """
+    return _plus_years(max(performed_on, recorded_on), years if years is not None else get_settings().registry_retention_years)
+
+
+async def _chain_retention(session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID) -> dt.date | None:
+    """Longest retain_until already recorded for the operation (its applications and reversals)."""
+    return (
+        await session.execute(
+            text("SELECT max(retain_until) FROM registry_entries WHERE farm_id = :f AND operation_id = :o"),
+            {"f": farm_id, "o": operation_id},
+        )
+    ).scalar()
 
 
 def product_lines(op: dict[str, Any]) -> list[dict[str, Any]]:
@@ -53,6 +69,10 @@ async def write_applications(
 ) -> list[uuid.UUID]:
     """Insert one `application` per parcel and product line, with the snapshot of that moment."""
     operator = await _operator_name(session, op)
+    retain = retain_until(op["performed_on"], recorded_on=dt.date.today())
+    longest = await _chain_retention(session, op["farm_id"], op["id"])
+    if longest is not None:
+        retain = max(retain, longest)
     areas = [float(p["area_ha"] or 0) for p in parcels]
     weights = areas if sum(areas) > 0 else [1.0] * len(parcels)
     quantity = op.get("quantity_total")
@@ -82,7 +102,7 @@ async def write_applications(
                     "dar": uses.get("dar_days") if uses else None, "maxdose": uses.get("max_dose") if uses else None,
                     "cat": product["catalog_version_id"] if product else None, "operator": operator,
                     "ouser": op.get("operator_user_id"), "warn": json.dumps(op.get("warnings") or []),
-                    "season": op.get("season_id"), "retain": retain_until(op["performed_on"]),
+                    "season": op.get("season_id"), "retain": retain,
                 },
             )
     return ids

@@ -70,6 +70,13 @@ async def lines_of(
 
 
 async def can_see(session: AsyncSession, farm_id: uuid.UUID, operation_id: uuid.UUID, user_id: uuid.UUID, role: str) -> bool:
+    """Staff: always. Anyone else: only when EVERY line of the operation is visible to them (never a partial view)."""
     if role in STAFF:
         return True
-    return bool(await lines_of(session, farm_id, operation_id, user_id, role))
+    total = (
+        await session.execute(
+            text("SELECT count(*) FROM operation_parcels WHERE farm_id = :f AND operation_id = :o"), {"f": farm_id, "o": operation_id}
+        )
+    ).scalar_one()
+    visible = await lines_of(session, farm_id, operation_id, user_id, role)
+    return bool(total > 0 and len(visible) == total)

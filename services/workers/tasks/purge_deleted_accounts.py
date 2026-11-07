@@ -63,7 +63,7 @@ class SqlAccountRepo:
                     " AND o.removed_at IS NULL AND NOT (o.user_id = ANY($1)))",
                     ids, now,
                 )
-                # the registry is kept for its legal duration but loses the operator's personal data
+                # the registry, operations and corrections keep their regulatory content but lose the operator's personal data
                 await conn.fetch("SELECT anonymize_registry_operator(u) FROM unnest($1::uuid[]) AS u", ids)
                 await conn.execute("DELETE FROM worker_parcels WHERE user_id = ANY($1)", ids)
                 await conn.execute("DELETE FROM farm_members WHERE user_id = ANY($1)", ids)
