@@ -1,4 +1,5 @@
 """Dev token, idempotent upload and conflict acknowledgement (contracts/openapi.yaml)."""
+import os
 import uuid
 from typing import Any, Literal
 
@@ -41,7 +42,7 @@ async def dev_token(
     body: DevTokenRequest, session: AsyncSession = Depends(get_session)
 ) -> dict[str, str]:
     settings = get_settings()
-    if settings.env not in ("dev", "test"):
+    if os.environ.get("AYLAL_ENABLE_DEV_TOKEN") != "1" or settings.env not in ("dev", "test"):
         raise NOT_FOUND
     rows = (
         await session.execute(

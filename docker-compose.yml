@@ -94,6 +94,10 @@ services:
     environment:
       AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
       AYLAL_REDIS_URL: redis://redis:6379/0
+      # Dev stack: env explicit, secret and dev-token flag come from .env (never hardcoded).
+      AYLAL_ENV: ${AYLAL_ENV:-dev}
+      AYLAL_JWT_SECRET: ${AYLAL_JWT_SECRET:-}
+      AYLAL_ENABLE_DEV_TOKEN: ${AYLAL_ENABLE_DEV_TOKEN:-0}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
