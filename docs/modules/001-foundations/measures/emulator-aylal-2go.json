@@ -1,0 +1,32 @@
+[
+    {
+        "metric": "startup_ms",
+        "value": 35,
+        "unit": "ms",
+        "threshold": 3000,
+        "device": "emulator aylal-2go (provisoire)",
+        "date": "2026-11-07",
+        "verdict": "met",
+        "build": "e2e"
+    },
+    {
+        "metric": "map_open_ms",
+        "value": 4,
+        "unit": "ms",
+        "threshold": 2000,
+        "device": "emulator aylal-2go (provisoire)",
+        "date": "2026-11-07",
+        "verdict": "met",
+        "build": "e2e"
+    },
+    {
+        "metric": "fps",
+        "value": 60.3,
+        "unit": "fps",
+        "threshold": 60,
+        "device": "emulator aylal-2go (provisoire)",
+        "date": "2026-11-07",
+        "verdict": "met",
+        "build": "e2e"
+    }
+]
