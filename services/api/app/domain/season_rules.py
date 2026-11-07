@@ -6,6 +6,14 @@ def can_start_season(active, crop_id: str) -> str:
     return "season_already_active" if any(s["crop_id"] == crop_id for s in active) else "ok"
 
 
+def plan_season_start(active, crop_id: str, close_ids) -> dict:
+    """Rotation: close only the requested active seasons; the new crop may not stay active twice."""
+    closing = set(close_ids)
+    if any(s["id"] not in closing and s["crop_id"] == crop_id for s in active):
+        return {"ok": False, "code": "season_already_active"}
+    return {"ok": True, "closeIds": [s["id"] for s in active if s["id"] in closing]}
+
+
 def season_date(crop: dict, inp: dict, today: str) -> dict:
     year, sowing = inp.get("planting_year"), inp.get("sowing_date")
     if year is not None and sowing is not None:

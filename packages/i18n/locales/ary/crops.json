@@ -1,1 +1,20 @@
-{}
+{
+  "names": {
+    "olive": "الزيتون",
+    "citrus": "الحامض",
+    "durum-wheat": "القمح الصلب",
+    "soft-wheat": "القمح الطري",
+    "barley": "الشعير",
+    "tomato": "ماطيشة",
+    "potato": "بطاطا",
+    "onion": "البصلة",
+    "berries": "الفواكه الحمرا",
+    "avocado": "الأفوكا",
+    "date-palm": "النخيل",
+    "almond": "اللوز",
+    "grape": "الدالية",
+    "sugar-beet": "الشمندر",
+    "alfalfa": "الفصة",
+    "silage-maize": "الذرة العلفية"
+  }
+}

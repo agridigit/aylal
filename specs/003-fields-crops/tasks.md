@@ -34,7 +34,7 @@
 - [x] T016 Squelette des routeurs `services/api/app/routers/{fields.py,seasons.py,blocks.py,crops.py}` derrière `farm_context`/`require(action)` ; fait passer **T005 (404 inter-ferme)** et **T006 (403 par rôle, 404 non attribuée)** une fois les routes alimentées par les récits.
 - [x] T017 Autorisation de synchro `services/api/app/sync/fields.py` (`authorize` + `apply` pour `parcels`, `seasons`, `field_blocks`, `crops`, `field_commands`, champs serveur ignorés) branchée dans `services/api/app/routers/sync.py` ; fait passer **T007**.
 - [x] T018 [P] Règles de synchro PowerSync étendues (parcelles, campagnes, blocs, cultures ; ouvrier : ses parcelles seulement) dans `infra/powersync/sync-rules.yaml` conformes à `specs/003-fields-crops/contracts/powersync-sync-rules.yaml` (enfants de parcelle ouvrier filtrés sur parcelle parente non archivée), tests `services/api/tests/integration/test_f2_sync_rules_roles.py` et T007b écrits avant.
-- [ ] T019 [P] (RED écrit : `services/api/tests/contract/test_f2_openapi_sync.py`, drift `GET /v1/farms/{farm_id}/crops` non documenté) Contrat : synchroniser `specs/003-fields-crops/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f2_openapi_sync.py` écrit avant.
+- [x] T019 [P] (RED écrit : `services/api/tests/contract/test_f2_openapi_sync.py`, drift `GET /v1/farms/{farm_id}/crops` non documenté) Contrat : synchroniser `specs/003-fields-crops/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f2_openapi_sync.py` écrit avant.
 - [ ] T020 [P] Garde-fou Maroc : test d'allowlist `services/api/tests/unit/test_f2_no_foreign_tiles.py` et `apps/mobile/src/fields/__tests__/mapStyle.allowlist.test.ts` (style de carte et code mobile ne référencent que `AYLAL_TILES_BASE_URL`, aucun domaine tiers de tuiles/géocodage), puis `apps/mobile/src/fields/mapStyle.ts` ; emprise Maroc : 422 `outside_morocco` testé dans `services/api/tests/integration/test_f2_outside_morocco.py` (garde-fou n°6).
 
 **Point de contrôle** : T005 à T011 verts (sauf routes alimentées par les récits), `make test-api` et `make test-domain` verts.
@@ -53,7 +53,7 @@
 - [x] T027 `services/api/app/routers/fields.py` (create, patch, archive) et règles serveur ; fait passer T023 ; alimente T005, T006.
 - [x] T028 [P] `services/api/app/sync/fields.py` (apply `parcels`) ; fait passer T024.
 - [x] T029 [P] Mobile : `apps/mobile/src/fields/{drawSession.ts,gpsWalk.ts}` (expo-location, précision, simplification) ; fait passer T022.
-- [ ] T030 [P] (RED écrit : `packages/i18n/tests/f2-keys.test.ts`) i18n `packages/i18n/locales/{ary,ar,fr}/fields.json` (dessin, erreurs de croisement, précision GPS).
+- [x] T030 [P] (RED écrit : `packages/i18n/tests/f2-keys.test.ts`) i18n `packages/i18n/locales/{ary,ar,fr}/fields.json` (dessin, erreurs de croisement, précision GPS).
 
 ### Écrans (dépendent de T004)
 - [ ] T031 [écran] [P] [dépend de T004] Tests RED écrans F2-E2 dessin : touches et GPS, `PrecisionMeter`, explication visuelle du croisement, 4 états, miroir RTL, dans `apps/mobile/src/screens/FieldDraw/__tests__/` (R1-A3, R1-A4, CL).
@@ -115,7 +115,7 @@
 - [x] T059 [P] E2E service `services/api/tests/e2e/test_split_merge_e2e.py` : découper puis fusionner, vérifier surfaces et rattachements, rejeu hors ligne (R5-A1, R5-A2).
 
 ### Implémentation (non-écran)
-- [ ] T060 `services/api/app/routers/blocks.py`, route `POST .../fields/merge`, `services/api/app/sync/fields.py` (`field_blocks`, `field_commands`).
+- [x] T060 `services/api/app/routers/blocks.py`, route `POST .../fields/merge`, `services/api/app/sync/fields.py` (`field_blocks`, `field_commands`).
 - [ ] T061 [P] Archivage 90 jours : `GET .../fields/archived`, `POST .../restore`, `services/workers/tasks/purge_archived_fields.py` ; tests écrits avant dans `services/api/tests/integration/test_field_archive_restore.py` (restaurable ≤ 90 j, 404 après purge, 404 pour l'ouvrier) et `services/workers/tests/integration/test_purge_archived_fields.py` (CL).
 - [ ] T062 [P] Export et purge de compte/ferme étendus (`services/api/app/accounts/export.py`) ; test écrit avant `services/api/tests/integration/test_f2_export_purge.py` (ouvrier : ses parcelles seulement).
 
@@ -131,7 +131,7 @@
 - [x] T067 [P] E2E service `services/api/tests/e2e/test_seasons_e2e.py` : enchaîner deux campagnes, consulter la première (R6-A1 à A3).
 
 ### Implémentation (non-écran)
-- [ ] T068 Rotation, clôture et historique dans `services/api/app/routers/seasons.py` et `services/api/app/domain/season_rules.py` ; clés `seasons.json` (R6).
+- [x] T068 Rotation, clôture et historique dans `services/api/app/routers/seasons.py` et `services/api/app/domain/season_rules.py` ; clés `seasons.json` (R6).
 
 ### Écrans (dépendent de T004)
 - [ ] T069 [écran] [P] [dépend de T004] Tests RED écran F2-E6 campagnes et historique (blocage explicité de la double campagne, 4 états, RTL) dans `apps/mobile/src/screens/Seasons/__tests__/` et Maestro `apps/mobile/maestro/seasons.yaml` (R6-A1 à A3).
@@ -147,8 +147,8 @@
 ## Phase 8c : Contournement du plafond de 500 parcelles actives (constat sécurité)
 
 - [x] T079 [P] Tests RED `services/api/tests/integration/test_f2_field_quota_bypass.py` : restauration à 500 actives -> 422 `field_limit_reached` (REST ; la synchro ne peut pas restaurer, patch d'archivée = refusé), découpe (blocs) ne crée aucune parcelle, créations parallèles REST et synchro à 499 actives -> jamais plus de 500, restaurations parallèles idem.
-- [ ] T080 GREEN : plafond appliqué dans `restore_field` et `create_field` (REST et synchro) sous un verrou par ferme (`pg_advisory_xact_lock` ou `SELECT ... FOR UPDATE` sur `farms`) pris avant le comptage, dans la même transaction que l'écriture ; fait passer T079.
-- [ ] T081 GREEN Phases 7-8 (non-écran) : `plan_season_start`/`planSeasonStart`, `blocksOverlap`, rattachement des campagnes/blocs/attributions à la survivante dans `merge_fields`, 409 (et non 500) sur `IntegrityError` `seasons_one_active`, fait passer T057-T059, T065-T067.
+- [x] T080 GREEN : plafond appliqué dans `restore_field` et `create_field` (REST et synchro) sous un verrou par ferme (`pg_advisory_xact_lock` ou `SELECT ... FOR UPDATE` sur `farms`) pris avant le comptage, dans la même transaction que l'écriture ; fait passer T079.
+- [x] T081 GREEN Phases 7-8 (non-écran) : `plan_season_start`/`planSeasonStart`, `blocksOverlap`, rattachement des campagnes/blocs/attributions à la survivante dans `merge_fields`, 409 (et non 500) sur `IntegrityError` `seasons_one_active`, fait passer T057-T059, T065-T067.
 
 ## Phase 9 : Finition
 

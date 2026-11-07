@@ -10,3 +10,9 @@ export function blockInsideField(block: readonly Pt[], field: readonly Pt[]): bo
   if (total <= 0) return false;
   return (total - intersectionAreaM2(block, field)) / total <= BLOCK_OVERFLOW_RATIO;
 }
+
+/** Two blocks overlap when their intersection exceeds 1 percent of the smaller block. */
+export function blocksOverlap(a: readonly Pt[], b: readonly Pt[]): boolean {
+  const smaller = Math.min(areaM2(a), areaM2(b));
+  return smaller > 0 && intersectionAreaM2(a, b) / smaller > BLOCK_OVERFLOW_RATIO;
+}

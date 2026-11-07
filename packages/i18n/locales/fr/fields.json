@@ -1,1 +1,31 @@
-{}
+{
+  "draw": {
+    "taps": "Touchez chaque coin de la parcelle",
+    "gps": "Marcher le long de la parcelle",
+    "undo": "Annuler le dernier point",
+    "close": "Fermer la parcelle",
+    "crossing_help": "Les lignes ne doivent pas se croiser. Déplacez ou supprimez le point en erreur."
+  },
+  "gps": {
+    "precision": {
+      "good": "Précision GPS bonne",
+      "medium": "Précision GPS moyenne",
+      "poor": "Précision GPS faible, rapprochez-vous d'un lieu dégagé"
+    },
+    "accuracy": "Précision : {{meters}} m"
+  },
+  "errors": {
+    "self_intersection": "Les lignes de la parcelle se croisent",
+    "too_few_vertices": "Il faut au moins 3 points",
+    "too_many_vertices": "Trop de points",
+    "area_too_small": "Parcelle trop petite",
+    "area_too_large": "Parcelle trop grande",
+    "outside_morocco": "La parcelle est hors du Maroc",
+    "field_limit_reached": "Limite de 500 parcelles atteinte",
+    "invalid_coordinates": "Coordonnées invalides",
+    "not_a_polygon": "La forme n'est pas un polygone",
+    "block_outside_field": "Le bloc dépasse de la parcelle",
+    "block_overlap": "Ce bloc chevauche un autre bloc",
+    "merge_not_contiguous": "Les parcelles ne se touchent pas"
+  }
+}

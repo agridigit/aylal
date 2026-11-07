@@ -27,3 +27,13 @@ export function seasonDate(crop: { cycle: string }, input: SeasonDateInput, toda
   if (sowing === null) return { ok: false, code: "wrong_date_kind" };
   return validIsoDate(sowing) ? { ok: true } : { ok: false, code: "sowing_date_invalid" };
 }
+
+export type SeasonStartPlan = { ok: true; closeIds: string[] } | { ok: false; code: "season_already_active" };
+
+/** Rotation: only the requested active seasons are closed; the new crop may not stay active twice. */
+export function planSeasonStart(active: readonly { id: string; crop_id: string }[], cropId: string, closeIds: readonly string[]): SeasonStartPlan {
+  const closing = new Set(closeIds);
+  const closed = active.filter((s) => closing.has(s.id));
+  if (active.some((s) => !closing.has(s.id) && s.crop_id === cropId)) return { ok: false, code: "season_already_active" };
+  return { ok: true, closeIds: closed.map((s) => s.id) };
+}

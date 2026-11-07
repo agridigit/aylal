@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.field_rules import LIMITS as FIELD_LIMITS
@@ -185,6 +186,19 @@ async def overlap_warnings(session: AsyncSession, farm_id: uuid.UUID, field_id: 
     return [{"code": "overlap", "field_id": str(r[0])} for r in rows]
 
 
+async def _lock_farm_fields(session: AsyncSession, farm_id: uuid.UUID) -> None:
+    """Serialise field creation/restoration per farm until the transaction ends (500 cap)."""
+    await session.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(CAST(:f AS text), 0))"), {"f": str(farm_id)})
+
+
+async def _check_field_cap(session: AsyncSession, farm_id: uuid.UUID) -> None:
+    await _lock_farm_fields(session, farm_id)
+    count = await _one(session, "SELECT count(*) AS n FROM parcels WHERE farm_id = :f AND archived_at IS NULL", f=farm_id)
+    assert count is not None
+    if count["n"] >= FIELD_LIMITS["MAX_FIELDS_PER_FARM"]:
+        raise _bad("geometry", "field_limit_reached")
+
+
 async def create_field(
     session: AsyncSession, farm_id: uuid.UUID, user_id: uuid.UUID, data: Data, field_id: uuid.UUID | None = None
 ) -> dict[str, Any]:
@@ -192,10 +206,7 @@ async def create_field(
     if "name" not in values:
         raise _bad("name")
     geometry = await check_polygon(session, data.get("geometry"))
-    count = await _one(session, "SELECT count(*) AS n FROM parcels WHERE farm_id = :f AND archived_at IS NULL", f=farm_id)
-    assert count is not None
-    if count["n"] >= FIELD_LIMITS["MAX_FIELDS_PER_FARM"]:
-        raise _bad("geometry", "field_limit_reached")
+    await _check_field_cap(session, farm_id)
     field_id = field_id or uuid.uuid4()
     values.setdefault("greenhouse", False)
     values.setdefault("source", "draw_taps")
@@ -256,6 +267,7 @@ async def restore_field(session: AsyncSession, farm_id: uuid.UUID, field_id: uui
     row = await get_field(session, farm_id, field_id, archived=True)
     if row["purge_after"] is not None and row["purge_after"] <= _now():
         raise FieldError(404, "not_found")
+    await _check_field_cap(session, farm_id)
     await session.execute(
         text(
             "UPDATE parcels SET archived_at = NULL, purge_after = NULL, merged_into_id = NULL,"
@@ -265,6 +277,36 @@ async def restore_field(session: AsyncSession, farm_id: uuid.UUID, field_id: uui
     )
     await _set_children_state(session, farm_id, [field_id], None)
     return await get_field(session, farm_id, field_id)
+
+
+async def _move_children(session: AsyncSession, farm_id: uuid.UUID, survivor: uuid.UUID, merged: list[uuid.UUID]) -> None:
+    """Seasons, blocks and worker assignments follow the survivor; a duplicate active crop keeps the oldest season."""
+    ids = [survivor, *merged]
+    await session.execute(
+        text(
+            "UPDATE seasons SET ended_at = GREATEST(CURRENT_DATE, started_at), server_version = server_version + 1, updated_at = now()"
+            " WHERE farm_id = :f AND field_id = ANY(:ids) AND ended_at IS NULL AND id NOT IN ("
+            "  SELECT DISTINCT ON (crop_id) id FROM seasons WHERE farm_id = :f AND field_id = ANY(:ids) AND ended_at IS NULL"
+            "  ORDER BY crop_id, started_at, id)"
+        ),
+        {"f": farm_id, "ids": ids},
+    )
+    for table in ("seasons", "field_blocks"):
+        await session.execute(
+            text(
+                f"UPDATE {table} SET field_id = :s, parcel_archived_at = NULL, server_version = server_version + 1, updated_at = now()"
+                " WHERE farm_id = :f AND field_id = ANY(:m)"
+            ),
+            {"s": survivor, "f": farm_id, "m": merged},
+        )
+    await session.execute(
+        text(
+            "INSERT INTO worker_parcels (farm_id, user_id, parcel_id) SELECT DISTINCT farm_id, user_id, CAST(:s AS uuid) FROM worker_parcels"
+            " WHERE farm_id = :f AND parcel_id = ANY(:m) ON CONFLICT DO NOTHING"
+        ),
+        {"s": survivor, "f": farm_id, "m": merged},
+    )
+    await session.execute(text("DELETE FROM worker_parcels WHERE farm_id = :f AND parcel_id = ANY(:m)"), {"f": farm_id, "m": merged})
 
 
 async def merge_fields(session: AsyncSession, farm_id: uuid.UUID, survivor_id: Any, merged_ids: Any) -> dict[str, Any]:
@@ -298,6 +340,7 @@ async def merge_fields(session: AsyncSession, farm_id: uuid.UUID, survivor_id: A
         ),
         {"g": union["g"], "i": survivor, "f": farm_id},
     )
+    await _move_children(session, farm_id, survivor, merged)
     for m in merged:
         await archive_field(session, farm_id, m, merged_into=survivor)
     return await get_field(session, farm_id, survivor)
@@ -518,14 +561,18 @@ async def create_season(
     )
     if active:
         raise FieldError(409, "season_already_active")
-    await session.execute(
-        text(
-            "INSERT INTO seasons (id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, destination, stage_estimated)"
-            " VALUES (:id, :f, :fi, :c, :variety, :py, :sd, :st, :dest, :est)"
-        ),
-        {"id": season_id, "f": farm_id, "fi": field_id, "c": crop["id"], "variety": _variety(data).get("variety"),
-         "py": planting, "sd": sowing, "st": started, "dest": data.get("destination"), "est": estimated},
-    )
+    try:
+        async with session.begin_nested():
+            await session.execute(
+                text(
+                    "INSERT INTO seasons (id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, destination, stage_estimated)"
+                    " VALUES (:id, :f, :fi, :c, :variety, :py, :sd, :st, :dest, :est)"
+                ),
+                {"id": season_id, "f": farm_id, "fi": field_id, "c": crop["id"], "variety": _variety(data).get("variety"),
+                 "py": planting, "sd": sowing, "st": started, "dest": data.get("destination"), "est": estimated},
+            )
+    except IntegrityError:
+        raise FieldError(409, "season_already_active") from None
     return await get_season(session, farm_id, field_id, season_id)
 
 
@@ -547,8 +594,12 @@ async def update_season(session: AsyncSession, farm_id: uuid.UUID, field_id: uui
     if "stage_corrected" in values:
         sets.append("stage_corrected_at = now()")
     if sets:
-        await session.execute(
-            text(f"UPDATE seasons SET {', '.join(sets)}, server_version = server_version + 1, updated_at = now() WHERE id = :i AND farm_id = :f"),
-            {"i": season_id, "f": farm_id, **values},
-        )
+        try:
+            async with session.begin_nested():
+                await session.execute(
+                    text(f"UPDATE seasons SET {', '.join(sets)}, server_version = server_version + 1, updated_at = now() WHERE id = :i AND farm_id = :f"),
+                    {"i": season_id, "f": farm_id, **values},
+                )
+        except IntegrityError:
+            raise FieldError(409, "season_already_active") from None
     return await get_season(session, farm_id, field_id, season_id)

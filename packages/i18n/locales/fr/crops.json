@@ -1,1 +1,20 @@
-{}
+{
+  "names": {
+    "olive": "Olivier",
+    "citrus": "Agrumes",
+    "durum-wheat": "Blé dur",
+    "soft-wheat": "Blé tendre",
+    "barley": "Orge",
+    "tomato": "Tomate",
+    "potato": "Pomme de terre",
+    "onion": "Oignon",
+    "berries": "Fruits rouges",
+    "avocado": "Avocatier",
+    "date-palm": "Palmier dattier",
+    "almond": "Amandier",
+    "grape": "Vigne",
+    "sugar-beet": "Betterave",
+    "alfalfa": "Luzerne",
+    "silage-maize": "Maïs fourrager"
+  }
+}
