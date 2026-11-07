@@ -127,6 +127,31 @@ async def _uses_of(session: AsyncSession, product_id: Any) -> list[dict[str, Any
     return [{**dict(r), "max_dose": _num(r["max_dose"])} for r in rows]
 
 
+async def assign_seasons(
+    session: AsyncSession, farm_id: uuid.UUID, parcels: list[dict[str, Any]], performed_on: dt.date, supplied: Any = None,
+) -> list[dict[str, Any]]:
+    """Derive each parcel's campaign server-side (its active season on that day); a client season_id is only checked."""
+    if supplied is not None:
+        field = (
+            await session.execute(
+                text("SELECT field_id FROM seasons WHERE id = :s AND farm_id = :f"), {"s": uuid.UUID(str(supplied)), "f": farm_id}
+            )
+        ).scalar()
+        if field is None or field not in {p["id"] for p in parcels}:
+            raise OperationError(422, "invalid_season", "season_id")
+    for parcel in parcels:
+        parcel["season_id"] = (
+            await session.execute(
+                text(
+                    "SELECT id FROM seasons WHERE farm_id = :f AND field_id = :p AND started_at <= :d"
+                    " AND (ended_at IS NULL OR ended_at >= :d) ORDER BY started_at DESC, id LIMIT 1"
+                ),
+                {"f": farm_id, "p": parcel["id"], "d": performed_on},
+            )
+        ).scalar()
+    return parcels
+
+
 async def _applications_so_far(
     session: AsyncSession, farm_id: uuid.UUID, parcel_id: uuid.UUID, product_id: Any, season_id: Any, exclude: Any,
 ) -> int:
@@ -157,7 +182,7 @@ async def warnings_for(
             product_id = line.get("product_id")
             uses = await _uses_of(session, product_id) if product_id else []
             so_far = (
-                await _applications_so_far(session, farm_id, parcel["id"], product_id, data.get("season_id"), exclude_operation)
+                await _applications_so_far(session, farm_id, parcel["id"], product_id, parcel.get("season_id"), exclude_operation)
                 if product_id else 0
             )
             for code in phyto_warnings({
@@ -217,6 +242,7 @@ async def create_operation(
     if len(parcels) != len(data["parcel_ids"]):
         raise OperationError(404, "not_found")
     await _check_product(session, data)
+    await assign_seasons(session, farm_id, parcels, data["performed_on"], data.get("season_id"))
     key = await _resolve_label(session, farm_id, user_id, data["label_photo_id"]) if data.get("label_photo_id") else None
     status = initial_status(data["performed_on"], today, role)
     await lock_farm(session, farm_id)
@@ -363,7 +389,7 @@ async def _parcels_of(session: AsyncSession, op: dict[str, Any]) -> list[dict[st
             {"f": op["farm_id"], "o": op["id"]},
         )
     ).mappings().all()
-    return [dict(r) for r in rows]
+    return await assign_seasons(session, op["farm_id"], [dict(r) for r in rows], op["performed_on"])
 
 
 async def _actor_operation(
@@ -392,6 +418,9 @@ async def reschedule(
         raise OperationError(409, "invalid_transition")
     if new_date < today or not within_limit("performed_on", new_date.isoformat(), today):
         raise OperationError(422, "validation", "performed_on")
+    if new_date.year != op["performed_on"].year:
+        await lock_farm(session, farm_id)
+        await check_quotas(session, farm_id, new_date, op["status"])
     await session.execute(
         text("UPDATE operations SET performed_on = :d, updated_at = now(), server_version = server_version + 1 WHERE id = :i AND farm_id = :f"),
         {"d": new_date, "i": operation_id, "f": farm_id},
@@ -476,6 +505,10 @@ async def correct(
         key = await _resolve_label(session, farm_id, user_id, data["label_photo_id"])
     if not diff and key is None:
         return await detail(session, farm_id, operation_id, user_id, role)
+    new_day = diff.get("performed_on")
+    if new_day is not None and new_day.year != op["performed_on"].year:
+        await lock_farm(session, farm_id)
+        await check_quotas(session, farm_id, new_day, op["status"])
     registry_phyto = op["type"] == "phyto" and op["status"] in _DONE_STATES and bool(diff)
     new_ids: list[uuid.UUID] = []
     updated = {**op, **diff}
@@ -544,4 +577,5 @@ async def check(
     if len(parcels) != len(data["parcel_ids"]):
         raise OperationError(404, "not_found")
     await _check_product(session, data)
+    await assign_seasons(session, farm_id, parcels, data["performed_on"], data.get("season_id"))
     return {"warnings": await warnings_for(session, farm_id, data, parcels)}

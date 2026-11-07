@@ -103,7 +103,7 @@ async def write_applications(
                     "cat": product["catalog_version_id"] if product else None, "operator": operator,
                     "ouser": op.get("operator_user_id"),
                     "warn": json.dumps([w for w in op.get("warnings") or [] if w.get("parcel_id") in (None, str(parcel["id"]))]),
-                    "season": op.get("season_id"), "retain": retain,
+                    "season": parcel.get("season_id"), "retain": retain,
                 },
             )
     return ids
