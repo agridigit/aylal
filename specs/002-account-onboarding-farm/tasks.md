@@ -147,6 +147,9 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T076 [P] RED intégration : atomicité du compteur d'échecs et de la consommation (20 vérifications parallèles), dans `services/api/tests/integration/test_otp_atomicity.py`.
 - [x] T077 [P] RED intégration : ferme supprimée -> 404 REST et refus sync/admin, dans `services/api/tests/integration/test_deleted_farm_access.py`.
 - [x] T078 GREEN : `routers/auth.py` (échecs par téléphone, invalidation, limites 429, UPDATE conditionnel / `with_for_update`), `auth/access.py`, `auth/farm_context.py`, `sync/admin.py` (`Farm.deleted_at IS NULL`).
+- [x] T079 [P] RED intégration : IP cliente derrière proxy (`AYLAL_TRUSTED_PROXIES`, vide = en-têtes ignorés ; seaux distincts par client ; IP inconnue = pas de seau partagé), dans `services/api/tests/integration/test_otp_ratelimit_hardening.py`.
+- [x] T080 [P] RED intégration : concurrence sur `/request` (plafond horaire et délai de 60 s jamais contournés), même fichier.
+- [ ] T081 GREEN : `routers/auth.py` + `config.py` (IP de confiance via X-Real-IP/X-Forwarded-For, `pg_advisory_xact_lock(hashtext(phone))` avant les lectures).
 
 ## Dépendances
 
