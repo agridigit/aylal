@@ -98,6 +98,10 @@ services:
       AYLAL_ENV: ${AYLAL_ENV:-dev}
       AYLAL_JWT_SECRET: ${AYLAL_JWT_SECRET:-}
       AYLAL_ENABLE_DEV_TOKEN: ${AYLAL_ENABLE_DEV_TOKEN:-0}
+      AYLAL_OTP_PEPPER: ${AYLAL_OTP_PEPPER:-}
+      AYLAL_SMS_GATEWAY_URL: ${AYLAL_SMS_GATEWAY_URL:-}
+      AYLAL_SMS_GATEWAY_KEY: ${AYLAL_SMS_GATEWAY_KEY:-}
+      AYLAL_ENABLE_TEST_OTP: ${AYLAL_ENABLE_TEST_OTP:-}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }

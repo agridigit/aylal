@@ -2,7 +2,7 @@
 name = "aylal-workers"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = ["arq>=0.26"]
+dependencies = ["arq>=0.26", "argon2-cffi>=23.1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

@@ -16,6 +16,10 @@ class Settings:
     redis_url: str
     env: str
     jwt_secret: str
+    otp_pepper: str
+    sms_gateway_url: str
+    sms_gateway_key: str
+    enable_test_otp: bool
 
 
 def get_settings() -> Settings:
@@ -35,4 +39,8 @@ def get_settings() -> Settings:
         redis_url=os.environ.get("AYLAL_REDIS_URL", "redis://redis:6379/0"),
         env=env,
         jwt_secret=secret,
+        otp_pepper=os.environ.get("AYLAL_OTP_PEPPER", ""),
+        sms_gateway_url=os.environ.get("AYLAL_SMS_GATEWAY_URL", ""),
+        sms_gateway_key=os.environ.get("AYLAL_SMS_GATEWAY_KEY", ""),
+        enable_test_otp=os.environ.get("AYLAL_ENABLE_TEST_OTP", "0") == "1",
     )

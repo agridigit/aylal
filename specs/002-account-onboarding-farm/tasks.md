@@ -7,9 +7,9 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 
 ## Phase 1 : Mise en place
 
-- [ ] T001 Ajouter `argon2-cffi` à `services/api/pyproject.toml` et `services/workers/pyproject.toml` ; `expo-secure-store`, `expo-location` à `apps/mobile/package.json` ; reconstruire les images Docker.
-- [ ] T002 [P] Créer les fichiers de clés i18n vides `packages/i18n/locales/{ary,ar,fr}/{auth,onboarding,farm,team,account}.json` et le test de parité des clés `packages/i18n/tests/parity.test.ts`.
-- [ ] T003 [P] Ajouter la configuration sans secret par défaut dans `services/api/app/config.py` : `AYLAL_JWT_SECRET`, `AYLAL_OTP_PEPPER`, clés passerelle, `AYLAL_ENABLE_TEST_OTP` ; `docker-compose.yml` n'utilise que `${VAR:-}` vide.
+- [x] T001 Ajouter `argon2-cffi` à `services/api/pyproject.toml` et `services/workers/pyproject.toml` ; `expo-secure-store`, `expo-location` à `apps/mobile/package.json` ; reconstruire les images Docker.
+- [x] T002 [P] Créer les fichiers de clés i18n vides `packages/i18n/locales/{ary,ar,fr}/{auth,onboarding,farm,team,account}.json` et le test de parité des clés `packages/i18n/tests/parity.test.ts`.
+- [x] T003 [P] Ajouter la configuration sans secret par défaut dans `services/api/app/config.py` : `AYLAL_JWT_SECRET`, `AYLAL_OTP_PEPPER`, clés passerelle, `AYLAL_ENABLE_TEST_OTP` ; `docker-compose.yml` n'utilise que `${VAR:-}` vide.
 - [ ] T004 Porte design (principe 10) : maquettes HD arabe et français validées des écrans P1 E1 à E6, E11, E12 et P2 E7 à E10 dans `docs/design/002-account-onboarding-farm/` ; aucun écran n'est codé avant validation. Les tâches d'écran dépendent de T004.
 
 ## Phase 2 : Fondations (bloquent tous les récits)
