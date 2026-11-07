@@ -7,7 +7,7 @@ Fonctionnalité : $ARGUMENTS (dossier `specs/<feature>/`). Travaille sans poser 
 2. Pour chaque groupe :
    - Tâches marquées `[P]` (fichiers indépendants) : lance en parallèle, dans un seul message, au plus 4 sous-agents à la fois.
    - Autres tâches : une par une.
-   - Pour chaque tâche : d'abord le sous-agent `test-writer` (RED confirmé par l'exécution), commit `test(<feature>): red - <Txxx>` ; puis le sous-agent `implementer` (GREEN), commit `feat(<feature>): green - <Txxx>`.
+   - Pour chaque tâche : d'abord le sous-agent `test-writer` (tests unitaires, d'intégration et de bout en bout ; RED confirmé par l'exécution), commit `test(<feature>): red - <Txxx>` ; puis le sous-agent `implementer` (GREEN), commit `feat(<feature>): green - <Txxx>`.
    - Les tâches de mise en place (Docker, configuration, squelette) n'ont pas de phase RED mais doivent laisser `make check` vert.
 3. Coche chaque tâche terminée dans `tasks.md` (`- [x]`).
 4. À la fin du groupe : sous-agent `reviewer`. Si `REJECTED`, relance `implementer` avec la raison (3 tentatives max), puis continue.

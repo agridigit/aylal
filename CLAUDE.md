@@ -13,6 +13,12 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 3. REFACTOR : nettoyer sans changer le comportement, tests toujours verts. Commit `refactor(<feature>): ...`.
 - Interdit : modifier un test pour le faire passer, sauf si le test contredit la spec (le noter dans `specs/<feature>/decisions.md`).
 - Chaque critère d'acceptation P1 a au moins un test automatisé. Couverture minimale du code métier : 80 %.
+- **Trois niveaux de tests obligatoires pour chaque module** (`packages/*`, `services/*`, `apps/*`) et pour chaque fonctionnalité :
+  - unitaires : `<module>/tests/unit/` — une règle ou une fonction isolée, sans réseau ni base ;
+  - intégration : `<module>/tests/integration/` (et `tests/contract/` pour les contrats) — plusieurs composants réels ensemble (API + PostgreSQL, synchronisation SQLite/PowerSync, workers + Redis/MinIO, domaine TS ↔ API Python) ;
+  - bout en bout : `services/<s>/tests/e2e/` (parcours HTTP complet sur la pile Docker), `apps/mobile/e2e/` (Maestro), `apps/web|desktop/e2e/` (Playwright) — parcours utilisateur d'un critère d'acceptation P1.
+- Chaque critère d'acceptation P1 est couvert aux trois niveaux quand c'est applicable ; sinon la raison est notée dans `specs/<feature>/decisions.md`.
+- Garde automatique : `make test-pyramid` (inclus dans `make check`) refuse un module sans les trois niveaux, ou une branche qui change du code sans ajouter de tests aux trois niveaux. `make e2e` doit être vert avant `/aylal.release`.
 
 ## Docker (obligatoire)
 - Tout tourne dans Docker : API, workers, base, synchronisation, stockage, tests, rendu des diagrammes.
