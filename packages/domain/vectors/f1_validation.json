@@ -1,0 +1,11 @@
+[
+  {"name": "farm with name and location is valid", "rule": "farm", "input": {"name": "Ferme Atlas", "location": {"lat": 33.57, "lon": -7.59}}, "expect": {"valid": true, "errors": []}},
+  {"name": "farm area is optional", "rule": "farm", "input": {"name": "Ferme", "location": {"lat": 31.6, "lon": -8.0}, "area_ha": 2.5}, "expect": {"valid": true, "errors": []}},
+  {"name": "farm without name is refused", "rule": "farm", "input": {"name": "", "location": {"lat": 33.57, "lon": -7.59}}, "expect": {"valid": false, "errors": [{"field": "name", "code": "too_short"}]}},
+  {"name": "farm without location is refused", "rule": "farm", "input": {"name": "Ferme"}, "expect": {"valid": false, "errors": [{"field": "location", "code": "required"}]}},
+  {"name": "farm with negative area is refused", "rule": "farm", "input": {"name": "Ferme", "location": {"lat": 33.57, "lon": -7.59}, "area_ha": -1}, "expect": {"valid": false, "errors": [{"field": "area_ha", "code": "too_small"}]}},
+  {"name": "consent with purpose and version is valid", "rule": "consent", "input": {"purpose": "data_policy", "text_version": "2026-01"}, "expect": {"valid": true, "errors": []}},
+  {"name": "consent without version is refused", "rule": "consent", "input": {"purpose": "data_policy"}, "expect": {"valid": false, "errors": [{"field": "text_version", "code": "required"}]}},
+  {"name": "profile with name and language is valid", "rule": "profile", "input": {"display_name": "Hassan", "language": "ary"}, "expect": {"valid": true, "errors": []}},
+  {"name": "profile with unknown language is refused", "rule": "profile", "input": {"display_name": "Hassan", "language": "en"}, "expect": {"valid": false, "errors": [{"field": "language", "code": "invalid_choice"}]}}
+]

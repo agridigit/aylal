@@ -1,0 +1,13 @@
+flowchart TD
+    A[Choisir ma langue] --> B[Écrire mon numéro]
+    B --> C[Recevoir le code par SMS ou WhatsApp]
+    C --> D{Code bon ?}
+    D -- Non, 3 fois --> W[Attendre 5 minutes]
+    W --> C
+    D -- Oui --> E[Lire et accepter la politique]
+    E --> F[Écrire mon nom ou surnom]
+    F --> G[Créer ma ferme]
+    G --> H[Ma ferme est prête]
+    H --> I[Ajouter une autre ferme]
+    H --> J[Inviter un gérant ou un ouvrier]
+    H --> K[Supprimer mon compte]

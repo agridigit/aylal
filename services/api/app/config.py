@@ -8,6 +8,7 @@ _MIN_SECRET_LEN = 32
 _LOCAL_ENVS = ("dev", "test")
 # Per-process fallback for dev/test only; never a fixed, guessable value.
 _EPHEMERAL_SECRET = secrets.token_urlsafe(48)
+_EPHEMERAL_PEPPER = secrets.token_urlsafe(48)
 
 
 @dataclass(frozen=True)
@@ -16,6 +17,11 @@ class Settings:
     redis_url: str
     env: str
     jwt_secret: str
+    otp_pepper: str
+    sms_gateway_url: str
+    sms_gateway_key: str
+    enable_test_otp: bool
+    trusted_proxies: tuple[str, ...] = ()
 
 
 def get_settings() -> Settings:
@@ -28,6 +34,17 @@ def get_settings() -> Settings:
             f"AYLAL_JWT_SECRET must be set to at least {_MIN_SECRET_LEN} chars "
             "(and not the dev value) when AYLAL_ENV is not dev/test"
         )
+    pepper = os.environ.get("AYLAL_OTP_PEPPER", "")
+    if env in _LOCAL_ENVS:
+        pepper = pepper or _EPHEMERAL_PEPPER
+    elif len(pepper) < _MIN_SECRET_LEN:
+        raise RuntimeError(
+            f"AYLAL_OTP_PEPPER must be set to at least {_MIN_SECRET_LEN} chars "
+            "when AYLAL_ENV is not dev/test"
+        )
+    enable_test_otp = os.environ.get("AYLAL_ENABLE_TEST_OTP", "0") == "1"
+    if enable_test_otp and env not in _LOCAL_ENVS:
+        raise RuntimeError("AYLAL_ENABLE_TEST_OTP=1 is forbidden when AYLAL_ENV is not dev/test")
     return Settings(
         database_url=os.environ.get(
             "AYLAL_DATABASE_URL", "postgresql://aylal:aylal_dev@db:5432/aylal"
@@ -35,4 +52,11 @@ def get_settings() -> Settings:
         redis_url=os.environ.get("AYLAL_REDIS_URL", "redis://redis:6379/0"),
         env=env,
         jwt_secret=secret,
+        otp_pepper=pepper,
+        sms_gateway_url=os.environ.get("AYLAL_SMS_GATEWAY_URL", ""),
+        sms_gateway_key=os.environ.get("AYLAL_SMS_GATEWAY_KEY", ""),
+        enable_test_otp=enable_test_otp,
+        trusted_proxies=tuple(
+            p.strip() for p in os.environ.get("AYLAL_TRUSTED_PROXIES", "").split(",") if p.strip()
+        ),
     )

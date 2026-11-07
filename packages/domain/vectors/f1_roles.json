@@ -1,0 +1,147 @@
+[
+ {
+  "role": "owner",
+  "action": "farm.delete",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "farm.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "farm.delete",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "farm.update",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "farm.update",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "farm.update",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "member.invite",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "member.invite",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "member.invite",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "member.role_change",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "member.role_change",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "member.role_change",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "member.remove",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "member.remove",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "member.remove",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "parcels.assign",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "parcels.assign",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "parcels.assign",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "record.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "record.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "record.write",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "record.read_all",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "record.read_all",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "record.read_all",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "finance.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "finance.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "finance.read",
+  "allowed": false
+ },
+ {
+  "role": "editor",
+  "action": "record.write",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "unknown.action",
+  "allowed": false
+ }
+]

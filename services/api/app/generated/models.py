@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field, confloat, constr
@@ -12,8 +13,24 @@ class Bundle(BaseModel):
     pass
 
 
+class ConsentGrant(BaseModel):
+    purpose: constr(min_length=1, max_length=80)
+    text_version: constr(min_length=1, max_length=40)
+
+
 class FarmCreate(BaseModel):
     name: constr(min_length=1, max_length=120)
+
+
+class Location(BaseModel):
+    lat: confloat(ge=-90.0, le=90.0)
+    lon: confloat(ge=-180.0, le=180.0)
+
+
+class FarmRegistration(BaseModel):
+    name: constr(min_length=1, max_length=120)
+    location: Location
+    area_ha: confloat(ge=0.0) | None = None
 
 
 class Geometry(BaseModel):
@@ -25,6 +42,21 @@ class ParcelCreate(BaseModel):
     name: constr(min_length=1, max_length=80)
     geometry: Geometry = Field(..., title='PolygonGeometry')
     vigor: confloat(ge=0.0, le=1.0)
+
+
+class PhoneInput(BaseModel):
+    phone: str
+
+
+class Language(Enum):
+    ary = 'ary'
+    ar = 'ar'
+    fr = 'fr'
+
+
+class ProfileUpdate(BaseModel):
+    display_name: constr(min_length=1, max_length=80)
+    language: Language
 
 
 class TrialRecordCreate(BaseModel):

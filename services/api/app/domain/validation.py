@@ -7,15 +7,34 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from app.generated.models import FarmCreate, ParcelCreate, TrialRecordCreate
+from app.domain.phone import normalize_phone
+from app.generated.models import (
+    ConsentGrant,
+    FarmCreate,
+    FarmRegistration,
+    ParcelCreate,
+    PhoneInput,
+    ProfileUpdate,
+    TrialRecordCreate,
+)
 
 RULES: dict[str, type[BaseModel]] = {
     "trial_record.create": TrialRecordCreate,
     "parcel.create": ParcelCreate,
     "farm.create": FarmCreate,
+    "phone": PhoneInput,
+    "farm": FarmRegistration,
+    "consent": ConsentGrant,
+    "profile": ProfileUpdate,
 }
 
-_TRIMMED_FIELDS = {"trial_record.create": "title", "farm.create": "name"}
+_TRIMMED_FIELDS = {
+    "trial_record.create": ("title",),
+    "farm.create": ("name",),
+    "farm": ("name",),
+    "consent": ("purpose", "text_version"),
+    "profile": ("display_name",),
+}
 
 
 def is_valid_polygon(coordinates: list[list[list[float]]]) -> bool:
@@ -34,6 +53,10 @@ def _code(error_type: str, field: str, loc_len: int, missing: bool) -> str:
         return "required"
     if field == "geometry":
         return "invalid_geometry"
+    if error_type in ("literal_error", "enum"):
+        return "invalid_choice"
+    if field == "area_ha" and error_type == "greater_than_equal":
+        return "too_small"
     if error_type == "string_too_short":
         return "too_short"
     if error_type == "string_too_long":
@@ -46,9 +69,11 @@ def _code(error_type: str, field: str, loc_len: int, missing: bool) -> str:
 def validate(rule: str, data: Any) -> dict[str, Any]:
     model = RULES[rule]
     payload = data
-    trimmed = _TRIMMED_FIELDS.get(rule)
-    if trimmed and isinstance(data, dict) and isinstance(data.get(trimmed), str):
-        payload = {**data, trimmed: data[trimmed].strip()}
+    if isinstance(data, dict):
+        payload = {
+            **data,
+            **{f: data[f].strip() for f in _TRIMMED_FIELDS.get(rule, ()) if isinstance(data.get(f), str)},
+        }
 
     errors: list[dict[str, str]] = []
     seen: set[tuple[str, str]] = set()
@@ -67,4 +92,6 @@ def validate(rule: str, data: Any) -> dict[str, Any]:
     else:
         if isinstance(parsed, ParcelCreate) and not is_valid_polygon(parsed.geometry.coordinates):
             add("geometry", "invalid_geometry")
+        if isinstance(parsed, PhoneInput) and normalize_phone(parsed.phone) is None:
+            add("phone", "invalid")
     return {"valid": not errors, "errors": errors}

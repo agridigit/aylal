@@ -2,6 +2,29 @@
 
 Tenu automatiquement par Claude (sous-agent `git-keeper`). Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [SemVer](https://semver.org/lang/fr/).
 
+## [0.2.0] - 2026-11-07 — F1 Compte, onboarding et ferme
+### Ajouts
+- Fondations du module compte, onboarding et ferme (modèle, API, domaine)
+- Inscription par OTP
+- Langue, consentement et ferme
+- Suppression de compte, multi-fermes et invitations
+- Durcissement de sécurité : OTP (limitation de débit, auth renforcée), proxys de confiance fail-closed (Caddy /32 sur réseau edge dédié, port API sur loopback, repli sur le pair), ferme supprimée refusée, autorisation par rôle sur les écritures admin (REST et upload de synchronisation)
+### Corrections
+- Caddy joint l'API via le réseau edge pour que l'adresse du proxy de confiance corresponde
+- Les tests d'intégration obtiennent toujours leur base jetable sous xdist
+- diagrams: un fichier markdown sans image n'échoue plus au contrôle des images
+### Documentation
+- Documentation ingénieur et agriculteur du module 002-account-onboarding-farm
+- Référence du design system mobile AYLAL
+- Les flux Maestro vivent dans apps/mobile/maestro (émulateur aylal-2go)
+- Tableau de mesures 001-foundations (non mesuré)
+- Limites connues : écrans mobiles reportés (porte design T004 bloquée) ; e2e Maestro non exécutés
+### Technique
+- Portes qualité accélérées (conteneurs de test préchauffés, base modèle, pytest parallèle, revue à deux niveaux)
+- Configuration lint des tests, couverture compatible greenlet, sous-processus bloquant autorisé au démarrage des tests
+- Tâches F1 cochées, état de fusion marqué
+Documentation du module : [docs/modules/002-account-onboarding-farm/](docs/modules/002-account-onboarding-farm/)
+
 ## [0.1.1] - 2026-11-07 — hotfix App mobile réelle et e2e Android sur émulateur macOS
 ### Corrections
 - e2e: no host python/openssl, measures extraction never fails the run; untrack .coverage

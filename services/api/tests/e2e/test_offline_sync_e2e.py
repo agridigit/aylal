@@ -11,7 +11,7 @@ BASE = "https://proxy/v1"
 def test_given_a_queued_offline_creation_when_the_network_returns_then_it_is_stored_once() -> None:
     user, farm_id, rid = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
     sql("INSERT INTO farms (id, name) VALUES ($1, 'e2e farm')", farm_id)
-    sql("INSERT INTO farm_members (farm_id, user_id, role) VALUES ($1, $2, 'editor')", farm_id, user)
+    sql("INSERT INTO farm_members (farm_id, user_id, role) VALUES ($1, $2, 'manager')", farm_id, user)
     with httpx.Client(base_url=BASE, verify=False, timeout=30) as c:
         r = c.post("/auth/dev-token", json={"user_id": str(user)})
         assert r.status_code == 200

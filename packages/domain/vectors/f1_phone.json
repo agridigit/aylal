@@ -1,0 +1,12 @@
+[
+  {"name": "local 06 format is converted to E.164", "input": "0612345678", "expect": "+212612345678"},
+  {"name": "local 07 format is converted to E.164", "input": "0712345678", "expect": "+212712345678"},
+  {"name": "E.164 with plus is kept", "input": "+212612345678", "expect": "+212612345678"},
+  {"name": "spaces and dashes are ignored", "input": "06 12-34 56 78", "expect": "+212612345678"},
+  {"name": "00212 prefix is accepted", "input": "00212712345678", "expect": "+212712345678"},
+  {"name": "non Moroccan number is refused", "input": "+33612345678", "expect": null},
+  {"name": "landline 05 is refused", "input": "0522123456", "expect": null},
+  {"name": "too short is refused", "input": "061234", "expect": null},
+  {"name": "letters are refused", "input": "06abcdefgh", "expect": null},
+  {"name": "empty is refused", "input": "", "expect": null}
+]

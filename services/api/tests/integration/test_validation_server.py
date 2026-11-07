@@ -19,7 +19,7 @@ def test_given_a_shared_vector_when_uploaded_as_a_put_then_the_server_verdict_ma
     vector, client, token_for, make_farm, upload
 ) -> None:
     user, rid = uuid.uuid4(), uuid.uuid4()
-    farm = make_farm({user: "editor"})
+    farm = make_farm({user: "manager"})
     res = upload(token_for(user), [op(farm, rid, kind="put", fields=vector["input"])])["results"][0]
     if vector["expect"]["valid"]:
         assert res["status"] == "applied"

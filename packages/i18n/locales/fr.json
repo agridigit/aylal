@@ -1,4 +1,12 @@
 {
+  "onboarding": {
+    "language": {
+      "title": "Choisissez votre langue",
+      "subtitle": "Vous pourrez la changer plus tard",
+      "speak": "Écouter",
+      "confirm": "Continuer"
+    }
+  },
   "home": {
     "title": "Bienvenue sur AYLAL",
     "subtitle": "Votre exploitation, même sans réseau",
