@@ -8,5 +8,5 @@ bucket_definitions:
       - SELECT * FROM farm_members WHERE farm_id = bucket.farm_id
       - SELECT * FROM parcels WHERE farm_id = bucket.farm_id
       - SELECT * FROM trial_records WHERE farm_id = bucket.farm_id AND deleted_at IS NULL
-      - SELECT * FROM sync_conflicts WHERE record_id IN (SELECT id FROM trial_records WHERE farm_id = bucket.farm_id) AND acknowledged_at IS NULL
+      - SELECT * FROM sync_conflicts WHERE farm_id = bucket.farm_id AND acknowledged_at IS NULL
 # Les écritures ne passent PAS par PowerSync : le connecteur mobile envoie ps_crud vers POST /v1/sync/upload.

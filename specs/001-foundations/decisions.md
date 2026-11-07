@@ -28,3 +28,9 @@
 - L'image `aylal-android-build` ne contient que JDK 17 et pnpm, sans Android SDK. L'hôte Docker est aarch64 (Apple Silicon) : Google ne publie pas de build-tools Android pour Linux arm64 (aapt2 x86_64 seulement), donc `gradle assembleRelease` n'est pas fiable sans émulation x86_64 (QEMU), non validée ici.
 - Décision : rien n'est inventé. `make apk-size` affiche « NON MESURE » et échoue (code 1) tant que la chaîne n'existe pas ; le test `tests/report/test_apk_size.sh` (logique de seuil via APK_PATH) reste inchangé et vert.
 - À faire (T110/T111) : ajouter expo/react-native épinglés, `expo prebuild`, SDK Android épinglé dans le Dockerfile (plateforme linux/amd64), script `build:android:release`, puis mesurer.
+
+## Hotfix android-e2e : synchro réelle sur émulateur
+- PowerSync 1.28.1 refuse la sous-requête de `sync_conflicts` (« select not supported here ») : la règle devient `WHERE farm_id = bucket.farm_id AND acknowledged_at IS NULL` (contrat et infra restent identiques).
+- L'API n'expose pas de JWKS : PowerSync valide les jetons HS256 avec une clé inline dérivée de `AYLAL_JWT_SECRET` (entrypoint compose). Sans secret, clé aléatoire (aucun jeton valide).
+- `@powersync/op-sqlite` abandonné (incompatible avec `@powersync/react-native` 2.4 qui embarque l'adaptateur op-sqlite).
+- Identité ferme/utilisateur : constantes du seed, builds E2E uniquement. Opération rejetée par l'API : reste en file (pas de perte), à traiter en F suivante.

@@ -4,25 +4,6 @@
 #   macOS (no KVM in Docker): the emulator runs NATIVELY on the Mac (approved exception, see
 #   specs/001-foundations/decisions.md); adb, APK install and Maestro still run in Docker and reach the
 #   host adb server through host.docker.internal (adb stays bound to 127.0.0.1).
-# The offline_sync flow needs the real stack (API + PowerSync) on the host: the emulator reaches it through 10.0.2.2.
-# Dev token enabled and one shared JWT secret (API signs, PowerSync verifies); both for this test run only. Idempotent.
-mkdir -p .aylal/e2e
-SECRET_FILE=".aylal/e2e/jwt-secret"
-[ -s "$SECRET_FILE" ] || { umask 077; openssl rand -hex 32 > "$SECRET_FILE"; }
-export AYLAL_ENABLE_DEV_TOKEN=1 AYLAL_JWT_SECRET="$(cat "$SECRET_FILE")"
-make up
-$DC exec -T api python - <<'PY'
-import asyncio
-from app.db.seed import seed
-from app.db.session import sessionmaker
-
-async def main() -> None:
-    async with sessionmaker() as session:
-        await seed(session)
-
-asyncio.run(main())
-PY
-
 # E2E_NO_BUILD=1 reuses apps/mobile/dist/app-release.apk. E2E_SKIP=1 skips with a loud warning (never in make check on a configured machine).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
@@ -58,6 +39,25 @@ for _ in $(seq 1 90); do
   [ "$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] && break; sleep 2
 done
 [ "$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] || { echo "make e2e: l'émulateur n'a pas démarré (voir /tmp/aylal-emulator.log)" >&2; exit 1; }
+
+# The offline_sync flow needs the real stack (API + PowerSync) on the host: the emulator reaches it through 10.0.2.2.
+# Dev token enabled and one shared JWT secret (API signs, PowerSync verifies); both for this test run only. Idempotent.
+mkdir -p .aylal/e2e
+SECRET_FILE=".aylal/e2e/jwt-secret"
+[ -s "$SECRET_FILE" ] || { umask 077; openssl rand -hex 32 > "$SECRET_FILE"; }
+export AYLAL_ENABLE_DEV_TOKEN=1 AYLAL_JWT_SECRET="$(cat "$SECRET_FILE")"
+make up
+$DC exec -T api python - <<'PY'
+import asyncio
+from app.db.seed import seed
+from app.db.session import sessionmaker
+
+async def main() -> None:
+    async with sessionmaker() as session:
+        await seed(session)
+
+asyncio.run(main())
+PY
 
 # E2E_NO_BUILD=1 reuses an existing APK (local iteration only; make check always rebuilds).
 if [ "${E2E_NO_BUILD:-}" = "1" ] && [ -f "$APK" ]; then echo "e2e: APK existant réutilisé ($APK)"; else make apk; fi
