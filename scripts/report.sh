@@ -29,6 +29,9 @@ module_report() {
       fi
     done
   } > "$out"
+  local fa="$dir/measures/apk_size_mb.json" der
+  der="$(sed -n 's/.*"derogation": *"\([^"]*\)".*/\1/p' "$fa" 2>/dev/null | head -1)"
+  [[ -z "$der" ]] || printf '\n%s\n' "$der" >> "$out"
   if grep -qE '\| non tenu \|$' "$out"; then
     printf '\nUn seuil non tenu ouvre un réexamen du choix technique (noté dans decisions.md).\n' >> "$out"
   fi
