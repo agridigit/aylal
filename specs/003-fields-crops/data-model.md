@@ -53,6 +53,7 @@ Index unique partiel `(field_id, crop_id) WHERE ended_at IS NULL`. Historique : 
 | Démarrer/clôturer campagne, corriger le stade | oui | oui | 403 |
 | Créer une culture libre | oui | oui | 403 |
 | Lire archivées | oui | oui | 404 |
+| Lire campagnes/blocs d'une parcelle archivée | via archivées/restauration | via archivées/restauration | 404 (aucune synchro ni lecture dès l'archivage de la parcelle parente) |
 Les ouvriers n'écrivent aucune de ces tables par REST ni par synchro (F2 ne leur ouvre aucune écriture ; le journal d'opérations F6 viendra).
 
 ## États

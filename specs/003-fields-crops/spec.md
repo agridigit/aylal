@@ -180,7 +180,7 @@ Pour chaque écran, les quatre états sont conçus : chargement (squelettes, jam
 - **FR-017** : L'agriculteur MUST pouvoir importer des parcelles depuis un fichier KML ou Shapefile après confirmation (P3).
 - **FR-018** : Une parcelle supprimée MUST être archivée 90 jours, restaurable pendant ce délai, puis supprimée définitivement.
 - **FR-019** : Chaque écran MUST avoir les quatre états conçus et une mise en page RTL complète ; aucun texte ne doit être en dur, tout est traduit en darija, arabe et français.
-- **FR-020** : Un ouvrier MUST ne voir que les parcelles qui lui sont attribuées (règle F1) ; la gestion des parcelles MUST être réservée au propriétaire et aux gestionnaires.
+- **FR-020** : Un ouvrier MUST ne voir que les parcelles qui lui sont attribuées (règle F1) ; la gestion des parcelles MUST être réservée au propriétaire et aux gestionnaires. Dès qu'une parcelle est archivée ou supprimée, l'ouvrier MUST ne plus recevoir ni pouvoir lire aucune donnée de cette parcelle (fiche, blocs, campagnes), ni par l'API ni par la synchronisation.
 - **FR-021** : Les données de parcelles MUST appartenir à l'agriculteur, être incluses dans son export et supprimées avec son compte (loi 09-08).
 
 ### Entités principales

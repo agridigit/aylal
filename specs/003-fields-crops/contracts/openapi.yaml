@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info: { title: AYLAL API — F2 (extension de F0/F1), version: 0.3.0 }
 x-conventions:
-  scope: "Toute route /farms/{farm_id}/* : non-membre, ferme supprimée ou parcelle/bloc/campagne d'une autre ferme -> 404 (identique à inexistant) ; membre sans droit -> 403. Ouvrier : parcelle non attribuée -> 404 ; action de gestion sur parcelle attribuée -> 403. Parcelle archivée -> 404 sur les routes normales (seules /fields/archived et /restore la voient). Les mêmes règles s'appliquent à /v1/sync/upload (tables parcels, seasons, field_blocks, crops, field_commands)."
+  scope: "Toute route /farms/{farm_id}/* : non-membre, ferme supprimée ou parcelle/bloc/campagne d'une autre ferme -> 404 (identique à inexistant) ; membre sans droit -> 403. Ouvrier : parcelle non attribuée -> 404 ; action de gestion sur parcelle attribuée -> 403. Parcelle archivée -> 404 sur les routes normales (seules /fields/archived et /restore la voient), y compris pour les blocs et campagnes de cette parcelle ; un ouvrier ne lit plus rien d'une parcelle archivée. Les mêmes règles s'appliquent à /v1/sync/upload (tables parcels, seasons, field_blocks, crops, field_commands)."
   server_fields: "area_calc_ha, status_summary, created_by, purge_after, farm_id (existant) sont imposés par le serveur ; toute valeur cliente est ignorée."
   errors: "detail = {code, field?} ; codes : geometry_invalid, geometry_self_intersecting (avec crossings[]), geometry_too_complex, area_out_of_bounds, outside_morocco, season_already_active, season_date_mismatch, block_outside_field, block_overlap, merge_not_contiguous, crop_not_found, too_many_fields."
   warnings: "Réponses 200/201 de fields : warnings[] non bloquants, ex. {code:'overlap', field_ids:[...]}, {code:'imagery_unsuitable'}."
