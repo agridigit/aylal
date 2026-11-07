@@ -36,7 +36,7 @@ def test_given_a_purged_account_then_operator_and_note_identifiers_are_removed_e
             await conn.execute("INSERT INTO parcels (id, farm_id, name, geometry, vigor) VALUES ($1,$2,'P1',"
                 "ST_SetSRID(ST_GeomFromText('POLYGON((-7.5 33.5,-7.49 33.5,-7.49 33.51,-7.5 33.51,-7.5 33.5))'),4326),0.5)", parcel, farm)
             for oid, author, operator, name, note in (
-                (op_author, gone, None, PII, "appelle 0612345678"),
+                (op_author, gone, None, "Karim", "appelle 0612345678"),
                 (op_operator, keeper, gone, PII, "note operateur"),
                 (op_other, keeper, None, "Karim", "note de karim"),
             ):
@@ -44,7 +44,7 @@ def test_given_a_purged_account_then_operator_and_note_identifiers_are_removed_e
                     "INSERT INTO operations (id, farm_id, type, performed_on, status, author_id, operator_user_id, operator_name, note,"
                     " free_product_name, dose, dose_unit) VALUES ($1,$2,'phyto',$3,'validated',$4,$5,$6,$7,'Prod X',2,'L/ha')",
                     oid, farm, dt.date.today(), author, operator, name, note)
-            names, marks, vals, by_recorder = _register(conn, farm, op_author, parcel, recorded_by=gone)
+            names, marks, vals, by_recorder = _register(conn, farm, op_author, parcel, recorded_by=gone, operator_name="Karim")
             await conn.execute(f"INSERT INTO registry_entries ({names}) VALUES ({marks})", *vals)
             names, marks, vals, by_operator = _register(conn, farm, op_operator, parcel, operator_user_id=gone, recorded_by=keeper)
             await conn.execute(f"INSERT INTO registry_entries ({names}) VALUES ({marks})", *vals)
@@ -58,19 +58,21 @@ def test_given_a_purged_account_then_operator_and_note_identifiers_are_removed_e
             await SqlAccountRepo(DSN).purge_deleted_accounts(NOW)
 
             assert await conn.fetchval("SELECT count(*) FROM users WHERE id=$1", gone) == 0
-            # registry: no personal operator name on the rows recorded by or attributed to the user, content intact
-            for rid in (by_recorder, by_operator):
-                row = await conn.fetchrow("SELECT operator_name, operator_user_id, product_name, dose, dose_unit, performed_on FROM registry_entries WHERE id=$1", rid)
-                assert "0612" not in row["operator_name"] and "Ahmed" not in row["operator_name"], row["operator_name"]
-                assert row["operator_user_id"] is None
-                assert row["product_name"] == "Prod X" and float(row["dose"]) == 2 and row["dose_unit"] == "L/ha"
+            # scope: only the deleted account's OWN identity goes (operator role -> name/id; author role -> author/recorder/note)
+            row = await conn.fetchrow("SELECT operator_name, operator_user_id, recorded_by, product_name, dose, dose_unit FROM registry_entries WHERE id=$1", by_recorder)
+            assert row["recorded_by"] is None and row["operator_name"] == "Karim"  # free-text third-party operator is kept
+            assert row["product_name"] == "Prod X" and float(row["dose"]) == 2 and row["dose_unit"] == "L/ha"
+            row = await conn.fetchrow("SELECT operator_name, operator_user_id, recorded_by, product_name, dose, dose_unit FROM registry_entries WHERE id=$1", by_operator)
+            assert "0612" not in row["operator_name"] and "Ahmed" not in row["operator_name"] and row["operator_user_id"] is None
+            assert row["recorded_by"] == keeper and row["product_name"] == "Prod X" and float(row["dose"]) == 2
             assert await conn.fetchval("SELECT operator_name FROM registry_entries WHERE id=$1", other) == "Karim"
-            # operations: author or operator is the user -> operator_name and note identifiers gone, content kept
+            row = await conn.fetchrow("SELECT operator_name, note, author_id, free_product_name, dose, performed_on FROM operations WHERE id=$1", op_author)
+            assert row["note"] is None and row["author_id"] is None and row["operator_name"] == "Karim"
+            row = await conn.fetchrow("SELECT operator_name, note, operator_user_id, author_id, free_product_name, dose, performed_on FROM operations WHERE id=$1", op_operator)
+            assert row["operator_user_id"] is None and "Ahmed" not in (row["operator_name"] or "")
+            assert row["note"] == "note operateur" and row["author_id"] == keeper  # the author's note is not the deleted operator's
             for oid in (op_author, op_operator):
-                row = await conn.fetchrow("SELECT operator_name, note, operator_user_id, free_product_name, dose, performed_on FROM operations WHERE id=$1", oid)
-                assert not row["operator_name"] or "Ahmed" not in row["operator_name"]
-                assert row["note"] is None or ("0612" not in row["note"] and "operateur" not in row["note"])
-                assert row["operator_user_id"] is None
+                row = await conn.fetchrow("SELECT free_product_name, dose, performed_on FROM operations WHERE id=$1", oid)
                 assert row["free_product_name"] == "Prod X" and float(row["dose"]) == 2 and row["performed_on"] == dt.date.today()
             kept = await conn.fetchrow("SELECT operator_name, note FROM operations WHERE id=$1", op_other)
             assert (kept["operator_name"], kept["note"]) == ("Karim", "note de karim")
