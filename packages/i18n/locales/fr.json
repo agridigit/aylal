@@ -1,0 +1,53 @@
+{
+  "home": {
+    "title": "Bienvenue sur AYLAL",
+    "subtitle": "Votre exploitation, même sans réseau",
+    "speak": "Écouter",
+    "openTrialRecord": "Saisir un essai",
+    "offlineBanner": "Hors ligne : vos données sont enregistrées sur le téléphone",
+    "state": {
+      "empty": "Aucune donnée pour le moment",
+      "emptyAction": "Ajouter un essai",
+      "error": "Un problème est survenu",
+      "errorSolution": "Vérifiez votre connexion puis réessayez",
+      "retry": "Réessayer",
+      "loading": "Chargement en cours",
+      "ready": "Tout est prêt"
+    },
+    "openMap": "Ouvrir la carte",
+    "openShowcase": "Voir la démo"
+  },
+  "lang": {
+    "ary": "Darija (arabe)",
+    "ary-Latn": "Darija (latin)",
+    "ar": "Arabe",
+    "fr": "Français"
+  },
+  "trialRecord": {
+    "title": "Nouvel essai",
+    "fields": {
+      "title": "Titre",
+      "note": "Note",
+      "quantity": "Quantité"
+    },
+    "save": "Enregistrer",
+    "sync": {
+      "pending": "Non envoyé",
+      "conflict": "Conflit à vérifier",
+      "synced": "Envoyé"
+    }
+  },
+  "map": {
+    "title": "Mes parcelles",
+    "empty": "Aucune parcelle enregistrée"
+  },
+  "showcase": {
+    "title": "Démonstration"
+  },
+  "measures": {
+    "export": "Exporter les mesures",
+    "unmeasured": "Non mesuré",
+    "met": "Seuil tenu",
+    "not_met": "Seuil non tenu"
+  }
+}

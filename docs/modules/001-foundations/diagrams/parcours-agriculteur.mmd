@@ -1,0 +1,8 @@
+flowchart TD
+    A[Ouvrir AYLAL] --> B[Choisir la langue]
+    B --> C[Saisir un essai]
+    C --> D[Enregistrer]
+    D --> E{Réseau ?}
+    E -- Non --> F[Non envoyé<br/>gardé sur le téléphone]
+    E -- Oui --> G[Envoyé]
+    F -- Le réseau revient --> G

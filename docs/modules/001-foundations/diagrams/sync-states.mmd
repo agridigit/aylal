@@ -1,0 +1,6 @@
+stateDiagram-v2
+  [*] --> pending: saisie locale
+  pending --> synced: server_ack
+  pending --> conflict: conflict_detected
+  conflict --> synced: user_ack
+  synced --> pending: local_edit

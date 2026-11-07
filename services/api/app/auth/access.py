@@ -1,0 +1,29 @@
+"""Current user dependency and role lookup (the DB is the source of truth, not the token)."""
+import uuid
+from typing import Literal
+
+from fastapi import Header, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.tokens import verify_token
+from app.config import get_settings
+from app.db.models import FarmMember
+
+Role = Literal["owner", "editor", "viewer"]
+WRITE_ROLES = {"owner", "editor"}
+
+
+async def current_user(authorization: str | None = Header(default=None)) -> uuid.UUID:
+    if authorization and authorization.lower().startswith("bearer "):
+        claims = verify_token(authorization[7:].strip(), get_settings().jwt_secret)
+        if claims:
+            return uuid.UUID(claims["sub"])
+    raise HTTPException(status_code=401, detail="unauthorized")
+
+
+async def farm_role(session: AsyncSession, farm_id: uuid.UUID, user_id: uuid.UUID) -> str | None:
+    result = await session.execute(
+        select(FarmMember.role).where(FarmMember.farm_id == farm_id, FarmMember.user_id == user_id)
+    )
+    return result.scalar_one_or_none()

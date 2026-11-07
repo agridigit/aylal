@@ -1,0 +1,519 @@
+[
+  {
+    "name": "valid parcel",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "valid vigor 0",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 0
+    },
+    "expect": {
+      "valid": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "valid vigor 1",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 1
+    },
+    "expect": {
+      "valid": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "valid name 80 chars",
+    "rule": "parcel.create",
+    "input": {
+      "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "missing name",
+    "rule": "parcel.create",
+    "input": {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "name",
+          "code": "required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "empty name",
+    "rule": "parcel.create",
+    "input": {
+      "name": "",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "name",
+          "code": "too_short"
+        }
+      ]
+    }
+  },
+  {
+    "name": "name 81 chars",
+    "rule": "parcel.create",
+    "input": {
+      "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "name",
+          "code": "too_long"
+        }
+      ]
+    }
+  },
+  {
+    "name": "vigor below 0",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": -0.1
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "vigor",
+          "code": "out_of_range"
+        }
+      ]
+    }
+  },
+  {
+    "name": "vigor above 1",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.6,
+              33.5
+            ],
+            [
+              -7.5,
+              33.5
+            ],
+            [
+              -7.5,
+              33.6
+            ],
+            [
+              -7.6,
+              33.5
+            ]
+          ]
+        ]
+      },
+      "vigor": 1.1
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "vigor",
+          "code": "out_of_range"
+        }
+      ]
+    }
+  },
+  {
+    "name": "missing geometry",
+    "rule": "parcel.create",
+    "input": {
+      "name": "P",
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "geometry",
+          "code": "required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "unclosed ring",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              1
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "geometry",
+          "code": "invalid_geometry"
+        }
+      ]
+    }
+  },
+  {
+    "name": "ring with fewer than 4 positions",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "geometry",
+          "code": "invalid_geometry"
+        }
+      ]
+    }
+  },
+  {
+    "name": "empty polygon",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": []
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "geometry",
+          "code": "invalid_geometry"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wrong geometry type",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "geometry",
+          "code": "invalid_geometry"
+        }
+      ]
+    }
+  },
+  {
+    "name": "longitude out of range",
+    "rule": "parcel.create",
+    "input": {
+      "name": "Parcelle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              200,
+              0
+            ],
+            [
+              201,
+              0
+            ],
+            [
+              201,
+              1
+            ],
+            [
+              200,
+              0
+            ]
+          ]
+        ]
+      },
+      "vigor": 0.5
+    },
+    "expect": {
+      "valid": false,
+      "errors": [
+        {
+          "field": "geometry",
+          "code": "invalid_geometry"
+        }
+      ]
+    }
+  }
+]

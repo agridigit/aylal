@@ -1,0 +1,22 @@
+# E2E AC3.1 + AC3.2 : mode avion -> saisie -> "non envoyé" -> retour réseau -> indicateur disparu
+appId: ma.aylal.app
+---
+- launchApp:
+    clearState: true
+- setAirplaneMode: enabled
+- tapOn:
+    id: "home.openTrialRecord"
+- tapOn:
+    id: "trialRecord.title"
+- inputText: "Essai hors ligne"
+- tapOn:
+    id: "trialRecord.save"
+- assertVisible:
+    id: "sync.indicator.pending"
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    notVisible:
+      id: "sync.indicator.pending"
+    timeout: 60000
+- assertVisible:
+    id: "sync.indicator.synced"

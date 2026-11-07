@@ -1,0 +1,36 @@
+# E2E AC2.1 à AC2.4 : ouverture < 3 s, bascule darija/arabe/français, 4 états atteignables
+appId: ma.aylal.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "home.title"
+    timeout: 3000
+- tapOn:
+    id: "lang.ary"
+- assertVisible:
+    id: "home.title"
+- tapOn:
+    id: "lang.ar"
+- assertVisible:
+    id: "home.title"
+- tapOn:
+    id: "lang.fr"
+- assertVisible:
+    id: "home.title"
+# état vide
+- assertVisible:
+    id: "home.state.empty"
+# état hors ligne
+- setAirplaneMode: enabled
+- assertVisible:
+    id: "home.offlineBanner"
+- setAirplaneMode: disabled
+# état erreur (déclenché par le lien profond de test) puis chargement
+- openLink: "aylal://home?debugState=error"
+- assertVisible:
+    id: "home.state.error"
+- openLink: "aylal://home?debugState=loading"
+- assertVisible:
+    id: "home.state.loading"

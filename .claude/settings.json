@@ -25,7 +25,14 @@
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(test:*)",
-      "Bash(.specify/scripts/bash/*)"
+      "Bash(.specify/scripts/bash/*)",
+      "Bash(git merge:*)",
+      "Bash(git tag:*)",
+      "Bash(git stash:*)",
+      "Bash(git show:*)",
+      "Bash(git describe:*)",
+      "Bash(git restore:*)",
+      "Bash(git worktree:*)"
     ],
     "deny": [
       "Bash(git push:*)",
@@ -35,7 +42,22 @@
       "Bash(curl:*)",
       "Bash(wget:*)",
       "Read(./.env)",
-      "Read(./.env.*)"
+      "Read(./.env.*)",
+      "Bash(git remote add:*)",
+      "Bash(gh:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/guard-git.sh\""
+          }
+        ]
+      }
     ]
   }
 }

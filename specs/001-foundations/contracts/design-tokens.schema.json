@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AYLAL design tokens",
+  "type": "object",
+  "required": ["themes", "space", "radius", "shadow", "typography", "motion"],
+  "properties": {
+    "themes": {
+      "type": "object",
+      "required": ["light", "dark", "sun"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(light|dark|sun)$": {
+          "type": "object",
+          "required": ["background", "surface", "text", "textMuted", "primary", "onPrimary", "danger", "warning", "success", "border", "focus"],
+          "additionalProperties": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+        }
+      }
+    },
+    "space": { "type": "object", "additionalProperties": { "type": "integer", "multipleOf": 4, "minimum": 0 } },
+    "radius": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "shadow": { "type": "object" },
+    "typography": {
+      "type": "object",
+      "required": ["fontFamily", "fontFamilyArabic", "scale"],
+      "properties": {
+        "fontFamily": { "const": "IBM Plex Sans" },
+        "fontFamilyArabic": { "const": "IBM Plex Sans Arabic" },
+        "scale": { "type": "object" }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "required": ["base"],
+      "properties": { "base": { "type": "integer", "minimum": 200, "maximum": 300 } }
+    },
+    "touchTargetMin": { "const": 48 }
+  },
+  "x-tests": "sun: ratio de contraste text/background >= 7 ; light/dark >= 4.5 ; space multiples de 4"
+}

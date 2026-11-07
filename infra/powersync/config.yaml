@@ -1,0 +1,15 @@
+replication:
+  connections:
+    - type: postgresql
+      uri: !env PS_DATA_SOURCE_URI
+      sslmode: disable
+storage:
+  type: postgresql
+  uri: !env PS_STORAGE_SOURCE_URI
+  sslmode: disable
+port: 8080
+sync_rules:
+  path: sync-rules.yaml
+client_auth:
+  jwks_uri: http://api:8000/v1/.well-known/jwks.json
+  audience: [powersync]

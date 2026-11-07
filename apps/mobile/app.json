@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "AYLAL",
+    "slug": "aylal",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "android": { "package": "ma.aylal.app" },
+    "extra": { "powersyncUrl": "https://proxy/powersync", "apiUrl": "https://proxy/v1" }
+  }
+}

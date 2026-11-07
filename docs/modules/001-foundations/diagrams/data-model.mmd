@@ -1,0 +1,42 @@
+erDiagram
+  farms ||--o{ farm_members : a
+  farms ||--o{ parcels : contient
+  farms ||--o{ trial_records : possede
+  trial_records ||--o{ sync_conflicts : journalise
+  trial_records ||--o{ applied_ops : recoit
+  farms { uuid id PK
+    text name
+    timestamptz created_at }
+  farm_members { uuid farm_id PK
+    uuid user_id PK
+    enum role }
+  parcels { uuid id PK
+    uuid farm_id FK
+    text name
+    polygon geometry
+    real vigor }
+  trial_records { uuid id PK
+    uuid farm_id FK
+    uuid author_id
+    text title
+    text note
+    numeric quantity
+    timestamptz updated_at
+    bigint server_version
+    jsonb field_versions
+    timestamptz deleted_at
+    boolean has_conflict }
+  sync_conflicts { uuid id PK
+    uuid farm_id FK
+    uuid record_id FK
+    text field
+    jsonb discarded_value
+    jsonb kept_value
+    uuid discarded_by
+    bigint base_version
+    bigint server_version
+    timestamptz acknowledged_at }
+  applied_ops { uuid op_id PK
+    uuid record_id FK
+    timestamptz applied_at
+    jsonb result }

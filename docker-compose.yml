@@ -1,10 +1,13 @@
-# AYLAL — squelette Docker Compose. La fonctionnalité F0 crée les Dockerfiles et complète ce fichier
-# sans renommer les services (le Makefile et les agents s'appuient sur ces noms).
+# AYLAL — plateforme Docker Compose (F0). Noms de services figés (contracts/make-targets.md).
 name: aylal
 
 x-env: &env
   env_file: .env
   restart: unless-stopped
+
+x-pg-pass: &pg-pass ${POSTGRES_PASSWORD:-aylal_dev}
+x-minio-user: &minio-user ${MINIO_ROOT_USER:-aylal}
+x-minio-pass: &minio-pass ${MINIO_ROOT_PASSWORD:-aylal_dev_minio}
 
 services:
   db:
@@ -13,51 +16,146 @@ services:
     environment:
       POSTGRES_DB: aylal
       POSTGRES_USER: aylal
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aylal_dev}
-    command: ["postgres", "-c", "wal_level=logical"]   # requis par PowerSync
-    volumes: [db-data:/var/lib/postgresql/data]
+      POSTGRES_PASSWORD: *pg-pass
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    command: ["postgres", "-c", "wal_level=logical", "-c", "password_encryption=scram-sha-256"]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/10-powersync-storage.sql:ro
     ports: ["5432:5432"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aylal"]
+      test: ["CMD-SHELL", "pg_isready -U aylal -d aylal"]
       interval: 5s
+      timeout: 5s
       retries: 20
 
   redis:
     image: redis:7-alpine
     <<: *env
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   minio:
-    image: minio/minio:latest
+    image: chainguard/minio@sha256:869ca3178831d9f521ea02258a0f0d4fbc1e9f84302e707514e1f861b860865d   # minio/minio a disparu de Docker Hub
     <<: *env
-    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: *minio-user
+      MINIO_ROOT_PASSWORD: *minio-pass
+      MC_HOST_local: http://${MINIO_ROOT_USER:-aylal}:${MINIO_ROOT_PASSWORD:-aylal_dev_minio}@localhost:9000
+    user: root
+    command: ["server", "/data", "--console-address", ":9001"]
     volumes: [minio-data:/data]
     ports: ["9000:9000", "9001:9001"]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio-init:
+    image: chainguard/minio@sha256:869ca3178831d9f521ea02258a0f0d4fbc1e9f84302e707514e1f861b860865d   # fournit aussi mc
+    environment:
+      MINIO_ROOT_USER: *minio-user
+      MINIO_ROOT_PASSWORD: *minio-pass
+    user: root
+    entrypoint: ["/bin/sh", "/init.sh"]
+    volumes: ["./infra/minio/init.sh:/init.sh:ro"]
+    depends_on: { minio: { condition: service_healthy } }
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 3s
+      retries: 20
 
   powersync:
-    image: journeyapps/powersync-service:latest   # édition auto-hébergée, à confirmer en F0
+    image: journeyapps/powersync-service:1.28.1
     <<: *env
-    depends_on: { db: { condition: service_healthy } }
-    volumes: ["./infra/powersync:/config"]
+    environment:
+      POWERSYNC_CONFIG_PATH: /config/config.yaml
+      PS_DATA_SOURCE_URI: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
+      PS_STORAGE_SOURCE_URI: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/powersync_storage
+    depends_on:
+      db: { condition: service_healthy }
+      api: { condition: service_healthy }
+    volumes: ["./infra/powersync:/config:ro"]
     ports: ["8080:8080"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/probes/liveness').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
   api:
-    build: { context: ., dockerfile: services/api/Dockerfile }
+    build: { context: ., dockerfile: services/api/Dockerfile, target: runtime }
     <<: *env
-    depends_on: { db: { condition: service_healthy }, redis: { condition: service_started } }
+    environment:
+      AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
+      AYLAL_REDIS_URL: redis://redis:6379/0
+      # Dev stack: env explicit, secret and dev-token flag come from .env (never hardcoded).
+      AYLAL_ENV: ${AYLAL_ENV:-dev}
+      AYLAL_JWT_SECRET: ${AYLAL_JWT_SECRET:-}
+      AYLAL_ENABLE_DEV_TOKEN: ${AYLAL_ENABLE_DEV_TOKEN:-0}
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
     ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/v1/health', timeout=3).status == 200 else 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   worker:
     build: { context: ., dockerfile: services/workers/Dockerfile }
     <<: *env
-    depends_on: [db, redis, minio]
+    environment:
+      AYLAL_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "arq", "--check", "worker.WorkerSettings"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes: ["./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"]
+    ports: ["8443:443"]
+    depends_on:
+      api: { condition: service_healthy }
+      powersync: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   # ---------- tests (profil "test") ----------
   api-test:
     profiles: ["test"]
     build: { context: ., dockerfile: services/api/Dockerfile, target: test }
     env_file: .env.test
-    depends_on: { db: { condition: service_healthy } }
-    volumes: ["./services/api:/app"]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      proxy: { condition: service_healthy }
+    environment:
+      AYLAL_DOMAIN_DIR: /packages/domain
+      AYLAL_REPO_DIR: /repo
+      AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
+      AYLAL_REDIS_URL: redis://redis:6379/0
+      AYLAL_ENV: test
+      AYLAL_JWT_SECRET: test-only-secret-0123456789-abcdefghij
+      AYLAL_ENABLE_DEV_TOKEN: "1"
+    volumes: ["./services/api:/app", "./packages/domain:/packages/domain:ro", ".:/repo:ro"]
     command: ["pytest", "-q"]
 
   js-test:
@@ -66,10 +164,37 @@ services:
     working_dir: /repo
     volumes: [".:/repo", "pnpm-store:/pnpm/store"]
 
-  # ---------- E2E mobile (profil "e2e") : émulateur Android + Maestro, défini en F0 ----------
+  # ---------- captures visuelles (profil "visual") ----------
+  storybook:
+    profiles: ["visual"]
+    build: { context: ., dockerfile: infra/docker/js.Dockerfile }
+    working_dir: /repo
+    volumes: [".:/repo", "pnpm-store:/pnpm/store"]
+    command: ["pnpm", "--filter", "@aylal/ui", "storybook", "--ci", "--host", "0.0.0.0", "-p", "6006"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:6006').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  visual:
+    profiles: ["visual"]
+    build: { context: ., dockerfile: infra/docker/visual.Dockerfile }
+    working_dir: /repo
+    volumes: [".:/repo", "pnpm-store:/pnpm/store"]
+    environment:
+      STORYBOOK_URL: http://storybook:6006
+    depends_on: { storybook: { condition: service_healthy } }
+    command: ["pnpm", "--filter", "@aylal/ui", "test:visual"]
+
+  # ---------- E2E mobile (profil "e2e") : émulateur Android + Maestro ----------
   e2e:
     profiles: ["e2e"]
-    build: { context: ., dockerfile: infra/docker/e2e.Dockerfile }
+    build:
+      context: .
+      dockerfile: infra/docker/e2e.Dockerfile
+      args:
+        MAESTRO_URL: ${MAESTRO_URL:-}
     volumes: [".:/repo"]
 
 volumes:

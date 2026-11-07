@@ -1,0 +1,9 @@
+{
+	local_certs
+}
+
+localhost, proxy {
+	tls internal
+	reverse_proxy /sync/* powersync:8080
+	reverse_proxy api:8000
+}

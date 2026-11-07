@@ -1,0 +1,209 @@
+[
+  {
+    "name": "no concurrent change applies cleanly",
+    "record": {
+      "fields": {
+        "title": "A",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 1,
+        "note": 1
+      },
+      "server_version": 1
+    },
+    "op": {
+      "op_id": "o1",
+      "author_id": "u1",
+      "base_version": 1,
+      "changes": {
+        "title": "B"
+      },
+      "device_clock": "2026-01-01T00:00:00Z"
+    },
+    "expect": {
+      "fields": {
+        "title": "B",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 2,
+        "note": 1
+      },
+      "server_version": 2,
+      "has_conflict": false,
+      "conflicts": []
+    }
+  },
+  {
+    "name": "disjoint fields merge without conflict",
+    "record": {
+      "fields": {
+        "title": "A2",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 2,
+        "note": 1
+      },
+      "server_version": 2
+    },
+    "op": {
+      "op_id": "o2",
+      "author_id": "u2",
+      "base_version": 1,
+      "changes": {
+        "note": "m"
+      },
+      "device_clock": "2026-01-01T00:00:00Z"
+    },
+    "expect": {
+      "fields": {
+        "title": "A2",
+        "note": "m"
+      },
+      "field_versions": {
+        "title": 2,
+        "note": 3
+      },
+      "server_version": 3,
+      "has_conflict": false,
+      "conflicts": []
+    }
+  },
+  {
+    "name": "same field concurrent change: last arrival wins and discarded value is logged",
+    "record": {
+      "fields": {
+        "title": "A2",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 2,
+        "note": 1
+      },
+      "server_version": 2
+    },
+    "op": {
+      "op_id": "o3",
+      "author_id": "u2",
+      "base_version": 1,
+      "changes": {
+        "title": "A3"
+      },
+      "device_clock": "2026-01-01T00:00:00Z"
+    },
+    "expect": {
+      "fields": {
+        "title": "A3",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 3,
+        "note": 1
+      },
+      "server_version": 3,
+      "has_conflict": true,
+      "conflicts": [
+        {
+          "field": "title",
+          "discarded_value": "A2",
+          "kept_value": "A3",
+          "discarded_by": "u2",
+          "base_version": 1,
+          "server_version": 3
+        }
+      ]
+    }
+  },
+  {
+    "name": "skewed device clock far in the past does not change the outcome",
+    "record": {
+      "fields": {
+        "title": "A2",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 2,
+        "note": 1
+      },
+      "server_version": 2
+    },
+    "op": {
+      "op_id": "o4",
+      "author_id": "u2",
+      "base_version": 1,
+      "changes": {
+        "title": "A3"
+      },
+      "device_clock": "1970-01-01T00:00:00Z"
+    },
+    "expect": {
+      "fields": {
+        "title": "A3",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 3,
+        "note": 1
+      },
+      "server_version": 3,
+      "has_conflict": true,
+      "conflicts": [
+        {
+          "field": "title",
+          "discarded_value": "A2",
+          "kept_value": "A3",
+          "discarded_by": "u2",
+          "base_version": 1,
+          "server_version": 3
+        }
+      ]
+    }
+  },
+  {
+    "name": "skewed device clock far in the future does not change the outcome",
+    "record": {
+      "fields": {
+        "title": "A2",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 2,
+        "note": 1
+      },
+      "server_version": 2
+    },
+    "op": {
+      "op_id": "o5",
+      "author_id": "u2",
+      "base_version": 1,
+      "changes": {
+        "title": "A3"
+      },
+      "device_clock": "2099-01-01T00:00:00Z"
+    },
+    "expect": {
+      "fields": {
+        "title": "A3",
+        "note": "n"
+      },
+      "field_versions": {
+        "title": 3,
+        "note": 1
+      },
+      "server_version": 3,
+      "has_conflict": true,
+      "conflicts": [
+        {
+          "field": "title",
+          "discarded_value": "A2",
+          "kept_value": "A3",
+          "discarded_by": "u2",
+          "base_version": 1,
+          "server_version": 3
+        }
+      ]
+    }
+  }
+]

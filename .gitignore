@@ -1,0 +1,22 @@
+.DS_Store
+.idea/
+node_modules/
+dist/
+coverage/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.env
+*.apk
+*.aab
+.pnpm-store/
+
+# AYLAL local state
+.worktrees/
+.aylal/green-*
+packages/ui/test-results/
+.pnpm-store/
+storybook-static/

@@ -1,0 +1,29 @@
+flowchart LR
+  subgraph Phone[Téléphone Android]
+    App[App Expo<br/>src/screens, src/sync]
+    SQL[(SQLite chiffré<br/>ps_crud + tables)]
+    App --> SQL
+  end
+  subgraph Docker[Docker Compose]
+    Proxy[proxy Caddy TLS]
+    API[api FastAPI /v1]
+    PS[powersync :8080]
+    DB[(db PostgreSQL 16 + PostGIS)]
+    R[(redis)]
+    W[worker Arq]
+    M[(minio S3)]
+  end
+  subgraph Pkg[Monorepo]
+    Dom[packages/domain Zod]
+    Gen[services/api/app/generated Pydantic]
+    Dom -->|JSON Schema| Gen
+  end
+  App -->|HTTPS écritures POST /v1/sync/upload| Proxy --> API
+  PS -->|flux de lecture buckets par ferme| App
+  API --> DB
+  API --> R
+  DB -->|réplication logique| PS
+  W --> R
+  W --> M
+  Gen -.-> API
+  Dom -.-> App
