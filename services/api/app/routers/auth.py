@@ -1,24 +1,31 @@
 """Phone + one-time code authentication (contracts/auth-otp.md)."""
 import datetime as dt
-import hashlib
-import secrets
+import ipaddress
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import issue_token
+from app.auth import current_user, issue_token, sessions
 from app.auth.otp import TEST_CODE, ConsoleSender, check_code, hash_code, new_code
+from app.auth.tokens import ACCESS_TTL
 from app.config import get_settings
 from app.db.models import FarmMember, OtpChallenge, RefreshToken, User
 from app.db.session import get_session
-from app.domain.otp_policy import OTP_LOCK_SECONDS, OtpState, is_locked, register_failure
+from app.domain.otp_policy import (
+    OTP_LOCK_SECONDS,
+    OtpState,
+    attempts_left,
+    is_expired,
+    is_locked,
+    register_failure,
+)
 from app.domain.phone import normalize_phone
 
-router = APIRouter(prefix="/auth/otp")
+router = APIRouter(prefix="/auth")
 OTP_TTL = dt.timedelta(minutes=5)
 sender = ConsoleSender()
 RESEND_DELAY = dt.timedelta(seconds=60)
@@ -40,8 +47,43 @@ class OtpVerify(BaseModel):
 def _phone(raw: str) -> str:
     phone = normalize_phone(raw)
     if phone is None:
-        raise HTTPException(status_code=422, detail="phone_invalid")
+        raise HTTPException(status_code=422, detail={"code": "phone_invalid"})
     return phone
+
+
+def client_ip(request: Request) -> str | None:
+    """Rate-limit IP: forwarded headers count only from a trusted proxy; unknown -> None (no shared bucket)."""
+    host = request.client.host if request.client else None
+    if not host:
+        return None
+    peer = _ip(host)
+    trusted = [n for n in (_net(p) for p in get_settings().trusted_proxies) if n is not None]
+    if peer is None or not any(peer in n for n in trusted):
+        return host  # the socket peer itself: forwarded headers are not trusted
+    real = _ip(request.headers.get("x-real-ip"))
+    if real is not None:
+        return str(real)
+    for hop in reversed(request.headers.get("x-forwarded-for", "").split(",")):  # rightmost untrusted hop
+        addr = _ip(hop.strip())
+        if addr is None:
+            return None
+        if not any(addr in n for n in trusted):
+            return str(addr)
+    return None
+
+
+def _ip(value: str | None) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    try:
+        return ipaddress.ip_address(value) if value else None
+    except ValueError:
+        return None
+
+
+def _net(value: str) -> ipaddress.IPv4Network | ipaddress.IPv6Network | None:
+    try:
+        return ipaddress.ip_network(value, strict=False)
+    except ValueError:
+        return None
 
 
 def _ms(moment: dt.datetime | None) -> int | None:
@@ -55,16 +97,17 @@ def _too_many(retry_after: int) -> HTTPException:
     )
 
 
-@router.post("/request", status_code=202)
+@router.post("/otp/request", status_code=202)
 async def request_code(
     body: OtpRequest, request: Request, session: AsyncSession = Depends(get_session)
 ) -> dict[str, str]:
     settings = get_settings()  # per request: a forbidden configuration serves nothing
     phone = _phone(body.phone)
-    ip = request.client.host if request.client else "unknown"
+    ip = client_ip(request)
     now = dt.datetime.now(dt.UTC)
     channel = body.channel if body.channel in ("sms", "whatsapp") else "sms"
-    # Serialise requests for one phone: the lock is held until commit.
+    # Serialise requests for one phone (also a phone with no row yet): held until commit.
+    await _phone_lock(session, phone)
     latest = await _latest(session, phone, lock=True)
     if latest is not None and latest.locked_until is not None and latest.locked_until > now:
         return {"status": "accepted"}  # locked: same answer, nothing sent, lock kept
@@ -81,7 +124,7 @@ async def request_code(
             select(func.count()).where(OtpChallenge.phone_e164 == phone, OtpChallenge.last_sent_at > since)
         )
     ).scalar_one()
-    per_ip = (
+    per_ip = 0 if ip is None else (
         await session.execute(
             select(func.count()).where(OtpChallenge.client_ip == ip, OtpChallenge.last_sent_at > since)
         )
@@ -108,6 +151,10 @@ async def request_code(
     return {"status": "accepted"}
 
 
+async def _phone_lock(session: AsyncSession, phone: str) -> None:
+    await session.execute(text("SELECT pg_advisory_xact_lock(hashtext(:p))"), {"p": phone})
+
+
 async def _latest(session: AsyncSession, phone: str, lock: bool = False) -> OtpChallenge | None:
     query = (
         select(OtpChallenge)
@@ -120,13 +167,14 @@ async def _latest(session: AsyncSession, phone: str, lock: bool = False) -> OtpC
     return (await session.execute(query)).scalar_one_or_none()
 
 
-@router.post("/verify")
+@router.post("/otp/verify")
 async def verify_code(
     body: OtpVerify, session: AsyncSession = Depends(get_session)
 ) -> dict[str, Any]:
     settings = get_settings()
     phone = _phone(body.phone)
     now = dt.datetime.now(dt.UTC)
+    await _phone_lock(session, phone)
     challenge = await _latest(session, phone, lock=True)  # row lock: failures count atomically
     if challenge is None:
         raise HTTPException(status_code=400, detail={"code": "otp_invalid", "attempts_left": 0})
@@ -134,7 +182,7 @@ async def verify_code(
     now_ms = int(now.timestamp() * 1000)
     if is_locked(state, now_ms):  # checked before any comparison, the right code included
         raise _locked(int(((state["locked_until_ms"] or now_ms) - now_ms) / 1000) + 1)
-    if challenge.expires_at <= now:
+    if is_expired(_ms(challenge.expires_at) or 0, now_ms):
         raise HTTPException(status_code=410, detail={"code": "otp_expired"})
     if not check_code(body.code, challenge.code_hash, settings.otp_pepper):
         new = register_failure(state, now_ms)
@@ -144,7 +192,7 @@ async def verify_code(
         await session.commit()
         if new["locked_until_ms"] is not None:
             raise _locked(OTP_LOCK_SECONDS)
-        left = max(0, 3 - new["failed_attempts"])
+        left = attempts_left(new)
         raise HTTPException(status_code=400, detail={"code": "otp_invalid", "attempts_left": left})
     challenge.consumed_at = now
     user = (await session.execute(select(User).where(User.phone_e164 == phone))).scalar_one_or_none()
@@ -152,6 +200,17 @@ async def verify_code(
         user = User(id=uuid.uuid4(), phone_e164=phone, status="pending")
         session.add(user)
         await session.flush()
+    family = uuid.uuid4()
+    raw = sessions.new_token()
+    session.add(
+        RefreshToken(id=uuid.uuid4(), user_id=user.id, family_id=family, token_hash=sessions.hash_token(raw))
+    )
+    payload = await _session_payload(session, user, raw)
+    await session.commit()
+    return payload
+
+
+async def _session_payload(session: AsyncSession, user: User, refresh: str) -> dict[str, Any]:
     farms = (
         await session.execute(
             select(FarmMember.farm_id, FarmMember.role).where(
@@ -160,16 +219,9 @@ async def verify_code(
         )
     ).all()
     access, expires = issue_token(
-        user.id, settings.jwt_secret, [str(f) for f, _ in farms], {str(f): r for f, r in farms}
+        user.id, get_settings().jwt_secret, [str(f) for f, _ in farms], {str(f): r for f, r in farms},
+        ttl=ACCESS_TTL,
     )
-    refresh = secrets.token_urlsafe(32)
-    session.add(
-        RefreshToken(
-            id=uuid.uuid4(), user_id=user.id, family_id=uuid.uuid4(),
-            token_hash=hashlib.sha256(refresh.encode()).hexdigest(),
-        )
-    )
-    await session.commit()
     return {
         "access_token": access,
         "refresh_token": refresh,
@@ -177,6 +229,69 @@ async def verify_code(
         "user": {"id": str(user.id), "phone": user.phone_e164, "status": user.status},
         "farms": [{"id": str(f), "role": r} for f, r in farms],
     }
+
+
+class RefreshBody(BaseModel):
+    refresh_token: str
+
+
+def _record(row: RefreshToken) -> sessions.TokenRecord:
+    return sessions.TokenRecord(
+        id=row.id, family_id=row.family_id, token_hash=row.token_hash,
+        rotated_at=row.rotated_at, revoked_at=row.revoked_at,
+    )
+
+
+async def _by_token(session: AsyncSession, token: str) -> RefreshToken | None:
+    return (
+        await session.execute(
+            select(RefreshToken).where(RefreshToken.token_hash == sessions.hash_token(token)).with_for_update()
+        )
+    ).scalar_one_or_none()
+
+
+def _unauthorized() -> HTTPException:
+    return HTTPException(status_code=401, detail={"code": "refresh_refused"})
+
+
+@router.post("/refresh")
+async def refresh(body: RefreshBody, session: AsyncSession = Depends(get_session)) -> dict[str, Any]:
+    now = dt.datetime.now(dt.UTC)
+    row = await _by_token(session, body.refresh_token)
+    if row is None:
+        raise _unauthorized()
+    decision = sessions.evaluate(_record(row), now)
+    if decision == "reuse":  # a spent token came back: the family is compromised
+        await session.execute(
+            update(RefreshToken)
+            .where(RefreshToken.family_id == row.family_id, RefreshToken.revoked_at.is_(None))
+            .values(revoked_at=now)
+        )
+        await session.commit()
+    if decision != "rotate":
+        raise _unauthorized()
+    user = (await session.execute(select(User).where(User.id == row.user_id))).scalar_one()
+    old, new, raw = sessions.rotate(_record(row), now)
+    row.rotated_at = old.rotated_at
+    session.add(RefreshToken(id=new.id, user_id=row.user_id, family_id=new.family_id, token_hash=new.token_hash))
+    payload = await _session_payload(session, user, raw)
+    await session.commit()
+    return payload
+
+
+@router.post("/logout", status_code=204)
+async def logout(
+    body: RefreshBody, user_id: uuid.UUID = Depends(current_user), session: AsyncSession = Depends(get_session)
+) -> Response:
+    row = await _by_token(session, body.refresh_token)
+    if row is not None and row.user_id == user_id:
+        await session.execute(
+            update(RefreshToken)
+            .where(RefreshToken.family_id == row.family_id, RefreshToken.revoked_at.is_(None))
+            .values(revoked_at=dt.datetime.now(dt.UTC))
+        )
+        await session.commit()
+    return Response(status_code=204)
 
 
 def _locked(retry_after: int) -> HTTPException:

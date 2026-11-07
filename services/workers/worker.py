@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 
 from arq.connections import RedisSettings
 
+from tasks.send_otp import send_otp
+
 
 async def health(ctx: dict[str, Any]) -> dict[str, str]:
     return {"status": "ok"}
@@ -16,6 +18,6 @@ def _redis_settings() -> RedisSettings:
 
 
 class WorkerSettings:
-    functions = [health]
+    functions = [health, send_otp]
     redis_settings = _redis_settings()
     health_check_interval = 5

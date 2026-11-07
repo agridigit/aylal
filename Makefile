@@ -48,6 +48,8 @@ apk:           ## construit l'APK release arm64 dans Docker -> apps/mobile/dist/
 	bash scripts/build-apk.sh
 test-deps:     ## refuse une app « façade » : dépendances réelles déclarées, aucun stub natif
 	$(DC) --profile test run --rm --no-deps js-test node scripts/check-real-deps.mjs
+e2e-api: export AYLAL_ENV=test
+e2e-api: export AYLAL_ENABLE_TEST_OTP=1
 e2e-api:
 	$(MAKE) up
 	$(DC) --profile test run --rm api-test pytest -q tests/e2e

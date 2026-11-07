@@ -53,9 +53,9 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [ ] T028 [P] E2E mobile Maestro : `apps/mobile/e2e/` ou `apps/mobile/maestro/signup_login.yaml` (R1-A1, A3, A4, A5).
 
 ### Implémentation
-- [ ] T029 `services/api/app/auth/otp.py`, `services/api/app/auth/sessions.py`, `services/api/app/routers/auth.py` (Redis pour compteurs d'envoi, PostgreSQL pour défis).
-- [ ] T030 [P] Worker `services/workers/tasks/send_otp.py` avec port `OtpSender` et adaptateur de passerelle isolé (R3 de research.md).
-- [ ] T031 [P] Mobile : `apps/mobile/src/auth/{session.ts,secureStore.ts,localPin.ts}`.
+- [x] T029 `services/api/app/auth/otp.py`, `services/api/app/auth/sessions.py`, `services/api/app/routers/auth.py` (Redis pour compteurs d'envoi, PostgreSQL pour défis).
+- [x] T030 [P] Worker `services/workers/tasks/send_otp.py` avec port `OtpSender` et adaptateur de passerelle isolé (R3 de research.md).
+- [x] T031 [P] Mobile : `apps/mobile/src/auth/{session.ts,secureStore.ts,localPin.ts}`.
 - [ ] T032 Mobile : écrans `apps/mobile/src/screens/Phone/`, `apps/mobile/src/screens/Code/` avec composants `packages/ui` et clés i18n `auth.json`.
 
 ## Phase 4 : Récit 2 — Choix de la langue avec voix (P1)
@@ -149,7 +149,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [x] T078 GREEN : `routers/auth.py` (échecs par téléphone, invalidation, limites 429, UPDATE conditionnel / `with_for_update`), `auth/access.py`, `auth/farm_context.py`, `sync/admin.py` (`Farm.deleted_at IS NULL`).
 - [x] T079 [P] RED intégration : IP cliente derrière proxy (`AYLAL_TRUSTED_PROXIES`, vide = en-têtes ignorés ; seaux distincts par client ; IP inconnue = pas de seau partagé), dans `services/api/tests/integration/test_otp_ratelimit_hardening.py`.
 - [x] T080 [P] RED intégration : concurrence sur `/request` (plafond horaire et délai de 60 s jamais contournés), même fichier.
-- [ ] T081 GREEN : `routers/auth.py` + `config.py` (IP de confiance via X-Real-IP/X-Forwarded-For, `pg_advisory_xact_lock(hashtext(phone))` avant les lectures).
+- [x] T081 GREEN : `routers/auth.py` + `config.py` (IP de confiance via X-Real-IP/X-Forwarded-For, `pg_advisory_xact_lock(hashtext(phone))` avant les lectures).
 
 ## Dépendances
 

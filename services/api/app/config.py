@@ -21,6 +21,7 @@ class Settings:
     sms_gateway_url: str
     sms_gateway_key: str
     enable_test_otp: bool
+    trusted_proxies: tuple[str, ...] = ()
 
 
 def get_settings() -> Settings:
@@ -55,4 +56,7 @@ def get_settings() -> Settings:
         sms_gateway_url=os.environ.get("AYLAL_SMS_GATEWAY_URL", ""),
         sms_gateway_key=os.environ.get("AYLAL_SMS_GATEWAY_KEY", ""),
         enable_test_otp=enable_test_otp,
+        trusted_proxies=tuple(
+            p.strip() for p in os.environ.get("AYLAL_TRUSTED_PROXIES", "").split(",") if p.strip()
+        ),
     )

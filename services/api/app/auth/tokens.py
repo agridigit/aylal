@@ -8,6 +8,7 @@ import uuid
 from typing import Any
 
 TTL = dt.timedelta(hours=12)
+ACCESS_TTL = dt.timedelta(minutes=15)  # OTP sessions: short access token, long-lived rotating refresh token
 
 
 def _b64(data: bytes) -> str:
@@ -23,10 +24,11 @@ def _sign(signing_input: str, secret: str) -> str:
 
 
 def issue_token(
-    user_id: uuid.UUID, secret: str, farm_ids: list[str], roles: dict[str, str]
+    user_id: uuid.UUID, secret: str, farm_ids: list[str], roles: dict[str, str],
+    ttl: dt.timedelta = TTL,
 ) -> tuple[str, dt.datetime]:
     now = dt.datetime.now(dt.UTC)
-    expires = now + TTL
+    expires = now + ttl
     claims = {
         "sub": str(user_id),
         "aud": "powersync",

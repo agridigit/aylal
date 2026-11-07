@@ -121,6 +121,8 @@ services:
       AYLAL_SMS_GATEWAY_URL: ${AYLAL_SMS_GATEWAY_URL:-}
       AYLAL_SMS_GATEWAY_KEY: ${AYLAL_SMS_GATEWAY_KEY:-}
       AYLAL_ENABLE_TEST_OTP: ${AYLAL_ENABLE_TEST_OTP:-}
+      # comma-separated IPs/CIDRs of the reverse proxy (Caddy); empty = forwarded headers ignored
+      AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
