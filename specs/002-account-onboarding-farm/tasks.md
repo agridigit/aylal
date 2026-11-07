@@ -61,10 +61,10 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 4 : Récit 2 — Choix de la langue avec voix (P1)
 
 ### Tests RED
-- [ ] T033 [P] Unitaires i18n : trois langues, RTL pour `ary` et `ar`, application immédiate dans `packages/i18n/tests/language.test.ts` (R2-A2, R2-A3).
-- [ ] T034 [P] Mobile écran E1 : trois options lisibles à voix haute, aucune présélection si langue inconnue, 4 états, miroir RTL, dans `apps/mobile/src/screens/Language/__tests__/` (R2-A1, R2-A2).
-- [ ] T035 [P] Intégration : `PATCH /v1/me` enregistre la langue sur le compte dans `services/api/tests/integration/test_me_language.py` (R2-A3).
-- [ ] T036 [P] E2E mobile : `apps/mobile/maestro/language_choice.yaml` (R2-A1 à A3).
+- [x] T033 [P] Unitaires i18n : trois langues, RTL pour `ary` et `ar`, application immédiate dans `packages/i18n/tests/language.test.ts` (R2-A2, R2-A3).
+- [ ] T034 [bloquée par T004] [P] Mobile écran E1 : trois options lisibles à voix haute, aucune présélection si langue inconnue, 4 états, miroir RTL, dans `apps/mobile/src/screens/Language/__tests__/` (R2-A1, R2-A2).
+- [x] T035 [P] Intégration : `PATCH /v1/me` enregistre la langue sur le compte dans `services/api/tests/integration/test_me_language.py` (R2-A3).
+- [ ] T036 [bloquée par T004] [P] E2E mobile : `apps/mobile/maestro/language_choice.yaml` (R2-A1 à A3).
 
 ### Implémentation
 - [ ] T037 `apps/mobile/src/screens/Language/`, `services/api/app/routers/me.py` (langue), textes `packages/i18n/locales/*/onboarding.json`.
@@ -72,11 +72,11 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 5 : Récit 3 — Consentement et profil minimal (P1)
 
 ### Tests RED
-- [ ] T038 [P] Unitaires domaine : consentement versionné, profil limité nom/surnom + langue, aucun champ superflu dans `packages/domain/tests/consent.test.ts` et `onboarding.test.ts` (R3-A2, R3-A3).
-- [ ] T039 [P] Intégration : `POST/GET /v1/me/consents`, `DELETE /v1/me/consents/{purpose}`, compte `pending` purgé après 24 h sans consentement et sans autre donnée que le numéro dans `services/api/tests/integration/test_consent.py` (R3-A2, FR-012).
-- [ ] T040 [P] Worker : `services/workers/tests/integration/test_purge_pending.py`.
-- [ ] T041 [P] Mobile écrans E4 et E5 : politique lisible à voix haute hors ligne, blocage sans consentement, enregistrement local puis synchro, 4 états, RTL, dans `apps/mobile/src/screens/{Consent,Profile}/__tests__/` (R3-A1 à A3).
-- [ ] T042 [P] E2E service `services/api/tests/e2e/test_consent_profile_e2e.py` et mobile `apps/mobile/maestro/consent_profile.yaml`.
+- [x] T038 [P] Unitaires domaine : consentement versionné, profil limité nom/surnom + langue, aucun champ superflu dans `packages/domain/tests/consent.test.ts` et `onboarding.test.ts` (R3-A2, R3-A3).
+- [x] T039 [P] Intégration : `POST/GET /v1/me/consents`, `DELETE /v1/me/consents/{purpose}`, compte `pending` purgé après 24 h sans consentement et sans autre donnée que le numéro dans `services/api/tests/integration/test_consent.py` (R3-A2, FR-012).
+- [x] T040 [P] Worker : `services/workers/tests/integration/test_purge_pending.py`.
+- [ ] T041 [bloquée par T004] [P] Mobile écrans E4 et E5 : politique lisible à voix haute hors ligne, blocage sans consentement, enregistrement local puis synchro, 4 états, RTL, dans `apps/mobile/src/screens/{Consent,Profile}/__tests__/` (R3-A1 à A3).
+- [x] T042 [P] E2E service `services/api/tests/e2e/test_consent_profile_e2e.py` et mobile `apps/mobile/maestro/consent_profile.yaml`. (partie service ; Maestro bloquée par T004)
 
 ### Implémentation
 - [ ] T043 `services/api/app/routers/me.py` (profil, consentements), worker de purge dans `services/workers/tasks/purge_deleted_accounts.py`.
@@ -85,12 +85,12 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 6 : Récit 4 — Création de la ferme (P1)
 
 ### Tests RED
-- [ ] T045 [P] Unitaires domaine : nom et emplacement requis, surface facultative dans `packages/domain/tests/farm.test.ts` (R4-A1, A5).
-- [ ] T046 [P] Intégration : `POST /v1/farms` (201, 422), propriétaire unique, commune déduite du point, `GET /v1/farms` avec rôle, dans `services/api/tests/integration/test_farms_create.py` (R4-A1, A2).
-- [ ] T047 [P] Intégration hors ligne : ferme créée localement puis synchronisée, indicateur « en attente d'envoi » (UUID client) dans `services/api/tests/integration/test_farm_offline_sync.py` (R4-A3).
-- [ ] T048 [P] Contrat `/v1/farms`, `/v1/geo/*` dans `services/api/tests/contract/test_farms_contract.py`.
-- [ ] T049 [P] Mobile écran E6 : position, carte, repli liste hiérarchique, ferme hors ligne, 4 états, RTL, dans `apps/mobile/src/screens/FarmCreate/__tests__/` (R4-A2, A3, A5).
-- [ ] T050 [P] E2E mobile parcours complet langue -> numéro -> code -> consentement -> surnom -> ferme en moins de 2 min et moins de 200 Ko : `apps/mobile/maestro/onboarding.yaml` (R4-A4, SC) ; E2E service `services/api/tests/e2e/test_onboarding_e2e.py`.
+- [x] T045 [P] Unitaires domaine : nom et emplacement requis, surface facultative dans `packages/domain/tests/farm.test.ts` (R4-A1, A5).
+- [x] T046 [P] Intégration : `POST /v1/farms` (201, 422), propriétaire unique, commune déduite du point, `GET /v1/farms` avec rôle, dans `services/api/tests/integration/test_farms_create.py` (R4-A1, A2).
+- [x] T047 [P] Intégration hors ligne : ferme créée localement puis synchronisée, indicateur « en attente d'envoi » (UUID client) dans `services/api/tests/integration/test_farm_offline_sync.py` (R4-A3).
+- [x] T048 [P] Contrat `/v1/farms`, `/v1/geo/*` dans `services/api/tests/contract/test_farms_contract.py`.
+- [ ] T049 [bloquée par T004] [P] Mobile écran E6 : position, carte, repli liste hiérarchique, ferme hors ligne, 4 états, RTL, dans `apps/mobile/src/screens/FarmCreate/__tests__/` (R4-A2, A3, A5).
+- [x] T050 [P] E2E mobile parcours complet langue -> numéro -> code -> consentement -> surnom -> ferme en moins de 2 min et moins de 200 Ko : `apps/mobile/maestro/onboarding.yaml` (R4-A4, SC) ; E2E service `services/api/tests/e2e/test_onboarding_e2e.py`. (partie service ; Maestro bloquée par T004)
 
 ### Implémentation
 - [ ] T051 `services/api/app/routers/farms.py` (création, liste, détail via `farm_context`), `services/api/app/geo/`.

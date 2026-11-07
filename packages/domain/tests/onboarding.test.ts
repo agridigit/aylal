@@ -43,3 +43,19 @@ describe("onboarding order", () => {
     ).toBe("done");
   });
 });
+
+import { PROFILE_FIELDS } from "../src/onboarding";
+
+describe("minimal profile (R3-A3)", () => {
+  it("Given the profile, When listing its fields, Then only name and language exist", () => {
+    expect([...PROFILE_FIELDS].sort()).toEqual(["display_name", "language"]);
+  });
+  it.each(["age", "land_status", "email", "gender"])("Given an extra field %s, When validating, Then it is refused", (extra) => {
+    const got = validateProfile({ display_name: "Hassan", language: "fr", [extra]: "x" });
+    expect(got.valid).toBe(false);
+    expect(got.errors.map((e) => e.field)).toContain(extra);
+  });
+  it("Given a name only without age or tenure, When validating a profile with a language, Then it is valid", () => {
+    expect(validateProfile({ display_name: "Hassan", language: "ar" }).valid).toBe(true);
+  });
+});

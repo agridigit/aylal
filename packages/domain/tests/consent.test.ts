@@ -17,3 +17,21 @@ describe("consent validation", () => {
     });
   }
 });
+
+import { CONSENT_PURPOSE_DATA_POLICY, hasActiveConsent } from "../src/consent";
+
+describe("versioned consent (R3-A2)", () => {
+  const grant = { purpose: CONSENT_PURPOSE_DATA_POLICY, text_version: "2026-01", withdrawn_at: null };
+  it("Given no grant, When checking, Then the user may not proceed", () => {
+    expect(hasActiveConsent([], CONSENT_PURPOSE_DATA_POLICY, "2026-01")).toBe(false);
+  });
+  it("Given a grant of the current text version, When checking, Then it is active", () => {
+    expect(hasActiveConsent([grant], CONSENT_PURPOSE_DATA_POLICY, "2026-01")).toBe(true);
+  });
+  it("Given a grant of an older text version, When checking, Then a new consent is required", () => {
+    expect(hasActiveConsent([grant], CONSENT_PURPOSE_DATA_POLICY, "2026-06")).toBe(false);
+  });
+  it("Given a withdrawn grant, When checking, Then it is not active", () => {
+    expect(hasActiveConsent([{ ...grant, withdrawn_at: "2026-02-01T00:00:00Z" }], CONSENT_PURPOSE_DATA_POLICY, "2026-01")).toBe(false);
+  });
+});

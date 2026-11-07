@@ -17,3 +17,23 @@ describe("farm validation", () => {
     });
   }
 });
+
+import { farmUploadState } from "../src/farm";
+
+describe("farm upload indicator (R4-A3)", () => {
+  it("Given a farm created offline and still queued, When reading its state, Then it is pending upload", () => {
+    expect(farmUploadState("f1", ["f1", "f2"])).toBe("pending_upload");
+  });
+  it("Given a farm no longer queued, When reading its state, Then it is synced", () => {
+    expect(farmUploadState("f1", ["f2"])).toBe("synced");
+  });
+});
+
+describe("farm required fields (R4-A1, R4-A5)", () => {
+  it("Given a farm with a blank name, When validating, Then name is refused", () => {
+    expect(validateFarm({ name: "   ", location: { lat: 33, lon: -7 } }).valid).toBe(false);
+  });
+  it("Given a farm without area, When validating, Then it is valid", () => {
+    expect(validateFarm({ name: "Ferme", location: { lat: 33, lon: -7 } }).valid).toBe(true);
+  });
+});
