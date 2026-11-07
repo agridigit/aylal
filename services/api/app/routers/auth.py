@@ -15,7 +15,7 @@ from app.auth.otp import TEST_CODE, ConsoleSender, check_code, hash_code, new_co
 from app.config import get_settings
 from app.db.models import FarmMember, OtpChallenge, RefreshToken, User
 from app.db.session import get_session
-from app.domain.otp_policy import OTP_LOCK_SECONDS, is_locked, register_failure
+from app.domain.otp_policy import OTP_LOCK_SECONDS, OtpState, is_locked, register_failure
 from app.domain.phone import normalize_phone
 
 router = APIRouter(prefix="/auth/otp")
@@ -88,7 +88,7 @@ async def verify_code(
     challenge = await _latest(session, phone)
     if challenge is None:
         raise HTTPException(status_code=400, detail={"code": "otp_invalid", "attempts_left": 0})
-    state = {"failed_attempts": challenge.failed_attempts, "locked_until_ms": _ms(challenge.locked_until)}
+    state: OtpState = {"failed_attempts": challenge.failed_attempts, "locked_until_ms": _ms(challenge.locked_until)}
     now_ms = int(now.timestamp() * 1000)
     if is_locked(state, now_ms):  # checked before any comparison, the right code included
         raise _locked(int(((state["locked_until_ms"] or now_ms) - now_ms) / 1000) + 1)

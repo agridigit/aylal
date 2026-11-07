@@ -23,6 +23,11 @@ from app.domain.validation import validate
 
 router = APIRouter(prefix="/farms")
 INVITATION_TTL = dt.timedelta(days=30)
+_FARM_UPDATE = require("farm.update")
+_MEMBER_ROLE_CHANGE = require("member.role_change")
+_MEMBER_REMOVE = require("member.remove")
+_PARCELS_ASSIGN = require("parcels.assign")
+_MEMBER_INVITE = require("member.invite")
 
 
 class FarmPatch(BaseModel):
@@ -143,7 +148,7 @@ async def get_farm(ctx: FarmContext = Depends(farm_context)) -> dict[str, Any]:
 
 
 @router.patch("/{farm_id}")
-async def patch_farm(body: FarmPatch, ctx: FarmContext = Depends(require("farm.update"))) -> dict[str, Any]:
+async def patch_farm(body: FarmPatch, ctx: FarmContext = Depends(_FARM_UPDATE)) -> dict[str, Any]:
     farm = await ctx.session.get(Farm, ctx.farm_id)
     if farm is None or farm.deleted_at is not None:
         raise NOT_FOUND
@@ -170,7 +175,7 @@ async def list_members(ctx: FarmContext = Depends(farm_context)) -> list[dict[st
 
 @router.patch("/{farm_id}/members/{user_id}")
 async def change_role(
-    user_id: uuid.UUID, body: RolePatch, ctx: FarmContext = Depends(require("member.role_change"))
+    user_id: uuid.UUID, body: RolePatch, ctx: FarmContext = Depends(_MEMBER_ROLE_CHANGE)
 ) -> dict[str, Any]:
     member = await _active_member(ctx.session, ctx.farm_id, user_id)
     if member.role == "owner":
@@ -188,7 +193,7 @@ async def change_role(
 
 @router.delete("/{farm_id}/members/{user_id}", status_code=204)
 async def remove_member(
-    user_id: uuid.UUID, ctx: FarmContext = Depends(require("member.remove"))
+    user_id: uuid.UUID, ctx: FarmContext = Depends(_MEMBER_REMOVE)
 ) -> Response:
     member = await _active_member(ctx.session, ctx.farm_id, user_id)
     if member.role == "owner":
@@ -205,7 +210,7 @@ async def remove_member(
 
 @router.put("/{farm_id}/members/{user_id}/parcels")
 async def assign_parcels(
-    user_id: uuid.UUID, body: ParcelAssignment, ctx: FarmContext = Depends(require("parcels.assign"))
+    user_id: uuid.UUID, body: ParcelAssignment, ctx: FarmContext = Depends(_PARCELS_ASSIGN)
 ) -> dict[str, Any]:
     member = await _active_member(ctx.session, ctx.farm_id, user_id)
     if member.role != "worker":
@@ -241,7 +246,7 @@ def _invitation_json(inv: Invitation) -> dict[str, Any]:
 
 
 @router.get("/{farm_id}/invitations")
-async def list_invitations(ctx: FarmContext = Depends(require("farm.update"))) -> list[dict[str, Any]]:
+async def list_invitations(ctx: FarmContext = Depends(_FARM_UPDATE)) -> list[dict[str, Any]]:
     rows = await ctx.session.execute(
         select(Invitation).where(Invitation.farm_id == ctx.farm_id).order_by(Invitation.created_at)
     )
@@ -252,7 +257,7 @@ async def list_invitations(ctx: FarmContext = Depends(require("farm.update"))) -
 async def invite(
     body: InvitationCreate,
     response: Response,
-    ctx: FarmContext = Depends(require("member.invite")),
+    ctx: FarmContext = Depends(_MEMBER_INVITE),
 ) -> dict[str, Any]:
     phone = normalize_phone(body.phone)
     if phone is None:
@@ -300,7 +305,7 @@ async def invite(
 
 @router.delete("/{farm_id}/invitations/{invitation_id}", status_code=204)
 async def cancel_invitation(
-    invitation_id: uuid.UUID, ctx: FarmContext = Depends(require("member.invite"))
+    invitation_id: uuid.UUID, ctx: FarmContext = Depends(_MEMBER_INVITE)
 ) -> Response:
     inv = (
         await ctx.session.execute(

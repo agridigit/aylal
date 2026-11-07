@@ -34,7 +34,7 @@ def _action(table: str, kind: str) -> str:
 
 
 def _is_creation(op: dict[str, Any]) -> bool:
-    return op["table"] == "farms" and op["kind"] == "put" and op["record_id"] == op["farm_id"]
+    return bool(op["table"] == "farms" and op["kind"] == "put" and op["record_id"] == op["farm_id"])
 
 
 async def authorize(session: AsyncSession, user_id: uuid.UUID, ops: list[dict[str, Any]]) -> None:

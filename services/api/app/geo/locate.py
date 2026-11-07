@@ -1,4 +1,5 @@
 """Pure point-in-commune lookup (R4-A2). Coordinates are (lon, lat); the boundary counts as inside."""
+import itertools
 from collections.abc import Sequence
 from typing import Any
 
@@ -16,7 +17,7 @@ def _on_segment(px: float, py: float, a: Point, b: Point) -> bool:
 def _ring_position(px: float, py: float, ring: Ring) -> str:
     """Return 'boundary', 'inside' or 'outside' (ray casting)."""
     inside = False
-    for a, b in zip(ring, ring[1:], strict=False):
+    for a, b in itertools.pairwise(ring):
         if _on_segment(px, py, a, b):
             return "boundary"
         if (a[1] > py) != (b[1] > py):
