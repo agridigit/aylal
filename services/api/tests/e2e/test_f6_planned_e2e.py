@@ -4,14 +4,13 @@ import uuid
 
 import httpx
 
-from tests.e2e._f6 import BASE, TODAY, field_with_crop, fresh, owner_with_farm, product
+from tests.e2e._f6 import BASE, TODAY, field_with_crop, owner_with_farm, unique_phone, product
 from tests.helpers import sql
 
-PHONE = "+212677006614"
+PHONE = unique_phone()
 
 
 def test_given_an_operation_planned_offline_for_tomorrow_when_synced_and_done_then_it_counts_everywhere() -> None:
-    fresh(PHONE)
     tomorrow = TODAY + dt.timedelta(days=1)
     with httpx.Client(base_url=BASE, verify=False, timeout=60) as c:
         h, farm = owner_with_farm(c, PHONE)
@@ -34,4 +33,3 @@ def test_given_an_operation_planned_offline_for_tomorrow_when_synced_and_done_th
         assert c.get(harvest, headers=h).json()["limiting_product"] == "E2E Planifie 614"
         assert sql("SELECT state FROM operation_reminders WHERE operation_id=$1", rid)[0][0] == "done"
         assert sql("SELECT count(*) FROM operations_done WHERE operation_id=$1", rid)[0][0] == 1
-    fresh(PHONE)

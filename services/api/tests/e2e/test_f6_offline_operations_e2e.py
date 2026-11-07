@@ -4,10 +4,10 @@ import uuid
 
 import httpx
 
-from tests.e2e._f6 import BASE, TODAY, field_with_crop, fresh, owner_with_farm
+from tests.e2e._f6 import BASE, TODAY, field_with_crop, owner_with_farm, unique_phone
 from tests.helpers import sql
 
-PHONE = "+212677006611"
+PHONE = unique_phone()
 
 
 def sync(farm, rid, day, parcel, **extra):
@@ -16,7 +16,6 @@ def sync(farm, rid, day, parcel, **extra):
 
 
 def test_given_thirty_days_of_offline_operations_when_the_network_returns_then_none_is_lost_or_duplicated_and_done_ones_are_readable() -> None:
-    fresh(PHONE)
     with httpx.Client(base_url=BASE, verify=False, timeout=60) as c:
         h, farm = owner_with_farm(c, PHONE)
         parcel, _ = field_with_crop(c, h, farm, "A", -7.60)
@@ -35,4 +34,3 @@ def test_given_thirty_days_of_offline_operations_when_the_network_returns_then_n
         assert len(listed) == 31
         stable = sql("SELECT operation_id FROM operations_done WHERE farm_id=$1", uuid.UUID(farm))
         assert {r[0] for r in stable} == set(ids), "the stable F4/F8 read point lists done operations only"
-    fresh(PHONE)

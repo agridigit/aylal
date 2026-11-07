@@ -1,13 +1,12 @@
 """T046 - SC-002: dose above max, crop not authorised and max applications: 3 warnings land in the registry."""
 import httpx
 
-from tests.e2e._f6 import BASE, body, field_with_crop, fresh, owner_with_farm, product
+from tests.e2e._f6 import BASE, body, field_with_crop, owner_with_farm, unique_phone, product
 
-PHONE = "+212677006612"
+PHONE = unique_phone()
 
 
 def test_given_three_non_compliant_treatments_when_reading_the_registry_then_the_three_warnings_are_on_their_lines() -> None:
-    fresh(PHONE)
     with httpx.Client(base_url=BASE, verify=False, timeout=60) as c:
         h, farm = owner_with_farm(c, PHONE)
         olive, season = field_with_crop(c, h, farm, "Olives", -7.60, "olive")
@@ -24,4 +23,3 @@ def test_given_three_non_compliant_treatments_when_reading_the_registry_then_the
         assert len(entries) == 3
         harvest = c.get(f"/farms/{farm}/fields/{olive}/earliest-harvest", headers=h).json()
         assert harvest["limiting_product"] == "E2E Cuprex 612" and harvest["harvestable_now"] is False
-    fresh(PHONE)

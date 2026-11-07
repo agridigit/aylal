@@ -3,13 +3,12 @@ import datetime as dt
 
 import httpx
 
-from tests.e2e._f6 import BASE, TODAY, body, field_with_crop, fresh, owner_with_farm, product
+from tests.e2e._f6 import BASE, TODAY, body, field_with_crop, owner_with_farm, unique_phone, product
 
-PHONE = "+212677006613"
+PHONE = unique_phone()
 
 
 def test_given_treatments_with_different_intervals_when_reading_the_parcel_then_the_longest_remaining_one_applies() -> None:
-    fresh(PHONE)
     with httpx.Client(base_url=BASE, verify=False, timeout=60) as c:
         h, farm = owner_with_farm(c, PHONE)
         parcel, _ = field_with_crop(c, h, farm, "A", -7.60)
@@ -24,4 +23,3 @@ def test_given_treatments_with_different_intervals_when_reading_the_parcel_then_
         assert c.get(url, headers=h).json()["date"] == (TODAY + dt.timedelta(days=21)).isoformat()
         assert c.post(f"/farms/{farm}/operations/{one.json()['id']}/cancel", headers=h).status_code == 200
         assert c.get(url, headers=h).json()["date"] == (TODAY + dt.timedelta(days=7)).isoformat()
-    fresh(PHONE)

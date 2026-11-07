@@ -5,7 +5,7 @@ import uuid
 
 import httpx
 
-from tests.e2e._f2 import BASE, fresh, owner_with_farm, square  # noqa: F401
+from tests.e2e._f2 import BASE, fresh, owner_with_farm, square, unique_phone  # noqa: F401
 from tests.helpers import sql
 
 TODAY = dt.date.today()
