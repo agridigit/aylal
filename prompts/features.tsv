@@ -1,0 +1,11 @@
+# id	slug	section_cps	titre
+F0	foundations	16,15	Fondations : monorepo, Docker, CI, design system, i18n, synchronisation hors ligne
+F1	account-onboarding-farm	6	Compte, onboarding et ferme
+F2	fields-crops	7	Parcelles et cultures
+F6	operations-journal	11	Journal des opérations et registre phyto
+F3	dashboard-monitoring	8	Tableau de bord et monitoring
+F4	irrigation-water-balance	9	Irrigation et bilan hydrique
+F5	crop-health	10	Santé des cultures : diagnostic photo et alertes
+F7	voice-assistant	12	Assistant IA vocal
+F8	farm-economics	13	Dépenses, stocks, récoltes et prix du marché
+F9	sharing-sensors	14	Partage, conseillers et capteurs

@@ -1,0 +1,1 @@
+Après l'analyse, corrige toi-même dans spec.md, plan.md et tasks.md toutes les incohérences de gravité CRITICAL et HIGH (exigence sans tâche, tâche sans test, contradiction avec la constitution). Ne touche pas au code. Réponds par une ligne : nombre d'incohérences corrigées. Ne pose aucune question.

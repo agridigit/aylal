@@ -1,0 +1,13 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "IBM Plex Sans, IBM Plex Sans Arabic, sans-serif",
+    "primaryColor": "#E8F0E3",
+    "primaryBorderColor": "#4F6B3A",
+    "primaryTextColor": "#1F2A17",
+    "lineColor": "#6B7F5A",
+    "secondaryColor": "#F4ECDF",
+    "tertiaryColor": "#E3EEF4"
+  },
+  "flowchart": { "curve": "basis", "htmlLabels": true }
+}

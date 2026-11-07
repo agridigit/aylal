@@ -1,0 +1,78 @@
+# AYLAL — squelette Docker Compose. La fonctionnalité F0 crée les Dockerfiles et complète ce fichier
+# sans renommer les services (le Makefile et les agents s'appuient sur ces noms).
+name: aylal
+
+x-env: &env
+  env_file: .env
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    <<: *env
+    environment:
+      POSTGRES_DB: aylal
+      POSTGRES_USER: aylal
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aylal_dev}
+    command: ["postgres", "-c", "wal_level=logical"]   # requis par PowerSync
+    volumes: [db-data:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aylal"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    <<: *env
+
+  minio:
+    image: minio/minio:latest
+    <<: *env
+    command: server /data --console-address ":9001"
+    volumes: [minio-data:/data]
+    ports: ["9000:9000", "9001:9001"]
+
+  powersync:
+    image: journeyapps/powersync-service:latest   # édition auto-hébergée, à confirmer en F0
+    <<: *env
+    depends_on: { db: { condition: service_healthy } }
+    volumes: ["./infra/powersync:/config"]
+    ports: ["8080:8080"]
+
+  api:
+    build: { context: ., dockerfile: services/api/Dockerfile }
+    <<: *env
+    depends_on: { db: { condition: service_healthy }, redis: { condition: service_started } }
+    ports: ["8000:8000"]
+
+  worker:
+    build: { context: ., dockerfile: services/workers/Dockerfile }
+    <<: *env
+    depends_on: [db, redis, minio]
+
+  # ---------- tests (profil "test") ----------
+  api-test:
+    profiles: ["test"]
+    build: { context: ., dockerfile: services/api/Dockerfile, target: test }
+    env_file: .env.test
+    depends_on: { db: { condition: service_healthy } }
+    volumes: ["./services/api:/app"]
+    command: ["pytest", "-q"]
+
+  js-test:
+    profiles: ["test"]
+    build: { context: ., dockerfile: infra/docker/js.Dockerfile }
+    working_dir: /repo
+    volumes: [".:/repo", "pnpm-store:/pnpm/store"]
+
+  # ---------- E2E mobile (profil "e2e") : émulateur Android + Maestro, défini en F0 ----------
+  e2e:
+    profiles: ["e2e"]
+    build: { context: ., dockerfile: infra/docker/e2e.Dockerfile }
+    volumes: [".:/repo"]
+
+volumes:
+  db-data:
+  minio-data:
+  pnpm-store:
