@@ -122,6 +122,10 @@ services:
       AYLAL_SMS_GATEWAY_KEY: ${AYLAL_SMS_GATEWAY_KEY:-}
       AYLAL_ENABLE_TEST_OTP: ${AYLAL_ENABLE_TEST_OTP:-}
       AYLAL_TILES_BASE_URL: ${AYLAL_TILES_BASE_URL:-}
+      # F6: optional AI ports, empty = unavailable (manual entry fallback); retention of the phyto registry (years)
+      AYLAL_VISION_URL: ${AYLAL_VISION_URL:-}
+      AYLAL_NLU_URL: ${AYLAL_NLU_URL:-}
+      AYLAL_REGISTRY_RETENTION_YEARS: ${AYLAL_REGISTRY_RETENTION_YEARS:-5}
       # exact address of Caddy on the dedicated edge network; empty = forwarded headers ignored (fail closed)
       AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-172.29.77.2/32}
     networks:
