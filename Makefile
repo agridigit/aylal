@@ -16,6 +16,8 @@ build:
 	$(DC) build
 
 test: test-api test-domain test-mobile   ## tous les tests unitaires et d'intégration
+# l'e2e passe par le proxy vers l'API de la pile : route dev-token activée pour les tests uniquement (env dev/test)
+test test-api e2e-api coverage test-integration check: export AYLAL_ENABLE_DEV_TOKEN=1
 test-api:
 	$(DC) --profile test run --rm api-test pytest -q $(ARGS)
 	$(DC) run --rm --no-deps worker pytest -q
