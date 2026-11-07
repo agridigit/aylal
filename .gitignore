@@ -17,3 +17,6 @@ __pycache__/
 # AYLAL local state
 .worktrees/
 .aylal/green-*
+packages/ui/test-results/
+.pnpm-store/
+storybook-static/

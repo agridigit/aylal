@@ -26,7 +26,7 @@ test-mobile:
 test-visual:   ## captures Storybook 3 thèmes x 2 sens contre les références
 	$(DC) --profile visual run --rm visual
 update-visual: ## régénère les références (revue obligatoire)
-	$(DC) --profile visual run --rm visual pnpm --filter @aylal/ui test:visual -- --update-snapshots
+	$(DC) --profile visual run --rm visual pnpm --filter @aylal/ui test:visual --update-snapshots catalog.spec.ts
 test-unit:     ## tests unitaires seuls
 	$(DC) --profile test run --rm api-test pytest -q -n auto tests/unit $(ARGS)
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/unit --passWithNoTests

@@ -129,12 +129,12 @@
 
 ### Implémentation (GREEN)
 
-- [ ] T070 [US4] Créer `packages/ui/package.json` et `packages/ui/src/tokens/{light,dark,sun}.ts`, `index.ts` (couleurs, typographie, espacement grille 4 px, rayons, ombres, états, mouvement), polices Plex en sous-ensemble embarquées localement (R10, R18)
-- [ ] T071 [P] [US4] Implémenter `packages/ui/src/motion.ts` (200-300 ms, réduction système)
-- [ ] T072 [P] [US4] Implémenter les composants de base dans `packages/ui/src/components/` : `Button`, `Text`, `Icon`, `TextField`, `Card`, `Skeleton`, `EmptyState`, `ErrorState`, `OfflineBanner`, `SyncBadge`, `Switch`, `ListItem` (variantes, états, RTL, zone tactile 48 dp)
-- [ ] T073 [US4] Écrire les stories `packages/ui/src/components/*.stories.tsx` et configurer Storybook `packages/ui/.storybook/` (barre d'outils thème et sens, react-native-web), service `storybook`
-- [ ] T074 [P] [US4] Configurer Playwright dans `infra/docker/visual.Dockerfile` et `packages/ui/visual/playwright.config.ts` ; cibles `make test-visual` / `make update-visual`
-- [ ] T075 [US4] Générer les références initiales (`make update-visual`) et les relire ; commit `feat(foundations): green - design system` ; REFACTOR `refactor(foundations): design system`
+- [x] T070 [US4] Créer `packages/ui/package.json` et `packages/ui/src/tokens/{light,dark,sun}.ts`, `index.ts` (couleurs, typographie, espacement grille 4 px, rayons, ombres, états, mouvement), polices Plex en sous-ensemble embarquées localement (R10, R18)
+- [x] T071 [P] [US4] Implémenter `packages/ui/src/motion.ts` (200-300 ms, réduction système)
+- [x] T072 [P] [US4] Implémenter les composants de base dans `packages/ui/src/components/` : `Button`, `Text`, `Icon`, `TextField`, `Card`, `Skeleton`, `EmptyState`, `ErrorState`, `OfflineBanner`, `SyncBadge`, `Switch`, `ListItem` (variantes, états, RTL, zone tactile 48 dp)
+- [x] T073 [US4] Écrire les stories `packages/ui/src/components/*.stories.tsx` et configurer Storybook `packages/ui/.storybook/` (barre d'outils thème et sens, react-native-web), service `storybook`
+- [x] T074 [P] [US4] Configurer Playwright dans `infra/docker/visual.Dockerfile` et `packages/ui/visual/playwright.config.ts` ; cibles `make test-visual` / `make update-visual`
+- [x] T075 [US4] Générer les références initiales (`make update-visual`) et les relire ; commit `feat(foundations): green - design system` ; REFACTOR `refactor(foundations): design system`
 
 **Point de contrôle** : catalogue complet, captures de référence versionnées.
 
