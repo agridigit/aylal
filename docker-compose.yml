@@ -148,6 +148,9 @@ services:
       AYLAL_REPO_DIR: /repo
       AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
       AYLAL_REDIS_URL: redis://redis:6379/0
+      AYLAL_ENV: test
+      AYLAL_JWT_SECRET: test-only-secret-0123456789-abcdefghij
+      AYLAL_ENABLE_DEV_TOKEN: "1"
     volumes: ["./services/api:/app", "./packages/domain:/packages/domain:ro", ".:/repo:ro"]
     command: ["pytest", "-q"]
 
