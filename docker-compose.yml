@@ -57,7 +57,9 @@ services:
     build: { context: ., dockerfile: services/api/Dockerfile, target: test }
     env_file: .env.test
     depends_on: { db: { condition: service_healthy } }
-    volumes: ["./services/api:/app"]
+    environment:
+      AYLAL_DOMAIN_DIR: /packages/domain
+    volumes: ["./services/api:/app", "./packages/domain:/packages/domain:ro"]
     command: ["pytest", "-q"]
 
   js-test:
