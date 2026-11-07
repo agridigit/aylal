@@ -1,0 +1,25 @@
+sequenceDiagram
+  participant U as Agriculteur
+  participant L as SQLite + ps_crud
+  participant C as connector.ts
+  participant A as API /v1/sync/upload
+  participant D as PostgreSQL
+  participant P as PowerSync
+  U->>L: saisie d'un essai (hors ligne)
+  L-->>U: état "non envoyé" (pending)
+  Note over L: file persistante, 0 perte
+  C->>A: POST ops (op_id, base_version, fields)
+  loop pour chaque op, une transaction par lot
+    A->>D: verrou consultatif + lecture applied_ops
+    alt op_id déjà vu
+      A-->>C: status duplicate (résultat enregistré)
+    else nouveau
+      A->>D: ACL + validation + fusion champ par champ
+      A->>D: écrit trial_records, applied_ops, sync_conflicts
+      A-->>C: applied / conflict_logged / rejected
+    end
+  end
+  C->>L: retire de ps_crud les ops acquittées
+  D->>P: réplication logique
+  P->>L: état serveur (server_version, has_conflict)
+  L-->>U: envoyé (synced) ou en conflit
