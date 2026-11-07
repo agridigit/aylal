@@ -137,6 +137,13 @@
 - [ ] T069 [écran] [P] [dépend de T004] Tests RED écran F2-E6 campagnes et historique (blocage explicité de la double campagne, 4 états, RTL) dans `apps/mobile/src/screens/Seasons/__tests__/` et Maestro `apps/mobile/maestro/seasons.yaml` (R6-A1 à A3).
 - [ ] T070 [écran] [dépend de T004, T069, T068] Écran `apps/mobile/src/screens/Seasons/`.
 
+## Phase 8b : Plafond de ressources géométriques (correctif sécurité DoS)
+
+- [ ] T075 [P] Tests RED unitaires : longueur BRUTE de l'anneau > MAX_VERTICES+1 refusée `too_many_vertices` avant `self_crossings` ; total de sommets d'un import > 20 000 -> `too_many_vertices_total`, dans `services/api/tests/unit/test_f2_geometry_resource_cap.py` et `packages/domain/tests/geometry-resource-cap.test.ts`.
+- [ ] T076 GREEN : contrôle de longueur brute dans `validate_ring`/`validateRing` avant déduplication et crossings ; constante `MAX_IMPORT_VERTICES_TOTAL = 20000` et erreur `too_many_vertices_total` dans `import_features`/`importFeatures` (`services/api/app/domain/geometry.py`, `packages/domain/src/geometry.ts`).
+- [ ] T077 [P] Tests RED intégration `services/api/tests/integration/test_f2_geometry_resource_cap.py` et E2E `services/api/tests/e2e/test_geometry_resource_cap_e2e.py` : POST parcelle et sync put avec anneau géant -> 422 / opération non appliquée, rapide, sans timeout.
+- [x] T078 Les routes parcelles et la synchro refusent déjà un anneau géant (`check_polygon` plafonne la longueur brute, 422 `geometry_vertices`) ; T077 est donc un test de non-régression (déjà vert), aucun code requis.
+
 ## Phase 9 : Finition
 
 - [ ] T071 REFACTOR global (commit `refactor(003-fields-crops): ...`) : retirer `parcels.vigor` après migration des lecteurs F0, supprimer les doublons, tests toujours verts.
