@@ -87,3 +87,14 @@ def test_given_a_limit_above_the_cap_when_searching_then_422(client, token_for, 
 
 def test_given_an_oversized_query_when_searching_then_422(client, token_for, world):
     assert search(client, token_for, world["owner"], q="x" * 81).status_code == 422
+
+
+def test_given_a_second_catalogue_import_when_searching_then_only_the_latest_version_is_returned(client, token_for, world):
+    old = add_catalog(dt.date(2026, 8, 1))
+    add_product(old, "Cuprex 50")
+    add_product(old, "Retired only")
+    new = add_catalog(dt.date(2026, 10, 1))
+    sql("UPDATE catalog_versions SET imported_at = now() + interval '1 minute' WHERE id=$1", new)
+    add_product(new, "Cuprex 50")
+    items = search(client, token_for, world["owner"], q="").json()["items"]
+    assert sorted(i["name"] for i in items) == ["Cuprex 50"]
