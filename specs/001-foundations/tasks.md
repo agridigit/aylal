@@ -186,12 +186,12 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T100 [P] [US6] Test Jest `apps/mobile/src/screens/Map/__tests__/Map.test.tsx` : carte rendue depuis 50 parcelles en cache local avec vigueur, sans réseau (AC6.2, FR-027)
-- [ ] T101 [P] [US6] Test Jest `apps/mobile/src/perf/__tests__/metrics.test.ts` : la sortie de mesure respecte `{metric, value, unit, threshold, device, date, verdict, build}` (data-model) (FR-028)
-- [ ] T102 [P] [US6] Test `tests/report/test_report.sh` : `make report` génère `docs/modules/001-foundations/mesures.md`, verdict « tenu »/« non tenu » par seuil (démarrage 3 s, carte 2 s, 60 i/s, 40 Mo, 5 Mo/jour) ; `STRICT=1` échoue sur « non tenu » ; un « non tenu » mentionne le réexamen du choix technique (AC6.4, SC-011)
-- [ ] T103 [P] [US6] Test Jest `apps/mobile/src/screens/Showcase/__tests__/Showcase.test.tsx` : écran animé du design system, respecte « réduire les animations » (AC6.3, FR-024)
-- [ ] T104 [P] [US6] Test Jest `apps/mobile/src/perf/__tests__/trafficBudget.test.ts` : trafic d'une session type < 5 Mo/jour (SC-006)
-- [ ] T105 [US6] Lancer : DOIVENT échouer ; commit `test(foundations): red - prototype`
+- [x] T100 [P] [US6] Test Jest `apps/mobile/src/screens/Map/__tests__/Map.test.tsx` : carte rendue depuis 50 parcelles en cache local avec vigueur, sans réseau (AC6.2, FR-027)
+- [x] T101 [P] [US6] Test Jest `apps/mobile/src/perf/__tests__/metrics.test.ts` : la sortie de mesure respecte `{metric, value, unit, threshold, device, date, verdict, build}` (data-model) (FR-028)
+- [x] T102 [P] [US6] Test `tests/report/test_report.sh` : `make report` génère `docs/modules/001-foundations/mesures.md`, verdict « tenu »/« non tenu » par seuil (démarrage 3 s, carte 2 s, 60 i/s, 40 Mo, 5 Mo/jour) ; `STRICT=1` échoue sur « non tenu » ; un « non tenu » mentionne le réexamen du choix technique (AC6.4, SC-011)
+- [x] T103 [P] [US6] Test Jest `apps/mobile/src/screens/Showcase/__tests__/Showcase.test.tsx` : écran animé du design system, respecte « réduire les animations » (AC6.3, FR-024)
+- [x] T104 [P] [US6] Test Jest `apps/mobile/src/perf/__tests__/trafficBudget.test.ts` : trafic d'une session type < 5 Mo/jour (SC-006)
+- [x] T105 [US6] Lancer : DOIVENT échouer ; commit `test(foundations): red - prototype`
 
 ### Implémentation (GREEN)
 

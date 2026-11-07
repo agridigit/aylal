@@ -9,3 +9,8 @@
 ## Phase 6 RED : écarts de forme des tests mobiles
 - Les tests Jest `Home.*` sont écrits en `.test.ts` (et non `.tsx`) : `apps/mobile/jest.config.js` n'exécute que `*.test.ts` en environnement node, sans bibliothèque de rendu React Native. Les règles (RTL, états, zones tactiles, clés i18n) sont testées via des modèles de vue purs et une analyse statique des sources `.tsx`. Le GREEN doit mapper `@aylal/i18n` dans `moduleNameMapper`.
 - Intégration de l'accueil : complétude des locales contre les clés réellement utilisées (Home, TrialRecord). E2E : Maestro (T084), exécutable seulement sur émulateur.
+
+## Phase 8 - tests RED mesures appareil
+- E2E `apps/mobile/maestro/device_measures.yaml` déclaré mais NON EXÉCUTABLE sur macOS (émulateur/KVM indisponible) ; à exécuter en CI Linux/KVM ou sur l'Android 2 Go (T110).
+- T100/T103 écrits en `.test.ts` (jest `testMatch` = `**/*.test.ts`, vues-modèles sans rendu natif) au lieu de `.tsx`, comme les écrans Home/TrialRecord.
+- Intégration : `tests/report/` (shell, fichiers réels) ; `MODULE` (défaut 001-foundations) et `APK_PATH`/`MEASURE_OUT` sont des paramètres d'environnement pour tester sans appareil.
