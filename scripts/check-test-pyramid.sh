@@ -5,7 +5,7 @@
 #   unit        : <module>/tests/unit/**   (TS legacy: <module>/tests/*.test.ts counts as unit)
 #   integration : <module>/tests/integration/**  (services: tests/contract/** also counts)
 #   apps (mobile): tests live next to code in src/**/__tests__ ; Maestro flows in maestro/
-#   e2e         : services/<s>/tests/e2e/**, apps/mobile/e2e/** (Maestro), apps/{web,desktop}/e2e/** (Playwright)
+#   e2e         : services/<s>/tests/e2e/**, apps/mobile/maestro/** (Maestro), apps/{web,desktop}/e2e/** (Playwright)
 set -u
 cd "$(git rev-parse --show-toplevel)"
 fail=0

@@ -25,7 +25,8 @@ C. Lance successivement `speckit-runner`, en sautant toute étape dont le fichie
 C'. Préparation anticipée (en parallèle de D) : si la fonctionnalité SUIVANTE du périmètre n'a pas de branche :
    `git worktree add -b NNN-<SLUG> .worktrees/NNN-<SLUG> main`, puis lance en ARRIÈRE-PLAN `speckit-runner` étape `specify` (mêmes arguments qu'en B) puis, à son retour, étape `clarify`.
    Dans le prompt de chaque agent : « Répertoire de travail : <chemin absolu>/.worktrees/NNN-<SLUG> — fais `cd` dedans pour toute commande et n'en sors jamais ; la branche existe déjà : ne crée ni ne change de branche ; ne lance ni Docker ni make. »
-   Ne l'attends pas : continue D. Une seule préparation anticipée à la fois.D. Implémentation test first : exécute toi-même /aylal.tdd-implement <branche>. Cette commande délègue à test-writer, implementer et reviewer, en parallèle pour les tâches [P]. Répète jusqu'à ce que `.status` vaille DONE, 4 tours au maximum.
+   Ne l'attends pas : continue D. Une seule préparation anticipée à la fois.
+D. Implémentation test first : exécute toi-même /aylal.tdd-implement <branche>. Cette commande délègue à test-writer, implementer et reviewer, en parallèle pour les tâches [P]. Répète jusqu'à ce que `.status` vaille DONE, 4 tours au maximum.
 E. Contrôle + documentation EN PARALLÈLE, dans un seul message :
    - lance en arrière-plan `doc-engineer` et `doc-farmer` pour <branche> (ils écrivent seulement dans `docs/modules/<branche>/`, sans commit, sans `make`) ;
    - lance toi-même `make check-cached` (saute la vérification si le même commit est déjà vert, par exemple après le `reviewer`).

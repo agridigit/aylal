@@ -17,7 +17,7 @@ def test_given_30_days_offline_with_1000_records_when_reconnecting_then_nothing_
     client, token_for, make_farm, upload
 ) -> None:
     user = uuid.uuid4()
-    farm = make_farm({user: "editor"})
+    farm = make_farm({user: "manager"})
     token = token_for(user)
     ids = [uuid.uuid4() for _ in range(N)]
     queue = [op(farm, r, kind="put", fields={"title": f"r{n}", "quantity": 0}) for n, r in enumerate(ids)]

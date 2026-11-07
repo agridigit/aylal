@@ -16,14 +16,14 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 - **Trois niveaux de tests obligatoires pour chaque module** (`packages/*`, `services/*`, `apps/*`) et pour chaque fonctionnalité :
   - unitaires : `<module>/tests/unit/` — une règle ou une fonction isolée, sans réseau ni base ;
   - intégration : `<module>/tests/integration/` (et `tests/contract/` pour les contrats) — plusieurs composants réels ensemble (API + PostgreSQL, synchronisation SQLite/PowerSync, workers + Redis/MinIO, domaine TS ↔ API Python) ;
-  - bout en bout : `services/<s>/tests/e2e/` (parcours HTTP complet sur la pile Docker), `apps/mobile/e2e/` (Maestro), `apps/web|desktop/e2e/` (Playwright) — parcours utilisateur d'un critère d'acceptation P1.
+  - bout en bout : `services/<s>/tests/e2e/` (parcours HTTP complet sur la pile Docker), `apps/mobile/maestro/` (Maestro, sur l'émulateur Android `aylal-2go` : `make e2e`), `apps/web|desktop/e2e/` (Playwright) — parcours utilisateur d'un critère d'acceptation P1.
 - Chaque critère d'acceptation P1 est couvert aux trois niveaux quand c'est applicable ; sinon la raison est notée dans `specs/<feature>/decisions.md`.
 - Garde automatique : `make test-pyramid` (inclus dans `make check`) refuse un module sans les trois niveaux, ou une branche qui change du code sans ajouter de tests aux trois niveaux. `make e2e` doit être vert avant `/aylal.release`.
 
 ## Docker (obligatoire)
 - Tout tourne dans Docker : API, workers, base, synchronisation, stockage, tests, rendu des diagrammes.
-- Commandes autorisées pour tester : `make test`, `make test-api`, `make test-domain`, `make test-mobile`, `make test-unit`, `make test-integration`, `make e2e`, `make check`, `make check-cached`, ou `docker compose ...`.
-- Vitesse sans compromis : pendant une tâche, ne lancer que les tests concernés (`ARGS=<fichiers>`) ; `make check` complet par `reviewer` en fin de groupe ; `make check-cached` ne saute la vérification que si le même commit est déjà vert.
+- Commandes autorisées pour tester : `make test`, `make test-api`, `make test-domain`, `make test-mobile`, `make test-unit`, `make test-integration`, `make e2e`, `make check`, `make check-fast`, `make check-fast-cached`, `make check-cached`, ou `docker compose ...`.
+- Vitesse sans compromis : pendant une tâche, ne lancer que les tests concernés (`ARGS=<fichiers>`) ; en fin de groupe, `reviewer` lance `make check-fast-cached` (tout sauf APK, captures, diagrammes et e2e) ; la porte complète `make check-cached` (avec e2e) tourne une fois en fin de fonctionnalité et avant `/aylal.release` ; les variantes `-cached` ne sautent la vérification que si le même commit est déjà vert. Les tests tournent dans des conteneurs chauds (`scripts/tx.sh`, `make down` les arrête) et pytest en parallèle avec une base par processus clonée d'un modèle migré.
 - Ne jamais installer de dépendance sur la machine hôte ; ajouter au Dockerfile concerné.
 
 ## Architecture (voir CPS section 16)
@@ -31,6 +31,7 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 - Toute règle métier vit dans `packages/domain` (TS) ou `services/api/app/domain` (Python), jamais dans un écran.
 - Hors ligne d'abord : SQLite local + PowerSync. Aucune donnée perdue.
 - Design : composants de `packages/ui` uniquement, jetons du design system AYLAL, RTL vérifié, 4 états par écran (chargement, vide, erreur, hors ligne).
+- Design de référence de l'app mobile : `docs/design/aylal-design-system.md` (Olivier, cartes élevées, icônes trait arrondi, jetons à deux niveaux, Unistyles). Tout écran ou composant s'y conforme.
 
 ## Documentation (à chaque fin de fonctionnalité)
 Dossier `docs/modules/<NNN-feature>/` :

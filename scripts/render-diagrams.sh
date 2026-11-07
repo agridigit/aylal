@@ -25,7 +25,7 @@ if [[ $count -eq 0 ]]; then echo "0 fichier rendu"; else echo "$count fichier(s)
 missing=0
 while IFS= read -r md; do
   d="$(dirname "$md")"
-  grep -oE '\]\(img/[^)]+\)' "$md" | sed -E 's/\]\((.*)\)/\1/' | while read -r img; do
+  { grep -oE '\]\(img/[^)]+\)' "$md" || true; } | sed -E 's/\]\((.*)\)/\1/' | while read -r img; do
     [[ -f "$d/$img" ]] || { echo "image manquante : $d/$img (référencée dans $md)"; exit 1; }
   done || missing=1
 done < <(find docs/modules -name '*.md' 2>/dev/null)

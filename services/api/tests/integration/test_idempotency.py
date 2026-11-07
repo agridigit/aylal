@@ -8,7 +8,7 @@ def test_given_an_applied_op_when_replayed_then_the_recorded_result_is_returned_
     client, token_for, make_farm, upload
 ) -> None:
     user, rid, oid = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
-    farm = make_farm({user: "editor"})
+    farm = make_farm({user: "manager"})
     token = token_for(user)
     put = op(farm, rid, kind="put", fields={"title": "once"}, op_id=oid)
     first = upload(token, [put])["results"][0]
@@ -24,7 +24,7 @@ def test_given_a_replayed_patch_when_sent_twice_then_the_version_does_not_grow(
     client, token_for, make_farm, upload
 ) -> None:
     user, rid = uuid.uuid4(), uuid.uuid4()
-    farm = make_farm({user: "editor"})
+    farm = make_farm({user: "manager"})
     token = token_for(user)
     v = upload(token, [op(farm, rid, kind="put", fields={"title": "a"})])["results"][0]["server_version"]
     patch = op(farm, rid, fields={"title": "b"}, base_version=v)
@@ -38,7 +38,7 @@ def test_given_a_cut_connection_mid_upload_when_the_whole_batch_is_resent_then_n
     client, token_for, make_farm, upload
 ) -> None:
     user = uuid.uuid4()
-    farm = make_farm({user: "editor"})
+    farm = make_farm({user: "manager"})
     token = token_for(user)
     ids = [uuid.uuid4() for _ in range(5)]
     batch = [op(farm, i, kind="put", fields={"title": f"r{n}"}) for n, i in enumerate(ids)]
