@@ -1,0 +1,20 @@
+flowchart TD
+    A[Ouvrir mon journal] --> B[Choisir l'icône du travail]
+    B --> C[Choisir la parcelle et la date]
+    C --> D{Quel travail ?}
+    D -- Traitement --> E[Choisir le produit et la dose]
+    E --> F{Un avertissement ?}
+    F -- Oui --> G[Lire l'avertissement]
+    G --> H[Enregistrer quand même]
+    F -- Non --> H
+    D -- Autre travail --> H
+    C --> I{Date à venir ?}
+    I -- Oui --> J[Opération planifiée]
+    J --> K[Rappel le jour venu]
+    K --> L[Confirmer : c'est fait]
+    I -- Non --> H
+    L --> H
+    H --> M[Voir la date de récolte au plus tôt]
+    H --> N[Envoyer le registre par PDF ou Excel]
+    H --> O{Fait par un ouvrier ?}
+    O -- Oui --> P[Le gestionnaire valide]

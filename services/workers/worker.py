@@ -6,10 +6,14 @@ from urllib.parse import urlparse
 from arq import cron
 from arq.connections import RedisSettings
 
+from tasks.build_registry_export import build_registry_export
 from tasks.build_tiles import build_tiles
 from tasks.expire_invitations import expire_invitations
+from tasks.import_phyto_catalog import import_phyto_catalog
+from tasks.mark_overdue_operations import mark_overdue_operations
 from tasks.purge_archived_fields import purge_archived_fields
 from tasks.purge_deleted_accounts import purge_deleted, purge_pending
+from tasks.purge_expired_registry import purge_expired_registry
 from tasks.send_otp import send_otp
 
 
@@ -23,12 +27,16 @@ def _redis_settings() -> RedisSettings:
 
 
 class WorkerSettings:
-    functions = [health, send_otp, purge_pending, purge_deleted, expire_invitations, build_tiles, purge_archived_fields]
+    functions = [health, send_otp, purge_pending, purge_deleted, expire_invitations, build_tiles, purge_archived_fields,
+                 purge_expired_registry, mark_overdue_operations, build_registry_export, import_phyto_catalog]
     cron_jobs = [
         cron(purge_pending, minute=0),
         cron(purge_deleted, hour=3, minute=0),
         cron(expire_invitations, hour=3, minute=30),
         cron(purge_archived_fields, hour=4, minute=0),
+        cron(purge_expired_registry, hour=4, minute=30),
+        cron(mark_overdue_operations, hour=5, minute=0),
+        cron(import_phyto_catalog, day=1, hour=2, minute=0),
     ]
     redis_settings = _redis_settings()
     health_check_interval = 5

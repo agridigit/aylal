@@ -30,6 +30,17 @@ MATRIX: dict[str, frozenset[str]] = {
     "season.start": OWNER_MANAGER,
     "season.update": OWNER_MANAGER,
     "crop.create_custom": OWNER_MANAGER,
+    # F6 (vectors f6_roles.json); there is no operation.delete: operations are never physically deleted
+    "operation.create": frozenset(ROLES),
+    "operation.read": frozenset(ROLES),
+    "operation.mark_done": frozenset(ROLES),
+    "operation.cancel": frozenset(ROLES),
+    "operation.reschedule": frozenset(ROLES),
+    "operation.validate": OWNER_MANAGER,
+    "operation.correct": OWNER_MANAGER,
+    "registry.read": OWNER_MANAGER,
+    "registry.export": OWNER_MANAGER,
+    "phyto_product.create_free": frozenset(ROLES),
 }
 
 

@@ -6,6 +6,7 @@ from typing import Any
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
@@ -199,3 +200,184 @@ class GeoCommune(Base):
     name_ar: Mapped[str] = mapped_column(Text)
     name_fr: Mapped[str] = mapped_column(Text)
     parent_id: Mapped[int] = mapped_column(ForeignKey("geo_provinces.id"))
+
+
+# ---- F6 operations journal (alembic 0006; columns and constraints: specs/005-operations-journal/data-model.md) ----
+def _uuid_pk() -> Mapped[uuid.UUID]:
+    return mapped_column(UUID(as_uuid=True), primary_key=True)
+
+
+class CatalogVersion(Base):
+    __tablename__ = "catalog_versions"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    imported_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True))
+    source_date: Mapped[dt.date] = mapped_column(Date)
+    row_count: Mapped[int] = mapped_column(Integer)
+    checksum: Mapped[str] = mapped_column(Text)
+
+
+class PhytoProduct(Base):
+    __tablename__ = "phyto_products"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    name: Mapped[str] = mapped_column(Text)
+    name_normalized: Mapped[str] = mapped_column(Text)
+    registration_no: Mapped[str | None] = mapped_column(Text)
+    holder: Mapped[str | None] = mapped_column(Text)
+    active_ingredients: Mapped[Any] = mapped_column(JSONB, server_default="[]")
+    homologation_expires_on: Mapped[dt.date | None] = mapped_column(Date)
+    expired_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    catalog_version_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("catalog_versions.id"))
+
+
+class PhytoProductUse(Base):
+    __tablename__ = "phyto_product_uses"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("phyto_products.id", ondelete="CASCADE"))
+    crop_slug: Mapped[str] = mapped_column(Text)
+    target: Mapped[str | None] = mapped_column(Text)
+    max_dose: Mapped[Any | None] = mapped_column(Numeric)
+    dose_unit: Mapped[str | None] = mapped_column(Text)
+    dar_days: Mapped[int | None] = mapped_column(Integer)
+    max_applications: Mapped[int | None] = mapped_column(Integer)
+    interval_days: Mapped[int | None] = mapped_column(Integer)
+
+
+class Operation(Base):
+    __tablename__ = "operations"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    farm_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"))
+    type: Mapped[str] = mapped_column(Text)
+    performed_on: Mapped[dt.date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(Text)
+    author_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    operator_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    operator_name: Mapped[str | None] = mapped_column(Text)
+    note: Mapped[str | None] = mapped_column(Text)
+    season_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    quantity_total: Mapped[Any | None] = mapped_column(Numeric)
+    quantity_unit: Mapped[str | None] = mapped_column(Text)
+    label_photo_key: Mapped[str | None] = mapped_column(Text)  # server-generated only, never exposed
+    product_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("phyto_products.id"))
+    free_product_name: Mapped[str | None] = mapped_column(Text)
+    dose: Mapped[Any | None] = mapped_column(Numeric)
+    dose_unit: Mapped[str | None] = mapped_column(Text)
+    product_lines: Mapped[Any] = mapped_column(JSONB, server_default="[]")
+    validated_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    validated_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    done_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    server_version: Mapped[int] = mapped_column(BigInteger, server_default="1")
+    field_versions: Mapped[Any] = mapped_column(JSONB, server_default="{}")
+
+
+class OperationParcel(Base):
+    __tablename__ = "operation_parcels"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    farm_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    operation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    parcel_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    author_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    type: Mapped[str] = mapped_column(Text)
+    performed_on: Mapped[dt.date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(Text)
+    product_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    free_product_name: Mapped[str | None] = mapped_column(Text)
+    allocated_quantity: Mapped[Any | None] = mapped_column(Numeric)
+    allocated_dose: Mapped[Any | None] = mapped_column(Numeric)
+    dose_unit: Mapped[str | None] = mapped_column(Text)
+    area_ha_snapshot: Mapped[Any | None] = mapped_column(Numeric)
+    crop_slug: Mapped[str | None] = mapped_column(Text)
+    warnings: Mapped[Any] = mapped_column(JSONB, server_default="[]")
+    parcel_archived_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))  # copied by trigger
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class OperationReminder(Base):
+    __tablename__ = "operation_reminders"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    farm_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    operation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    parcel_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    fire_on: Mapped[dt.date] = mapped_column(Date)
+    state: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RegistryEntry(Base):
+    """Append-only (triggers registry_append_only); read through the view registry_current."""
+
+    __tablename__ = "registry_entries"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    farm_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"))
+    operation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    parcel_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    entry_kind: Mapped[str] = mapped_column(Text)
+    supersedes_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("registry_entries.id"))
+    performed_on: Mapped[dt.date] = mapped_column(Date)
+    parcel_name: Mapped[str] = mapped_column(Text)
+    crop_name: Mapped[str | None] = mapped_column(Text)
+    area_ha: Mapped[Any | None] = mapped_column(Numeric)
+    product_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    product_name: Mapped[str] = mapped_column(Text)
+    active_ingredients: Mapped[Any] = mapped_column(JSONB, server_default="[]")
+    is_free_product: Mapped[bool] = mapped_column(Boolean, server_default="false")
+    dose: Mapped[Any | None] = mapped_column(Numeric)
+    dose_unit: Mapped[str | None] = mapped_column(Text)
+    allocated_quantity: Mapped[Any | None] = mapped_column(Numeric)
+    dar_days: Mapped[int | None] = mapped_column(Integer)
+    max_dose: Mapped[Any | None] = mapped_column(Numeric)
+    catalog_version_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    operator_name: Mapped[str] = mapped_column(Text)
+    operator_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    warnings: Mapped[Any] = mapped_column(JSONB, server_default="[]")
+    season_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    recorded_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    recorded_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
+    retain_until: Mapped[dt.date] = mapped_column(Date)
+
+
+class OperationCorrection(Base):
+    """Append-only (triggers registry_append_only)."""
+
+    __tablename__ = "operation_corrections"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    farm_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"))
+    operation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    field: Mapped[str] = mapped_column(Text)
+    before: Mapped[Any | None] = mapped_column(JSONB)
+    after: Mapped[Any | None] = mapped_column(JSONB)
+    author_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    corrected_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
+    source: Mapped[str] = mapped_column(Text)
+    registry_entry_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    server_version: Mapped[int | None] = mapped_column(BigInteger)
+
+
+class LabelUpload(Base):
+    __tablename__ = "label_uploads"
+    id: Mapped[uuid.UUID] = _uuid_pk()  # the opaque label_photo_id handed to the client
+    farm_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"))
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    object_key: Mapped[str] = mapped_column(Text)  # server-generated: farms/{farm_id}/labels/{uuid}
+    consumed_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ExportJob(Base):
+    __tablename__ = "export_jobs"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    farm_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"))
+    requested_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    scope: Mapped[str] = mapped_column(Text)
+    parcel_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    period_from: Mapped[dt.date] = mapped_column(Date)
+    period_to: Mapped[dt.date] = mapped_column(Date)
+    format: Mapped[str] = mapped_column(Text)
+    lang: Mapped[str] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(Text)
+    file_keys: Mapped[Any | None] = mapped_column(JSONB)  # server only, never read from nor returned to a client
+    sha256: Mapped[str | None] = mapped_column(Text)
+    row_count: Mapped[int] = mapped_column(Integer, server_default="0")
+    expires_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

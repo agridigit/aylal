@@ -1,0 +1,22 @@
+stateDiagram-v2
+  [*] --> planned: création, date future
+  [*] --> pending_validation: création, date passée ou jour, ouvrier
+  [*] --> validated: création, date passée ou jour, owner ou manager
+  planned --> planned: reschedule (date non passée)
+  planned --> cancelled: cancel
+  planned --> validated: mark_done (staff)
+  planned --> pending_validation: mark_done (ouvrier)
+  pending_validation --> validated: validate (staff)
+  pending_validation --> cancelled: cancel (staff, reversal)
+  validated --> cancelled: cancel (staff, reversal)
+  validated --> validated: correct (reversal + application)
+  pending_validation --> pending_validation: correct (staff)
+  note right of planned
+    En retard : état dérivé,
+    planned avec date passée
+  end note
+  note right of validated
+    Corrigée : un statut conservé,
+    visible par les écritures compensatoires
+  end note
+  cancelled --> [*]

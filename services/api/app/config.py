@@ -23,6 +23,12 @@ class Settings:
     enable_test_otp: bool
     trusted_proxies: tuple[str, ...] = ()
     tiles_base_url: str = ""
+    # F6: optional AI ports (empty = unavailable, the caller falls back to manual entry)
+    vision_url: str = ""
+    nlu_url: str = ""
+    registry_retention_years: int = 5
+    minio_user: str = ""
+    minio_password: str = ""
 
 
 def get_settings() -> Settings:
@@ -59,6 +65,11 @@ def get_settings() -> Settings:
         sms_gateway_key=os.environ.get("AYLAL_SMS_GATEWAY_KEY", ""),
         enable_test_otp=enable_test_otp,
         tiles_base_url=tiles_base_url,
+        vision_url=os.environ.get("AYLAL_VISION_URL", "").strip(),
+        nlu_url=os.environ.get("AYLAL_NLU_URL", "").strip(),
+        registry_retention_years=int(os.environ.get("AYLAL_REGISTRY_RETENTION_YEARS", "5") or "5"),
+        minio_user=os.environ.get("MINIO_ROOT_USER", ""),
+        minio_password=os.environ.get("MINIO_ROOT_PASSWORD", ""),
         trusted_proxies=tuple(
             p.strip() for p in os.environ.get("AYLAL_TRUSTED_PROXIES", "").split(",") if p.strip()
         ),
@@ -70,3 +81,10 @@ def require_tiles_base_url(settings: Settings) -> str:
     if settings.env not in _LOCAL_ENVS and not settings.tiles_base_url:
         raise RuntimeError("AYLAL_TILES_BASE_URL must be set when AYLAL_ENV is not dev/test")
     return settings.tiles_base_url
+
+
+def require_minio_credentials(settings: Settings) -> tuple[str, str]:
+    """Object-storage credentials; refused outside dev/test when absent (no default secret)."""
+    if settings.env not in _LOCAL_ENVS and not (settings.minio_user and settings.minio_password):
+        raise RuntimeError("MINIO_ROOT_USER and MINIO_ROOT_PASSWORD must be set when AYLAL_ENV is not dev/test")
+    return settings.minio_user, settings.minio_password

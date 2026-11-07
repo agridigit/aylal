@@ -47,9 +47,17 @@ def test_given_the_worker_bucket_then_no_financial_table_or_column_nor_wildcard_
             assert not re.search(r"SELECT\s+\*\s+FROM\s+(farms|farm_members|invitations|users|trial_records)\b", q), q
 
 
+# Global reference buckets (readable by every member, workers included), named explicitly: T015 / F6 spec.
+GLOBAL_CATALOG_BUCKETS = {"phyto_catalog"}
+
+
 def test_given_the_general_buckets_then_no_one_gets_a_row_of_a_removed_member_and_workers_are_not_in_a_staff_bucket():
     for name, b in RULES.items():
         if "worker" in name:
+            continue
+        if name in GLOBAL_CATALOG_BUCKETS:
+            assert not b.get("parameters"), name  # global catalogue: no per-user parameter, no farm data
+            assert not re.search(r"farm_id|user_id", " ".join(_all_queries(b))), name
             continue
         assert "farm_members" in b["parameters"]
         assert "removed_at IS NULL" in b["parameters"], name

@@ -56,3 +56,17 @@ describe("F2 roles matrix shared vectors (field.*, season.*, crop.create_custom)
     expect(can("owner", "field.teleport")).toBe(false);
   });
 });
+
+describe("F6 roles matrix shared vectors (operation.*, registry.*, phyto_product.create_free)", () => {
+  const f6: { role: string; action: string; allowed: boolean }[] = JSON.parse(
+    readFileSync(new URL("../vectors/f6_roles.json", import.meta.url), "utf-8"),
+  );
+  for (const m of f6) {
+    it(`given role ${m.role} when doing ${m.action} then allowed is ${m.allowed}`, () => {
+      expect(can(m.role, m.action)).toBe(m.allowed);
+    });
+  }
+  it("given any role then physical deletion of an operation is never allowed", () => {
+    expect(ROLES.some((r) => can(r, "operation.delete"))).toBe(false);
+  });
+});

@@ -1,6 +1,6 @@
 [project]
 name = "aylal-api"
-version = "0.3.0"
+version = "0.4.0"
 requires-python = ">=3.13"
 dependencies = [
   "fastapi>=0.115",
@@ -10,10 +10,18 @@ dependencies = [
   "alembic>=1.13",
   "asyncpg>=0.30",
   "argon2-cffi>=23.1",
+  "reportlab==5.1.0",
+  "openpyxl==3.1.5",
+  "arabic-reshaper==3.1.0",
+  "python-bidi==0.6.12",
+  "redis>=5.0",
+  "python-multipart>=0.0.9",
+  "boto3>=1.35",
+  "arq>=0.26",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-cov>=5", "pytest-xdist>=3.6", "httpx>=0.27", "ruff>=0.7", "mypy>=1.13", "datamodel-code-generator>=0.26", "pyyaml>=6", "jsonschema>=4.23"]
+dev = ["pytest>=8", "pytest-cov>=5", "pytest-xdist>=3.6", "httpx>=0.27", "ruff>=0.7", "mypy>=1.13", "datamodel-code-generator>=0.26", "pyyaml>=6", "jsonschema>=4.23", "pypdf>=5.0"]
 
 [tool.setuptools]
 packages = []
@@ -27,6 +35,11 @@ line-length = 100
 
 [tool.mypy]
 strict = true
+
+[[tool.mypy.overrides]]
+# bibliothèques sans stubs (rendu des exports, client S3)
+module = ["boto3.*", "botocore.*", "reportlab.*", "openpyxl.*", "arabic_reshaper", "bidi", "arq.*"]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 # code généré par datamodel-code-generator (constr(...) non typable statiquement)
@@ -44,5 +57,6 @@ fail_under = 80
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
 
 [tool.ruff.lint.per-file-ignores]
-# tests : subprocess sans check explicite et pytest.raises(Exception) volontaires
-"tests/**" = ["PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167", "ASYNC221"]
+# tests : subprocess sans check explicite et pytest.raises(Exception) volontaires ;
+# F811 : une fixture pytest importée (ex. `world`) puis reçue en paramètre est l'idiome attendu
+"tests/**" = ["F811", "PLW1510", "B017", "C408", "RUF100", "PLR0402", "SIM117", "FURB167", "ASYNC221"]

@@ -1,0 +1,42 @@
+{
+ "today": "2026-11-07",
+ "cases": [
+  {"name": "one product with a 21 day interval gives D+21",
+   "entries": [{"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 21, "product_name": "A"}],
+   "expected": {"date": "2026-11-26", "harvestable_now": false, "unknown_dar": false, "limiting_product": "A"}},
+  {"name": "several products: the longest remaining interval applies",
+   "entries": [
+    {"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-01", "dar_days": 7, "product_name": "Short"},
+    {"id": "e2", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-03", "dar_days": 21, "product_name": "Long"},
+    {"id": "e3", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-06", "dar_days": 3, "product_name": "Recent"}],
+   "expected": {"date": "2026-11-24", "harvestable_now": false, "unknown_dar": false, "limiting_product": "Long"}},
+  {"name": "no treatment means harvestable right now",
+   "entries": [],
+   "expected": {"date": null, "harvestable_now": true, "unknown_dar": false, "limiting_product": null}},
+  {"name": "an interval already elapsed is harvestable now",
+   "entries": [{"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-09-01", "dar_days": 7, "product_name": "Old"}],
+   "expected": {"date": "2026-09-08", "harvestable_now": true, "unknown_dar": false, "limiting_product": "Old"}},
+  {"name": "a reversed application is ignored",
+   "entries": [
+    {"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 30, "product_name": "Cancelled"},
+    {"id": "r1", "entry_kind": "reversal", "supersedes_id": "e1", "performed_on": "2026-11-05", "dar_days": 30, "product_name": "Cancelled"},
+    {"id": "e2", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 7, "product_name": "Kept"}],
+   "expected": {"date": "2026-11-12", "harvestable_now": false, "unknown_dar": false, "limiting_product": "Kept"}},
+  {"name": "a corrected application uses the new one only",
+   "entries": [
+    {"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 30, "product_name": "Before"},
+    {"id": "r1", "entry_kind": "reversal", "supersedes_id": "e1", "performed_on": "2026-11-05", "dar_days": 30, "product_name": "Before"},
+    {"id": "e2", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 10, "product_name": "After"}],
+   "expected": {"date": "2026-11-15", "harvestable_now": false, "unknown_dar": false, "limiting_product": "After"}},
+  {"name": "only cancelled entries means harvestable now",
+   "entries": [
+    {"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 30, "product_name": "Cancelled"},
+    {"id": "r1", "entry_kind": "reversal", "supersedes_id": "e1", "performed_on": "2026-11-05", "dar_days": 30, "product_name": "Cancelled"}],
+   "expected": {"date": null, "harvestable_now": true, "unknown_dar": false, "limiting_product": null}},
+  {"name": "an unknown interval is flagged while the known ones still count",
+   "entries": [
+    {"id": "e1", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": null, "product_name": "Free"},
+    {"id": "e2", "entry_kind": "application", "supersedes_id": null, "performed_on": "2026-11-05", "dar_days": 7, "product_name": "Known"}],
+   "expected": {"date": "2026-11-12", "harvestable_now": false, "unknown_dar": true, "limiting_product": "Known"}}
+ ]
+}
