@@ -12,6 +12,7 @@ from app.auth import current_user
 from app.db.models import Farm, FarmMember, RefreshToken, User
 from app.db.session import get_session
 from app.domain.account_deletion import deletion_deadline, deletion_impact
+from app.operations.exports import registry_export_for_deletion
 
 router = APIRouter(prefix="/me")
 
@@ -23,8 +24,9 @@ class DeletionRequest(BaseModel):
 @router.post("/deletion", status_code=202)
 async def request_deletion(
     _: DeletionRequest, user_id: uuid.UUID = Depends(current_user), session: AsyncSession = Depends(get_session)
-) -> dict[str, str]:
+) -> dict[str, Any]:
     now = dt.datetime.now(dt.UTC)
+    exports = await registry_export_for_deletion(session, user_id)  # the registry is exported first, then kept anonymised
     await session.execute(
         update(User).where(User.id == user_id).values(status="deletion_requested", deletion_requested_at=now)
     )
@@ -32,7 +34,10 @@ async def request_deletion(
         update(RefreshToken).where(RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None)).values(revoked_at=now)
     )
     await session.commit()
-    return {"deletion_requested_at": now.isoformat(), "deletion_deadline": deletion_deadline(now).isoformat()}
+    return {
+        "deletion_requested_at": now.isoformat(), "deletion_deadline": deletion_deadline(now).isoformat(),
+        "registry_export_id": exports[0] if exports else None, "registry_export_ids": exports,
+    }
 
 
 @router.get("/deletion/impact")

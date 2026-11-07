@@ -19,7 +19,7 @@ LIMITS: dict[str, int] = {
     "label_bytes": 3 * 1024 * 1024,
     "body_bytes": 256 * 1024,
 }
-DOSE_MIN, DOSE_MAX, DOSE_DECIMALS = Decimal("0.001"), Decimal("100000"), 3
+DOSE_MIN, DOSE_MAX, DOSE_DECIMALS = Decimal("0.001"), Decimal(100000), 3
 MIN_PERFORMED_ON = dt.date(2000, 1, 1)
 MAX_FUTURE_YEARS = 2
 
@@ -53,7 +53,7 @@ def within_limit(rule: str, value: float | str, today: dt.date) -> bool:
         except ValueError:
             return False
         return MIN_PERFORMED_ON <= day <= latest_performed_on(today)
-    if isinstance(value, str) or isinstance(value, bool):
+    if isinstance(value, (str, bool)):
         return False
     if rule == "parcels":
         return 1 <= value <= LIMITS["parcels"]
