@@ -95,6 +95,18 @@ services:
       timeout: 5s
       retries: 20
 
+  # One-shot: applies the database migrations before the API starts (make up must leave a usable schema).
+  migrate:
+    build: { context: ., dockerfile: services/api/Dockerfile, target: runtime }
+    <<: *env
+    environment:
+      AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
+      AYLAL_ENV: ${AYLAL_ENV:-dev}
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
   api:
     build: { context: ., dockerfile: services/api/Dockerfile, target: runtime }
     <<: *env
@@ -108,6 +120,7 @@ services:
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
     ports: ["8000:8000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/v1/health', timeout=3).status == 200 else 1)"]
