@@ -49,7 +49,7 @@ typecheck:
 	$(DC) --profile test run --rm api-test mypy app
 coverage:      ## seuil 80 % pytest et Vitest
 	$(DC) --profile test run --rm api-test pytest --cov=app --cov-fail-under=80
-	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- --coverage
+	$(DC) --profile test run --rm js-test pnpm -r --filter @aylal/domain test -- --coverage
 apk-size:      ## APK release <= 40 Mo
 	bash scripts/check-apk-size.sh
 check: test-pyramid lint typecheck test coverage test-visual apk-size diagrams e2e   ## porte de qualité utilisée par la boucle

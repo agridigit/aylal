@@ -27,12 +27,12 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T008 [P] Écrire les vecteurs partagés `packages/domain/vectors/trial_record.json` et `packages/domain/vectors/parcel.json` (title 1..120 après trim, quantity >= 0 et <= 1 000 000, note <= 2000, vigor dans [0,1], geometry polygone fermé valide ; cas valides et invalides) (AC3.5, FR-016)
-- [ ] T009 [P] Écrire le test Vitest `packages/domain/tests/validation.test.ts` qui joue tous les vecteurs de T008 contre les schémas Zod (AC3.5)
-- [ ] T010 [P] Écrire le test Vitest `packages/domain/tests/conflict.test.ts` : résolution champ par champ par ordre d'arrivée serveur, indépendante de l'horloge appareil, valeur écartée journalisée (AC3.4, cas limite horloge décalée, R6)
-- [ ] T011 [P] Écrire le test pytest `services/api/tests/unit/test_shared_validation.py` qui joue les mêmes vecteurs (T008) contre les modèles Pydantic générés et vérifie l'identité des verdicts avec TS (AC3.5)
-- [ ] T012 [P] Écrire le test de contrat `services/api/tests/contract/test_generated_schema_fresh.py` : les JSON Schema et modèles dans `services/api/app/generated/` correspondent à la sortie de l'export Zod (échec si périmés) (FR-016)
-- [ ] T013 Lancer `docker compose run --rm js-test` et `api-test` : T009 à T012 DOIVENT échouer ; commit `test(foundations): red - shared validation`
+- [x] T008 [P] Écrire les vecteurs partagés `packages/domain/vectors/trial_record.json` et `packages/domain/vectors/parcel.json` (title 1..120 après trim, quantity >= 0 et <= 1 000 000, note <= 2000, vigor dans [0,1], geometry polygone fermé valide ; cas valides et invalides) (AC3.5, FR-016)
+- [x] T009 [P] Écrire le test Vitest `packages/domain/tests/validation.test.ts` qui joue tous les vecteurs de T008 contre les schémas Zod (AC3.5)
+- [x] T010 [P] Écrire le test Vitest `packages/domain/tests/conflict.test.ts` : résolution champ par champ par ordre d'arrivée serveur, indépendante de l'horloge appareil, valeur écartée journalisée (AC3.4, cas limite horloge décalée, R6)
+- [x] T011 [P] Écrire le test pytest `services/api/tests/unit/test_shared_validation.py` qui joue les mêmes vecteurs (T008) contre les modèles Pydantic générés et vérifie l'identité des verdicts avec TS (AC3.5)
+- [x] T012 [P] Écrire le test de contrat `services/api/tests/contract/test_generated_schema_fresh.py` : les JSON Schema et modèles dans `services/api/app/generated/` correspondent à la sortie de l'export Zod (échec si périmés) (FR-016)
+- [x] T013 Lancer `docker compose run --rm js-test` et `api-test` : T009 à T012 DOIVENT échouer ; commit `test(foundations): red - shared validation`
 
 ### Implémentation (GREEN)
 
@@ -69,7 +69,7 @@
 - [x] T032 [US1] Compléter `Makefile` : cibles de make-targets.md, `make up` = `docker compose up -d --build --wait` nommant le service non sain, `make test` = `test-api` + `test-domain` + `test-mobile` nommant le test fautif, `make check` (lint, typecheck, test, coverage, test-visual, apk-size, diagrams, e2e), message explicite si KVM absent sauf `E2E_SKIP=1` (AC1.2, AC1.3, R9)
 - [x] T033 [P] [US1] Implémenter `scripts/check-apk-size.sh` (seuil 40 Mo, R18) et brancher `make apk-size`
 - [x] T034 [P] [US1] Configurer Ruff/mypy dans `services/api/pyproject.toml`, ESLint dans `eslint.config.js` racine, seuil `--cov-fail-under=80` pytest et seuils Vitest (FR-004)
-- [ ] T035 [US1] Commit `feat(foundations): green - platform` ; REFACTOR `refactor(foundations): platform`
+- [x] T035 [US1] Commit `feat(foundations): green - platform` ; REFACTOR `refactor(foundations): platform`
 
 **Point de contrôle** : `make up` sain, `make test` nomme un test en échec.
 
@@ -117,15 +117,15 @@
 
 ### Tests d'abord (RED)
 
-- [ ] T061 [P] [US4] Test de contrat Vitest `packages/ui/tests/tokens.schema.test.ts` : les jetons de chaque thème (clair, sombre, plein soleil) valident `contracts/design-tokens.schema.json` ; espacements multiples de 4 px ; polices IBM Plex Sans / IBM Plex Sans Arabic (AC4.1, FR-021)
-- [ ] T062 [P] [US4] Test Vitest `packages/ui/tests/contrast.test.ts` : contraste texte/fond >= 7:1 pour le texte courant du thème plein soleil (AC4.2)
-- [ ] T063 [P] [US4] Test Vitest `packages/ui/tests/motion.test.ts` : durées de transition 200 à 300 ms ; supprimées ou réduites si « réduire les animations » est actif (AC4.6, FR-024)
-- [ ] T064 [P] [US4] Test Vitest `packages/ui/tests/stories-coverage.test.ts` : chaque composant exporté a une story par variante et par état (défaut, actif, désactivé, chargement, erreur) (AC4.3, FR-022)
-- [ ] T065 [P] [US4] Test Vitest `packages/ui/tests/touch-target.test.ts` : tout composant interactif a une zone tactile >= 48 dp (AC2.5, FR-010)
-- [ ] T066 [P] [US4] Test Playwright `packages/ui/visual/catalog.spec.ts` : captures Storybook 3 thèmes x 2 sens (LTR/RTL) de chaque composant contre `packages/ui/visual/__screenshots__/` ; une modification involontaire est détectée (AC4.1, AC4.4, AC4.5, SC-007) [FR-023]
-- [ ] T067 [P] [US4] Test Playwright `packages/ui/visual/regression-detect.spec.ts` : une altération volontaire d'un composant fait échouer `make test-visual` (AC4.5)
-- [ ] T068 [P] [US4] Test Vitest `packages/ui/tests/long-text.test.ts` : texte long (fr) et court (ar) sans débordement ni troncature illisible (cas limite)
-- [ ] T069 [US4] Lancer : T061 à T068 DOIVENT échouer ; commit `test(foundations): red - design system`
+- [x] T061 [P] [US4] Test de contrat Vitest `packages/ui/tests/tokens.schema.test.ts` : les jetons de chaque thème (clair, sombre, plein soleil) valident `contracts/design-tokens.schema.json` ; espacements multiples de 4 px ; polices IBM Plex Sans / IBM Plex Sans Arabic (AC4.1, FR-021)
+- [x] T062 [P] [US4] Test Vitest `packages/ui/tests/contrast.test.ts` : contraste texte/fond >= 7:1 pour le texte courant du thème plein soleil (AC4.2)
+- [x] T063 [P] [US4] Test Vitest `packages/ui/tests/motion.test.ts` : durées de transition 200 à 300 ms ; supprimées ou réduites si « réduire les animations » est actif (AC4.6, FR-024)
+- [x] T064 [P] [US4] Test Vitest `packages/ui/tests/stories-coverage.test.ts` : chaque composant exporté a une story par variante et par état (défaut, actif, désactivé, chargement, erreur) (AC4.3, FR-022)
+- [x] T065 [P] [US4] Test Vitest `packages/ui/tests/touch-target.test.ts` : tout composant interactif a une zone tactile >= 48 dp (AC2.5, FR-010)
+- [x] T066 [P] [US4] Test Playwright `packages/ui/visual/catalog.spec.ts` : captures Storybook 3 thèmes x 2 sens (LTR/RTL) de chaque composant contre `packages/ui/visual/__screenshots__/` ; une modification involontaire est détectée (AC4.1, AC4.4, AC4.5, SC-007) [FR-023]
+- [x] T067 [P] [US4] Test Playwright `packages/ui/visual/regression-detect.spec.ts` : une altération volontaire d'un composant fait échouer `make test-visual` (AC4.5)
+- [x] T068 [P] [US4] Test Vitest `packages/ui/tests/long-text.test.ts` : texte long (fr) et court (ar) sans débordement ni troncature illisible (cas limite)
+- [x] T069 [US4] Lancer : T061 à T068 DOIVENT échouer ; commit `test(foundations): red - design system`
 
 ### Implémentation (GREEN)
 
