@@ -1,0 +1,83 @@
+{
+  "today": "2026-11-07",
+  "cases": [
+    {
+      "name": "a French sentence naming a parcel and a product",
+      "text": "j'ai traité les oliviers du bas avec du cuivre ce matin",
+      "parcels": [
+        {"id": "p-bas", "name": "Oliviers du bas"},
+        {"id": "p-haut", "name": "Oliviers du haut"},
+        {"id": "p-tom", "name": "Serre tomates"}
+      ],
+      "expected": {
+        "understood": true,
+        "requires_confirmation": true,
+        "draft": {"type": "phyto", "performed_on": "2026-11-07", "parcel_ids": ["p-bas"], "product_query": "cuivre"},
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "a French sentence whose parcel matches two parcels",
+      "text": "j'ai traité les oliviers avec du cuivre",
+      "parcels": [
+        {"id": "p-bas", "name": "Oliviers du bas"},
+        {"id": "p-haut", "name": "Oliviers du haut"},
+        {"id": "p-tom", "name": "Serre tomates"}
+      ],
+      "expected": {
+        "understood": true,
+        "requires_confirmation": true,
+        "draft": {"type": "phyto", "performed_on": "2026-11-07", "product_query": "cuivre"},
+        "ambiguous": [{"field": "parcel_ids", "candidates": ["p-bas", "p-haut"]}]
+      }
+    },
+    {
+      "name": "a darija sentence in Arabic script with yesterday",
+      "text": "رشيت الزيتون ديال الفوق بالنحاس البارح",
+      "parcels": [
+        {"id": "p-fouq", "name": "الزيتون ديال الفوق"},
+        {"id": "p-tahta", "name": "الزيتون ديال التحت"}
+      ],
+      "expected": {
+        "understood": true,
+        "requires_confirmation": true,
+        "draft": {"type": "phyto", "performed_on": "2026-11-06", "parcel_ids": ["p-fouq"], "product_query": "cuivre"},
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "a modern standard Arabic irrigation sentence",
+      "text": "قمت بسقي الطماطم اليوم",
+      "parcels": [{"id": "p-tom", "name": "الطماطم"}, {"id": "p-oliv", "name": "الزيتون"}],
+      "expected": {
+        "understood": true,
+        "requires_confirmation": true,
+        "draft": {"type": "irrigation", "performed_on": "2026-11-07", "parcel_ids": ["p-tom"]},
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "a sentence with a parcel the farm does not have",
+      "text": "j'ai arrosé le verger de pommiers",
+      "parcels": [{"id": "p-tom", "name": "Serre tomates"}],
+      "expected": {
+        "understood": true,
+        "requires_confirmation": true,
+        "draft": {"type": "irrigation", "performed_on": "2026-11-07"},
+        "ambiguous": [{"field": "parcel_ids", "candidates": []}]
+      }
+    },
+    {
+      "name": "a sentence that is not understood",
+      "text": "bla bla xyz",
+      "parcels": [{"id": "p-tom", "name": "Serre tomates"}],
+      "expected": {"understood": false, "requires_confirmation": true, "draft": {}, "ambiguous": []}
+    },
+    {
+      "name": "an empty sentence",
+      "text": "   ",
+      "parcels": [],
+      "expected": {"understood": false, "requires_confirmation": true, "draft": {}, "ambiguous": []}
+    }
+  ]
+}
