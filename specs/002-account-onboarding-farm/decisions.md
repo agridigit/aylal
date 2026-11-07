@@ -16,3 +16,9 @@
 - OTP : verrou et code haché (Argon2id + poivre) en place ; limites d'envoi (60 s, 5/h) et tâche d'envoi Arq reportées au récit 1 ; `/v1/auth/refresh` et `/logout` aussi.
 - Le démarrage de l'API appelle `get_settings()` (lifespan) : refus de démarrer si secret/poivre faibles ou `AYLAL_ENABLE_TEST_OTP=1` hors dev/test.
 - Durcissement supply-chain : `pnpm.onlyBuiltDependencies = ["esbuild"]` (seul paquet avec script d'installation dans l'arbre) dans `package.json` racine (pnpm 9.15 ne lit pas la clé de `pnpm-workspace.yaml`).
+
+## Constats de sécurité ouverts (revue automatique après 3d929ee, 2026-11-07)
+À traiter en test first (RED puis GREEN) avant fusion de F1 :
+1. OTP `/v1/auth/otp/request` (services/api/app/routers/auth.py) : le verrou (`failed_attempts`/`locked_until`) est porté par le challenge ; un nouveau challenge repart à 0 → contournement du verrouillage. Reporter ou compter les échecs par téléphone sur une fenêtre, invalider les challenges précédents, limiter le débit par téléphone et par IP (délai de renvoi, plafond horaire).
+2. OTP `/v1/auth/otp/verify` : course TOCTOU sur le compteur d'échecs. Verrouiller la ligne (`with_for_update()`) ou incrémenter atomiquement par UPDATE conditionnel ; marquer « consommé » par UPDATE conditionnel.
+3. services/api/app/auth/access.py : une ferme supprimée (`Farm.deleted_at`) reste accessible. Joindre `Farm`, exiger `deleted_at IS NULL` dans `farm_role`/`farm_context`/`authorize`, et refuser les écritures dans `sync/admin._farm`.
