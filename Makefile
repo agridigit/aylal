@@ -54,6 +54,9 @@ e2e-mobile:    ## bout en bout mobile seul
 	bash scripts/e2e-mobile.sh
 apk:           ## construit l'APK release arm64 dans Docker -> apps/mobile/dist/app-release.apk
 	bash scripts/build-apk.sh
+tiles:         ## construit morocco.pmtiles en local (Docker + tippecanoe) ; AYLAL_TILES_SOURCE et AYLAL_TILES_BASE_URL requis
+	docker build -q -f infra/docker/tiles.Dockerfile -t aylal-tiles .
+	docker run --rm -e AYLAL_TILES_BASE_URL -e AYLAL_TILES_SOURCE=/in/source.geojsonl -v "$(AYLAL_TILES_SOURCE):/in/source.geojsonl:ro" -v "$(CURDIR)/dist/tiles:/out" aylal-tiles
 sync-rules:    ## refuse des règles PowerSync que le service rejette (parseur du service)
 	bash scripts/validate-sync-rules.sh
 test-deps:     ## refuse une app « façade » : dépendances réelles déclarées, aucun stub natif

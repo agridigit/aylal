@@ -1,1 +1,16 @@
-{}
+{
+  "legend": {
+    "title": "Légende",
+    "ok": "Tout va bien",
+    "watch": "À surveiller",
+    "act": "Action nécessaire",
+    "unknown": "Pas encore de données"
+  },
+  "offline": {
+    "banner": "Hors ligne : vos parcelles restent affichées"
+  },
+  "empty": "Aucune parcelle. Dessinez la première.",
+  "error": "La carte ne peut pas s'afficher",
+  "loading": "Chargement de la carte",
+  "open_field": "Ouvrir la parcelle"
+}

@@ -35,7 +35,7 @@
 - [x] T017 Autorisation de synchro `services/api/app/sync/fields.py` (`authorize` + `apply` pour `parcels`, `seasons`, `field_blocks`, `crops`, `field_commands`, champs serveur ignorés) branchée dans `services/api/app/routers/sync.py` ; fait passer **T007**.
 - [x] T018 [P] Règles de synchro PowerSync étendues (parcelles, campagnes, blocs, cultures ; ouvrier : ses parcelles seulement) dans `infra/powersync/sync-rules.yaml` conformes à `specs/003-fields-crops/contracts/powersync-sync-rules.yaml` (enfants de parcelle ouvrier filtrés sur parcelle parente non archivée), tests `services/api/tests/integration/test_f2_sync_rules_roles.py` et T007b écrits avant.
 - [x] T019 [P] (RED écrit : `services/api/tests/contract/test_f2_openapi_sync.py`, drift `GET /v1/farms/{farm_id}/crops` non documenté) Contrat : synchroniser `specs/003-fields-crops/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f2_openapi_sync.py` écrit avant.
-- [ ] T020 [P] Garde-fou Maroc : test d'allowlist `services/api/tests/unit/test_f2_no_foreign_tiles.py` et `apps/mobile/src/fields/__tests__/mapStyle.allowlist.test.ts` (style de carte et code mobile ne référencent que `AYLAL_TILES_BASE_URL`, aucun domaine tiers de tuiles/géocodage), puis `apps/mobile/src/fields/mapStyle.ts` ; emprise Maroc : 422 `outside_morocco` testé dans `services/api/tests/integration/test_f2_outside_morocco.py` (garde-fou n°6).
+- [x] T020 [P] Garde-fou Maroc : test d'allowlist `services/api/tests/unit/test_f2_no_foreign_tiles.py` et `apps/mobile/src/fields/__tests__/mapStyle.allowlist.test.ts` (style de carte et code mobile ne référencent que `AYLAL_TILES_BASE_URL`, aucun domaine tiers de tuiles/géocodage), puis `apps/mobile/src/fields/mapStyle.ts` ; emprise Maroc : 422 `outside_morocco` testé dans `services/api/tests/integration/test_f2_outside_morocco.py` (garde-fou n°6).
 
 **Point de contrôle** : T005 à T011 verts (sauf routes alimentées par les récits), `make test-api` et `make test-domain` verts.
 
@@ -101,7 +101,7 @@
 - [x] T053 [P] E2E service `services/api/tests/e2e/test_field_map_e2e.py` : ferme de 50 parcelles, liste et fiche (R4-A1, R4-A3).
 
 ### Implémentation (non-écran)
-- [ ] T054 `GET /v1/farms/{farm_id}/fields` et `GET .../fields/{field_id}` dans `services/api/app/routers/fields.py` ; `apps/mobile/src/fields/{mapData.ts,offlineRegion.ts}` ; `infra/tiles/` et tâche `services/workers/tasks/build_tiles.py` + cible `make tiles` ; clés `map.json`.
+- [x] T054 `GET /v1/farms/{farm_id}/fields` et `GET .../fields/{field_id}` dans `services/api/app/routers/fields.py` ; `apps/mobile/src/fields/{mapData.ts,offlineRegion.ts}` ; `infra/tiles/` et tâche `services/workers/tasks/build_tiles.py` + cible `make tiles` ; clés `map.json`.
 
 ### Écrans (dépendent de T004)
 - [ ] T055 [écran] [P] [dépend de T004] Tests RED écran F2-E1 carte : toutes les parcelles colorées, couleur neutre, ouverture de la fiche au toucher, hors ligne, `MapLegend`, 4 états, RTL, dans `apps/mobile/src/screens/FieldMap/__tests__/` et Maestro `apps/mobile/maestro/field_map.yaml` (R4-A1 à A4).
@@ -116,8 +116,8 @@
 
 ### Implémentation (non-écran)
 - [x] T060 `services/api/app/routers/blocks.py`, route `POST .../fields/merge`, `services/api/app/sync/fields.py` (`field_blocks`, `field_commands`).
-- [ ] T061 [P] Archivage 90 jours : `GET .../fields/archived`, `POST .../restore`, `services/workers/tasks/purge_archived_fields.py` ; tests écrits avant dans `services/api/tests/integration/test_field_archive_restore.py` (restaurable ≤ 90 j, 404 après purge, 404 pour l'ouvrier) et `services/workers/tests/integration/test_purge_archived_fields.py` (CL).
-- [ ] T062 [P] Export et purge de compte/ferme étendus (`services/api/app/accounts/export.py`) ; test écrit avant `services/api/tests/integration/test_f2_export_purge.py` (ouvrier : ses parcelles seulement).
+- [x] T061 [P] Archivage 90 jours : `GET .../fields/archived`, `POST .../restore`, `services/workers/tasks/purge_archived_fields.py` ; tests écrits avant dans `services/api/tests/integration/test_field_archive_restore.py` (restaurable ≤ 90 j, 404 après purge, 404 pour l'ouvrier) et `services/workers/tests/integration/test_purge_archived_fields.py` (CL).
+- [x] T062 [P] Export et purge de compte/ferme étendus (`services/api/app/accounts/export.py`) ; test écrit avant `services/api/tests/integration/test_f2_export_purge.py` (ouvrier : ses parcelles seulement).
 
 ### Écrans (dépendent de T004)
 - [ ] T063 [écran] [P] [dépend de T004] Tests RED écrans F2-E5 découpage/fusion et F2-E8 archivées (4 états, RTL) dans `apps/mobile/src/screens/{SplitMerge,ArchivedFields}/__tests__/` et Maestro `apps/mobile/maestro/split_merge.yaml` (R5-A1, R5-A2, CL).

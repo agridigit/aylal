@@ -47,3 +47,10 @@ Le service PowerSync refuse un seau sans paramètre cohérent avec `farm_id` (`f
 **Déjà vert (non-régression)** : routes blocs (201, 422, 403, 404), garde-fous de fusion (403, 404 inter-ferme, 422 non contigu, atomicité), idempotence `field_commands`, domaine de fusion TS, E2E campagnes et rejeu de fusion. `contracts/openapi.yaml` est désormais du YAML valide.
 
 **Plafond de 500 parcelles** : « découper » n'est pas contournable car découper crée des blocs, jamais de parcelle ; le test le verrouille. La synchro ne peut pas restaurer (toute écriture sous parcelle archivée = 404). Les contournements réels : `restore_field` sans contrôle, et courses entre `count` et `INSERT` (REST et synchro) : verrou par ferme requis.
+
+## Finition non-écran (T020, T054, T061, T062)
+
+- Tuiles (T054) : `make tiles` construit `morocco.pmtiles` localement (image Docker `infra/docker/tiles.Dockerfile`, tippecanoe compilé dans l'image, `infra/tiles/build.sh`). La source vectorielle marocaine (`AYLAL_TILES_SOURCE`) et l'hébergement au Maroc (`AYLAL_TILES_BASE_URL`, https) sont fournis par l'opérateur : aucune source ni URL externe par défaut, donc aucun fichier de tuiles n'a été produit ici.
+- Photos des cultures (`apps/mobile/assets/crops/<slug>.webp`) : NON générées. De vraies photos de 16 cultures ne sont pas productibles localement sans banque d'images tierce ni prise de vue ; des illustrations synthétiques seraient trompeuses. Reste à fournir par l'humain (liée à la porte design T004). `crops.photo_key` pointe déjà vers `crops/<slug>.webp`.
+- T071 (retrait de `parcels.vigor`) : non fait. Le helper de tests `tests/integration/_f2.py` insère `vigor` et les tests ne sont pas modifiables ; la colonne et ses lecteurs F0 (carte, seed) restent, à retirer avec la migration des écrans.
+- Export (T062) : un gestionnaire reçoit toutes les parcelles/campagnes/blocs/cultures libres de ses fermes ; l'ouvrier uniquement ses parcelles assignées (pas de cultures libres).
