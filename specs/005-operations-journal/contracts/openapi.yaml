@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info: {title: AYLAL F6 - Journal des operations et registre phyto, version: 0.1.0}
+# Toutes les routes : Bearer, farm_context. Non-membre / ferme inconnue ou supprimee => 404 identique.
+# Reponses communes : 401, 403 (role), 404 (hors ferme, parcelle non visible), 413 (lot/photo trop grand), 422, 429 (Retry-After).
+paths:
+  /v1/farms/{farm_id}/operations:
+    get:
+      summary: Journal (ordre chronologique, curseur). worker => ses lignes visibles seulement.
+      parameters: [{name: limit, in: query, schema: {type: integer, maximum: 200, default: 50}}, {name: cursor, in: query, schema: {type: string}}, {name: parcel_id, in: query, schema: {type: string, format: uuid}}, {name: type, in: query, schema: {type: string}}, {name: status, in: query, schema: {type: string}}]
+      responses: {"200": {description: page}}
+    post:
+      summary: Creer une operation (idempotent par id client). Avertissements recalcules serveur.
+      requestBody: {content: {application/json: {schema: {$ref: "#/components/schemas/OperationInput"}}}}
+      responses: {"201": {description: creee}, "413": {description: trop de parcelles / quota}, "422": {description: validation}}
+  /v1/farms/{farm_id}/operations/{operation_id}:
+    get: {summary: Detail, responses: {"200": {description: ok}, "404": {description: inconnue ou non visible}}}
+    patch: {summary: Corriger (owner/manager) => reversal + application + operation_corrections, requestBody: {content: {application/json: {schema: {type: object, additionalProperties: false}}}}, responses: {"200": {description: ok}, "401": {description: non authentifie}, "403": {description: worker}, "404": {description: inconnue ou non visible}, "409": {description: operation annulee ou non corrigeable}, "422": {description: validation}}}
+  /v1/farms/{farm_id}/operations/{operation_id}/done: {post: {summary: Marquer faite (planifiee), responses: {"200": {description: ok}}}}
+  /v1/farms/{farm_id}/operations/{operation_id}/reschedule: {post: {summary: "Reporter une operation planifiee a une date future (R4-A4). Auteur ou owner/manager ; le rappel suit la nouvelle date ; une operation non planifiee => 409 invalid_transition ; date passee => 422", requestBody: {content: {application/json: {schema: {type: object, additionalProperties: false, required: [performed_on], properties: {performed_on: {type: string, format: date}}}}}}, responses: {"200": {description: ok}, "403": {description: pas l'auteur (worker)}, "404": {description: inconnue ou non visible}, "409": {description: pas planifiee}, "422": {description: date passee}}}}
+  /v1/farms/{farm_id}/operations/{operation_id}/cancel: {post: {summary: Annuler (ecriture compensatoire pour un traitement fait), responses: {"200": {description: ok}}}}
+  /v1/farms/{farm_id}/operations/{operation_id}/validate: {post: {summary: Valider (owner/manager), responses: {"200": {description: ok}, "401": {description: non authentifie}, "403": {description: worker}, "404": {description: inconnue ou non visible}, "409": {description: pas en attente de validation}}}}
+  /v1/farms/{farm_id}/operations/{operation_id}/corrections: {get: {summary: Historique des corrections (owner/manager), responses: {"200": {description: ok, content: {application/json: {schema: {type: object, properties: {items: {type: array, items: {$ref: "#/components/schemas/Correction"}}}}}}}, "401": {description: non authentifie}, "403": {description: worker}, "404": {description: inconnue ou non visible}}}}
+  /v1/farms/{farm_id}/operations/check:
+    post: {summary: Controles phyto sans enregistrer (avertissements), responses: {"200": {description: warnings}}}
+  /v1/farms/{farm_id}/operations/parse:
+    post: {summary: "Analyse d'une phrase dictee (<= 500 car., texte seul, jamais d'audio ni d'URL), pre-remplissage sans enregistrement ; 60/h par utilisateur ; 503 parse_unavailable si aucun fournisseur (AYLAL_NLU_URL vide)", requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/ParseRequest"}}}}, responses: {"200": {description: "brouillon + champs ambigus (a confirmer)", content: {application/json: {schema: {$ref: "#/components/schemas/ParseResult"}}}}, "401": {description: non authentifie}, "404": {description: ferme inconnue ou non membre}, "422": {description: texte vide ou > 500 car. ou champ inconnu}, "429": {description: limite horaire}, "503": {description: parse_unavailable}}}
+  /v1/farms/{farm_id}/operations/label:
+    post: {summary: "Reconnaissance d'etiquette (photo <= 3 Mo, multipart). Le serveur stocke la photo sous une cle qu'il genere (farms/{farm_id}/labels/{uuid}), jamais choisie par le client, et renvoie label_photo_id (opaque, lie a farm_id + user_id, usage unique, expire apres 24 h si non rattache). 503 code label_unavailable => repli par nom (la photo est quand meme stockee et un label_photo_id est renvoye)", responses: {"200": {description: "{label_photo_id: uuid, candidates: [...]}"}, "413": {description: photo > 3 Mo}, "422": {description: signature JPEG/WebP invalide}, "503": {description: label_unavailable}}}
+  /v1/farms/{farm_id}/fields/{field_id}/earliest-harvest:
+    get: {summary: "Date de recolte au plus tot. Staff : toute parcelle de la ferme (archivee comprise). Worker : parcelle attribuee non archivee, sinon 404", responses: {"200": {description: "{date|null, unknown_dar: bool, limiting_product}"}, "404": {description: parcelle inconnue ou non visible}}}
+  /v1/farms/{farm_id}/registry:
+    get: {summary: Vue courante du registre (owner/manager ; worker 403), parameters: [{name: parcel_id, in: query, schema: {type: string, format: uuid}}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}, {name: limit, in: query, schema: {type: integer, maximum: 200}}], responses: {"200": {description: page}, "401": {description: non authentifie}, "403": {description: worker}, "404": {description: ferme inconnue ou non membre}}}
+  /v1/farms/{farm_id}/registry/exports:
+    post: {summary: "Demander un export PDF/XLSX (<= 10 000 lignes, 1 actif par ferme, 10/h). Corps strict : aucune cle/URL d'objet acceptee, cle de fichier generee par le serveur (farms/{farm_id}/exports/{job_id}/...)", requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/RegistryExportRequest"}}}}, responses: {"202": {description: job en file}, "401": {description: non authentifie}, "403": {description: worker}, "404": {description: ferme ou parcelle inconnue}, "409": {description: export deja actif}, "422": {description: periode > 5 ans ou > 10000 lignes}, "429": {description: 10 par heure}}}
+  /v1/farms/{farm_id}/registry/exports/{job_id}:
+    get: {summary: "Etat du job ; downloads = URL signees (15 min au plus, Cache-Control no-store) emises au seul demandeur apres controle de la ferme ; file_keys jamais exposees ni acceptees ; job d'une autre ferme ou d'un autre utilisateur => 404", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/ExportJob"}}}}, "401": {description: non authentifie}, "403": {description: worker}, "404": {description: "job inconnu, d'une autre ferme ou d'un autre utilisateur"}, "410": {description: export_expired}}}
+  /v1/farms/{farm_id}/phyto-products/free:
+    post: {summary: "Produit libre : un simple nom (<= 80 car.) porte par l'operation, jamais controle contre le catalogue", requestBody: {content: {application/json: {schema: {$ref: "#/components/schemas/FreeProductRequest"}}}}, responses: {"200": {description: "{name, is_free}"}, "422": {description: validation}}}
+  /v1/phyto-products:
+    get: {summary: Recherche par nom ou matiere active (utilisateur authentifie), parameters: [{name: q, in: query, schema: {type: string, maxLength: 80}}, {name: crop, in: query, schema: {type: string}}, {name: limit, in: query, schema: {type: integer, maximum: 50}}], responses: {"200": {description: produits + catalog_version.source_date}}}
+  /v1/sync/upload:
+    post: {summary: "Etendu F6 : operations, operation_parcels via commandes ; meme authorize que REST ; lot <= 100 (413 batch_too_large avant ecriture)", responses: {"200": {description: resultats par op}}}
+components:
+  schemas:
+    OperationInput:
+      type: object
+      additionalProperties: false
+      required: [id, type, performed_on, parcel_ids]
+      properties:
+        id: {type: string, format: uuid}
+        type: {enum: [phyto, fertilization, irrigation, tillage, sowing_planting, pruning, weeding, harvest, other]}
+        performed_on: {type: string, format: date}
+        parcel_ids: {type: array, minItems: 1, maxItems: 50, items: {type: string, format: uuid}}
+        product_id: {type: string, format: uuid, nullable: true}
+        free_product_name: {type: string, maxLength: 80, nullable: true}
+        dose: {type: number, exclusiveMinimum: 0, maximum: 100000, nullable: true}
+        dose_unit: {type: string, nullable: true}
+        quantity_total: {type: number, exclusiveMinimum: 0, maximum: 100000, nullable: true}
+        operator_name: {type: string, maxLength: 80, nullable: true}
+        note: {type: string, maxLength: 500, nullable: true}
+        product_lines: {type: array, maxItems: 5, items: {$ref: "#/components/schemas/ProductLine"}, description: "Lignes produit d'un traitement (5 au plus)"}
+        season_id: {type: string, format: uuid, nullable: true}
+        quantity_unit: {type: string, maxLength: 20, nullable: true}
+        status: {enum: [planned, done, pending_validation, validated, cancelled], nullable: true, description: "IGNORE : le serveur decide du statut (date future => planned ; owner/manager => validated ; worker => pending_validation)"}
+        label_photo_id: {type: string, format: uuid, nullable: true, description: "Identifiant OPAQUE emis par le serveur par POST /operations/label, lie a (farm_id, user_id). Jamais de cle de stockage fournie par le client. Inconnu, d'une autre ferme, d'un autre utilisateur ou deja consomme => 422 invalid_object_ref (reponse identique, pas d'oracle)."}
+    # Regle transverse : aucune cle ni URL d'objet de stockage n'est jamais lue dans un corps client (REST, /v1/sync/upload, export).
+    # Les cles serveur respectent farms/{farm_id}/(labels|exports)/{uuid} et sont verifiees (ferme + utilisateur) avant tout usage.
+    ProductLine:
+      type: object
+      additionalProperties: false
+      properties:
+        product_id: {type: string, format: uuid, nullable: true}
+        free_product_name: {type: string, maxLength: 80, nullable: true}
+        dose: {type: number, exclusiveMinimum: 0, maximum: 100000, nullable: true}
+        dose_unit: {type: string, nullable: true}
+    FreeProductRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 80}
+    ServerObjectKey:
+      type: string
+      readOnly: true
+      pattern: '^farms/[0-9a-f-]{36}/(labels|exports)/[0-9a-f-]{36}(/[A-Za-z0-9._-]+)?$'
+    Warning:
+      type: object
+      properties:
+        code: {enum: [not_authorized_for_crop, dose_above_max, max_applications_reached, dar_unknown, free_product_unchecked]}
+        parcel_id: {type: string, format: uuid}
+        data: {type: object}
+    ParseRequest:
+      type: object
+      additionalProperties: false
+      required: [text]
+      properties:
+        text: {type: string, minLength: 1, maxLength: 500}
+    ParseResult:
+      type: object
+      required: [understood, requires_confirmation, draft, ambiguous]
+      properties:
+        understood: {type: boolean}
+        requires_confirmation: {type: boolean, enum: [true]}
+        draft: {type: object}
+        ambiguous:
+          type: array
+          items:
+            type: object
+            properties:
+              field: {type: string}
+              candidates: {type: array, items: {type: string, format: uuid}}
+    RegistryExportRequest:
+      type: object
+      additionalProperties: false
+      required: [period_from, period_to, format, scope, lang]
+      properties:
+        period_from: {type: string, format: date}
+        period_to: {type: string, format: date}
+        format: {enum: [pdf, xlsx, both]}
+        scope: {enum: [farm, parcel]}
+        lang: {enum: [fr, ar, ary]}
+        parcel_id: {type: string, format: uuid, nullable: true}
+    ExportJob:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        scope: {enum: [farm, parcel]}
+        parcel_id: {type: string, format: uuid, nullable: true}
+        period_from: {type: string, format: date}
+        period_to: {type: string, format: date}
+        format: {enum: [pdf, xlsx, both]}
+        lang: {enum: [fr, ar, ary]}
+        state: {enum: [queued, running, done, failed]}
+        sha256: {type: string, nullable: true}
+        row_count: {type: integer, nullable: true}
+        expires_at: {type: string, format: date-time, nullable: true}
+        created_at: {type: string, format: date-time}
+        downloads:
+          type: object
+          description: "URL signees courtes (pdf, xlsx) ; vide hors etat done. Aucune cle d'objet n'est exposee."
+          additionalProperties: {type: string, format: uri}
+    Correction:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        field: {type: string}
+        before: {description: "valeur avant (nombre JSON pour les champs numeriques)"}
+        after: {description: "valeur apres"}
+        author_id: {type: string, format: uuid}
+        corrected_at: {type: string, format: date-time}
+        source: {enum: [manual, sync_conflict]}

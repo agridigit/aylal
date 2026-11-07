@@ -3,10 +3,12 @@
 
 from __future__ import annotations
 
+from datetime import date
 from enum import Enum
 from typing import Literal
+from uuid import UUID
 
-from pydantic import BaseModel, Field, confloat, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, confloat, constr
 
 
 class Bundle(BaseModel):
@@ -31,6 +33,73 @@ class FarmRegistration(BaseModel):
     name: constr(min_length=1, max_length=120)
     location: Location
     area_ha: confloat(ge=0.0) | None = None
+
+
+class Type(Enum):
+    phyto = 'phyto'
+    fertilization = 'fertilization'
+    irrigation = 'irrigation'
+    tillage = 'tillage'
+    sowing_planting = 'sowing_planting'
+    pruning = 'pruning'
+    weeding = 'weeding'
+    harvest = 'harvest'
+    other = 'other'
+
+
+class ParcelId(RootModel[UUID]):
+    root: UUID
+
+
+class DoseUnit(Enum):
+    L_ha = 'L/ha'
+    mL_ha = 'mL/ha'
+    kg_ha = 'kg/ha'
+    g_ha = 'g/ha'
+
+
+class ProductLine(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    product_id: UUID | None = None
+    free_product_name: constr(min_length=1, max_length=80) | None = None
+    dose: confloat(le=100000.0, gt=0.0) | None = None
+    dose_unit: DoseUnit | None = None
+
+
+class Status(Enum):
+    planned = 'planned'
+    done = 'done'
+    pending_validation = 'pending_validation'
+    validated = 'validated'
+    cancelled = 'cancelled'
+
+
+class OperationInput(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id: UUID
+    type: Type = Field(..., title='OperationType')
+    performed_on: date
+    parcel_ids: list[ParcelId] = Field(..., max_length=50, min_length=1)
+    product_id: UUID | None = None
+    free_product_name: constr(min_length=1, max_length=80) | None = None
+    product_lines: list[ProductLine] | None = Field(None, max_length=5)
+    dose: confloat(le=100000.0, gt=0.0) | None = None
+    dose_unit: DoseUnit | None = Field(None, title='DoseUnit')
+    quantity_total: confloat(le=100000.0, gt=0.0) | None = None
+    quantity_unit: constr(min_length=1, max_length=20) | None = None
+    operator_name: constr(max_length=80) | None = None
+    note: constr(max_length=500) | None = None
+    season_id: UUID | None = None
+    label_photo_id: UUID | None = None
+    status: Status | None = Field(
+        None,
+        description='Ignored: the server decides the status.',
+        title='IgnoredStatus',
+    )
 
 
 class Geometry(BaseModel):

@@ -1,0 +1,51 @@
+flowchart LR
+  subgraph Mobile["Mobile (logique livrée, écrans reportés)"]
+    VM["View models + localControls\ncatalogCache, reminders"]
+    SQL[("SQLite local\nPowerSync")]
+    DOM["packages/domain\nrègles + vecteurs"]
+  end
+  subgraph API["services/api (FastAPI)"]
+    OPR["routers/operations"]
+    REG["routers/registry"]
+    CAT["routers/phyto_products"]
+    SYN["sync/operations\n/v1/sync/upload"]
+    ACC["operations/access.py\nrôles, visibilité, parité"]
+    SVC["operations/service.py\nquotas sous verrou de ferme"]
+    RLE["app/domain\noperation_rules, phyto_controls,\nharvest_date"]
+    RG["operations/registry.py\nécriture au registre"]
+    PRT["ports label / parse\n503 si URL vide"]
+  end
+  subgraph Worker["services/workers (Arq)"]
+    EXP["build_registry_export\nPDF + XLSX"]
+    IMP["import_phyto_catalog\nmensuel"]
+    OVD["mark_overdue_operations"]
+    PUR["purge_expired_registry"]
+  end
+  DB[("PostgreSQL\nregistry_entries append-only")]
+  S3[("MinIO\nétiquettes, exports")]
+  RD[("Redis\nlimiteur, file Arq")]
+  PS["PowerSync service\nrègles sans jointure"]
+  VM --> SQL
+  VM --> DOM
+  SQL -->|ps_crud| SYN
+  PS -->|lecture| SQL
+  PS --- DB
+  OPR --> ACC
+  REG --> ACC
+  SYN --> ACC
+  ACC --> SVC
+  SVC --> RLE
+  SVC --> RG
+  RG --> DB
+  SVC --> DB
+  CAT --> DB
+  OPR --> PRT
+  OPR --> S3
+  REG -->|enqueue| RD
+  RD --> EXP
+  EXP --> DB
+  EXP --> S3
+  REG -->|URL signée 15 min| S3
+  IMP --> DB
+  OVD --> DB
+  PUR -->|fonction SECURITY DEFINER| DB

@@ -32,6 +32,18 @@ export const MATRIX: Record<string, readonly Role[]> = {
   "season.correct_stage": OWNER_MANAGER,
   "block.read": ALL,
   "crop.create_custom": OWNER_MANAGER,
+  // F6: everyone records and reads operations they see; validation, corrections and the registry are staff only.
+  // There is no operation.delete: operations are never physically deleted (vectors/f6_roles.json)
+  "operation.create": ALL,
+  "operation.read": ALL,
+  "operation.mark_done": ALL,
+  "operation.cancel": ALL,
+  "operation.reschedule": ALL,
+  "operation.validate": OWNER_MANAGER,
+  "operation.correct": OWNER_MANAGER,
+  "registry.read": OWNER_MANAGER,
+  "registry.export": OWNER_MANAGER,
+  "phyto_product.create_free": ALL,
 };
 
 export function can(role: string, action: string): boolean {

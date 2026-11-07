@@ -2,6 +2,30 @@
 
 Tenu automatiquement par Claude (sous-agent `git-keeper`). Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [SemVer](https://semver.org/lang/fr/).
 
+## [0.4.0] - 2026-11-07 — F6 Journal des opérations
+### Ajouts
+- Journal des opérations de l'exploitation
+- Traitements phytosanitaires avec contrôles (produit, dose, délai avant récolte)
+- Calcul de la date de récolte au plus tôt
+- Planification des opérations et rappels
+- Registre phytosanitaire append-only avec export PDF et Excel
+- Catalogue d'homologations (la recherche ne renvoie que la dernière version)
+- Corrections de sécurité : parité des gardes, clés d'objets émises par le serveur, anonymisation par colonne, conservation basée sur l'horodatage serveur, season_id fixé par le serveur, quotas sous verrou
+- Dérogation de budget APK à 52 Mo documentée via apk-budget.env
+### Corrections
+- Règles de synchronisation PowerSync valides
+- Durcissement du registre (aucune suppression de ligne, y compris dans l'aide e2e)
+- Tests rouges contradictoires corrigés
+### Documentation
+- Documentation ingénieur et agriculteur (fr, ar) du module 005-operations-journal
+- Taille de l'APK mesurée et dérogation documentée
+- Limites connues : écrans reportés (porte design T004 et 004-design-system), dictée et reconnaissance d'étiquette non câblées, durée de conservation de 5 ans à confirmer
+### Technique
+- Migration 0006, configuration, client_ip et limiteur de débit
+- Simplification de l'écriture des lignes d'opération
+- Lint vert sur les tests (idiome d'import des fixtures, ordre des imports)
+Documentation du module : [docs/modules/005-operations-journal/](docs/modules/005-operations-journal/)
+
 ## [0.3.0] - 2026-11-07 — F2 Parcelles et cultures
 ### Ajouts
 - Parcelles, cultures et campagnes : modèle, API, synchronisation et règles de domaine

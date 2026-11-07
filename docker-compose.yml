@@ -6,8 +6,9 @@ x-env: &env
   restart: unless-stopped
 
 x-pg-pass: &pg-pass ${POSTGRES_PASSWORD:-aylal_dev}
-x-minio-user: &minio-user ${MINIO_ROOT_USER:-aylal}
-x-minio-pass: &minio-pass ${MINIO_ROOT_PASSWORD:-aylal_dev_minio}
+# F6: the services reach MinIO with S3_ACCESS_KEY / S3_SECRET_KEY, so the root account follows them unless MINIO_ROOT_* is set
+x-minio-user: &minio-user ${MINIO_ROOT_USER:-${S3_ACCESS_KEY:-aylal}}
+x-minio-pass: &minio-pass ${MINIO_ROOT_PASSWORD:-${S3_SECRET_KEY:-aylal_dev_minio}}
 
 services:
   db:
@@ -44,7 +45,7 @@ services:
     environment:
       MINIO_ROOT_USER: *minio-user
       MINIO_ROOT_PASSWORD: *minio-pass
-      MC_HOST_local: http://${MINIO_ROOT_USER:-aylal}:${MINIO_ROOT_PASSWORD:-aylal_dev_minio}@localhost:9000
+      MC_HOST_local: http://${MINIO_ROOT_USER:-${S3_ACCESS_KEY:-aylal}}:${MINIO_ROOT_PASSWORD:-${S3_SECRET_KEY:-aylal_dev_minio}}@localhost:9000
     user: root
     command: ["server", "/data", "--console-address", ":9001"]
     volumes: [minio-data:/data]
@@ -122,6 +123,10 @@ services:
       AYLAL_SMS_GATEWAY_KEY: ${AYLAL_SMS_GATEWAY_KEY:-}
       AYLAL_ENABLE_TEST_OTP: ${AYLAL_ENABLE_TEST_OTP:-}
       AYLAL_TILES_BASE_URL: ${AYLAL_TILES_BASE_URL:-}
+      # F6: optional AI ports, empty = unavailable (manual entry fallback); retention of the phyto registry (years)
+      AYLAL_VISION_URL: ${AYLAL_VISION_URL:-}
+      AYLAL_NLU_URL: ${AYLAL_NLU_URL:-}
+      AYLAL_REGISTRY_RETENTION_YEARS: ${AYLAL_REGISTRY_RETENTION_YEARS:-5}
       # exact address of Caddy on the dedicated edge network; empty = forwarded headers ignored (fail closed)
       AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-172.29.77.2/32}
     networks:
@@ -143,10 +148,13 @@ services:
     <<: *env
     environment:
       AYLAL_REDIS_URL: redis://redis:6379/0
+      # F6: catalogue hosted in Morocco (file:// or s3://), empty = no import; never an external URL by default
+      AYLAL_PHYTO_CATALOG_SOURCE: ${AYLAL_PHYTO_CATALOG_SOURCE:-}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
       minio: { condition: service_healthy }
+      minio-init: { condition: service_healthy }
     healthcheck:
       test: ["CMD", "arq", "--check", "worker.WorkerSettings"]
       interval: 10s
@@ -180,12 +188,14 @@ services:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
       proxy: { condition: service_healthy }
+      minio-init: { condition: service_healthy }
     environment:
       AYLAL_DOMAIN_DIR: /packages/domain
       AYLAL_REPO_DIR: /repo
       AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
       AYLAL_REDIS_URL: redis://redis:6379/0
       AYLAL_ENV: test
+      AYLAL_ENQUEUE_JOBS: "0"   # in-process tests never feed the stack's worker
       AYLAL_JWT_SECRET: test-only-secret-0123456789-abcdefghij
       AYLAL_ENABLE_DEV_TOKEN: "1"
     volumes: ["./services/api:/app", "./packages/domain:/packages/domain:ro", ".:/repo:ro"]

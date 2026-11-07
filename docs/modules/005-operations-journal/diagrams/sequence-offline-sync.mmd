@@ -1,0 +1,29 @@
+sequenceDiagram
+  autonumber
+  actor W as Ouvrier
+  participant M as Mobile (SQLite)
+  participant S as POST /v1/sync/upload
+  participant A as access.authorize
+  participant V as service (verrou de ferme)
+  participant R as registry.write_applications
+  participant DB as PostgreSQL
+  W->>M: saisie d'un traitement (hors ligne)
+  M->>M: localControls : avertissements indicatifs
+  M->>M: ps_crud en file (ids UUID client)
+  Note over M,S: retour du réseau, lot <= 100 opérations
+  M->>S: lot d'écritures
+  S->>A: rôle, ferme, parcelles visibles
+  alt violation de rôle
+    A-->>S: 403, rien n'est écrit
+  else autorisé
+    S->>V: apply_op (idempotent via applied_ops)
+    V->>DB: pg_advisory_xact_lock(ferme)
+    V->>DB: comptage des quotas puis INSERT operations + operation_parcels
+    V->>V: season_id dérivé, avertissements recalculés serveur
+    V->>V: statut forcé pending_validation (ouvrier)
+    V->>R: opération faite
+    R->>DB: INSERT registry_entries (snapshot, retain_until)
+    S-->>M: résultat par opération (rejected, conflit)
+  end
+  DB-->>M: PowerSync : operation_parcels, warnings serveur
+  Note over M: les valeurs serveur remplacent les avertissements locaux

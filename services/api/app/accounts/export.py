@@ -6,6 +6,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Consent, Farm, FarmMember, TrialRecord, User
+from app.operations.access import visible_lines
 
 _FIELD_SCOPE = (
     "p.farm_id = ANY(:farms) AND (p.farm_id = ANY(:wide) OR (p.archived_at IS NULL AND EXISTS ("
@@ -46,6 +47,26 @@ async def _field_data(session: AsyncSession, user_id: uuid.UUID, roles: list[tup
     return {"fields": fields, "seasons": seasons, "blocks": blocks, "crops": crops}
 
 
+async def _f6_data(session: AsyncSession, user_id: uuid.UUID, roles: list[tuple[uuid.UUID, str]]) -> dict[str, Any]:
+    """F6: operations the user authored (a worker only on parcels still visible to them) and, for staff, the registry."""
+    params = {"uid": user_id, "farms": [f for f, _ in roles], "wide": [f for f, r in roles if r != "worker"]}
+
+    async def rows(sql: str) -> list[dict[str, Any]]:
+        return [r[0] for r in (await session.execute(text(f"SELECT to_jsonb(t) FROM ({sql}) t"), params)).all()]
+
+    operations = await rows(
+        "SELECT o.id, o.farm_id, o.type, o.performed_on, o.status, o.operator_name, o.note, o.created_at FROM operations o"
+        " WHERE o.farm_id = ANY(:farms) AND o.author_id = :uid AND (o.farm_id = ANY(:wide) OR EXISTS (SELECT 1 FROM operation_parcels l"
+        f" WHERE l.farm_id = o.farm_id AND l.operation_id = o.id AND {visible_lines('worker')})) ORDER BY o.performed_on, o.id"
+    )
+    registry = await rows(
+        "SELECT r.id, r.farm_id, r.operation_id, r.parcel_id, r.entry_kind, r.performed_on, r.parcel_name, r.crop_name, r.area_ha,"
+        " r.product_name, r.is_free_product, r.dose, r.dose_unit, r.allocated_quantity, r.operator_name, r.recorded_at, r.retain_until"
+        " FROM registry_entries r WHERE r.farm_id = ANY(:wide) ORDER BY r.performed_on, r.recorded_at, r.id"
+    )
+    return {"operations": operations, "registry": registry}
+
+
 async def build_export(session: AsyncSession, user_id: uuid.UUID) -> dict[str, Any]:
     user = (await session.execute(select(User).where(User.id == user_id))).scalar_one()
     consents = (
@@ -67,6 +88,7 @@ async def build_export(session: AsyncSession, user_id: uuid.UUID) -> dict[str, A
         )
     ).scalars().all()
     data = await _field_data(session, user_id, [(f, r) for f, r in farms])
+    data.update(await _f6_data(session, user_id, [(f, r) for f, r in farms]))
     return {
         **data,
         "profile": {"phone": user.phone_e164, "display_name": user.display_name, "language": user.language},

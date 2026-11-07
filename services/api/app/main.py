@@ -4,7 +4,23 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.routers import account, auth, blocks, crops, farms, fields, geo, health, me, seasons, sync
+from app.operations.body_limit import BodyLimitMiddleware
+from app.routers import (
+    account,
+    auth,
+    blocks,
+    crops,
+    farms,
+    fields,
+    geo,
+    health,
+    me,
+    operations,
+    phyto_products,
+    registry,
+    seasons,
+    sync,
+)
 
 
 @asynccontextmanager
@@ -14,6 +30,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="AYLAL API", lifespan=lifespan)
+app.add_middleware(BodyLimitMiddleware)
 app.include_router(health.router, prefix="/v1")
 app.include_router(sync.router, prefix="/v1")
 app.include_router(auth.router, prefix="/v1")
@@ -25,3 +42,7 @@ app.include_router(fields.router, prefix="/v1")
 app.include_router(blocks.router, prefix="/v1")
 app.include_router(seasons.router, prefix="/v1")
 app.include_router(crops.router, prefix="/v1")
+app.include_router(operations.router, prefix="/v1")
+app.include_router(phyto_products.router, prefix="/v1")
+app.include_router(phyto_products.farm_router, prefix="/v1")
+app.include_router(registry.router, prefix="/v1")

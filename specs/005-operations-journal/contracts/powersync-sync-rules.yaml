@@ -1,0 +1,22 @@
+# Fragment F6 à fusionner dans infra/powersync/sync-rules.yaml (aucune jointure, aucune sous-requête).
+# Dénormalisation : farm_id, author_id, parcel_archived_at sont portés par chaque ligne (posés par le serveur).
+bucket_definitions:
+  # ajouts au seau farm_data (owner/manager)
+  farm_data_f6_additions:
+    # label_photo_key (et file_keys) JAMAIS synchronisées : colonnes explicites
+    - SELECT id, farm_id, type, performed_on, status, author_id, operator_user_id, operator_name, note, season_id, quantity_total, quantity_unit, product_id, free_product_name, dose, dose_unit, validated_by, validated_at, done_at, created_at, updated_at, server_version, field_versions FROM operations WHERE farm_id = bucket.farm_id
+    - SELECT * FROM operation_parcels WHERE farm_id = bucket.farm_id
+    - SELECT * FROM operation_reminders WHERE farm_id = bucket.farm_id
+    - SELECT * FROM operation_corrections WHERE farm_id = bucket.farm_id
+    - SELECT id, farm_id, operation_id, parcel_id, entry_kind, supersedes_id, performed_on, parcel_name, crop_name, area_ha, product_name, active_ingredients, is_free_product, dose, dose_unit, dar_days, operator_name, warnings, recorded_at FROM registry_entries WHERE farm_id = bucket.farm_id
+  phyto_catalog:            # seau global, sans paramètre
+    data:
+      - SELECT * FROM catalog_versions
+      - SELECT * FROM phyto_products WHERE expired_at IS NULL
+      - SELECT * FROM phyto_product_uses
+  # ouvrier : ses propres lignes, sur ses parcelles attribuées et non archivées ; aucune ligne de registre
+  farm_worker_ops:
+    parameters: SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, operation_id, parcel_id, author_id, type, performed_on, status, product_id, free_product_name, allocated_quantity, allocated_dose, dose_unit, crop_slug, warnings, updated_at FROM operation_parcels WHERE parcel_id = bucket.parcel_id AND author_id = bucket.user_id AND parcel_archived_at IS NULL
+# Écritures : jamais via PowerSync ; ps_crud -> POST /v1/sync/upload (≤ 100 opérations par lot).

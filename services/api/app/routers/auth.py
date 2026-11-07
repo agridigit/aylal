@@ -1,6 +1,5 @@
 """Phone + one-time code authentication (contracts/auth-otp.md)."""
 import datetime as dt
-import ipaddress
 import uuid
 from typing import Any
 
@@ -10,6 +9,7 @@ from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import current_user, issue_token, sessions
+from app.auth.client_ip import client_ip
 from app.auth.otp import TEST_CODE, ConsoleSender, check_code, hash_code, new_code
 from app.auth.tokens import ACCESS_TTL
 from app.config import get_settings
@@ -50,41 +50,6 @@ def _phone(raw: str) -> str:
     if phone is None:
         raise HTTPException(status_code=422, detail={"code": "phone_invalid"})
     return phone
-
-
-def client_ip(request: Request) -> str | None:
-    """Rate-limit IP: forwarded headers count only from a trusted proxy; unknown -> None (no shared bucket)."""
-    host = request.client.host if request.client else None
-    if not host:
-        return None
-    peer = _ip(host)
-    trusted = [n for n in (_net(p) for p in get_settings().trusted_proxies) if n is not None]
-    if peer is None or not any(peer in n for n in trusted):
-        return host  # the socket peer itself: forwarded headers are not trusted
-    real = _ip(request.headers.get("x-real-ip"))
-    if real is not None:
-        return str(real)
-    for hop in reversed(request.headers.get("x-forwarded-for", "").split(",")):  # rightmost untrusted hop
-        addr = _ip(hop.strip())
-        if addr is None:
-            return None
-        if not any(addr in n for n in trusted):
-            return str(addr)
-    return host if request.headers.get("x-forwarded-for") else None  # every hop trusted: the socket peer
-
-
-def _ip(value: str | None) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
-    try:
-        return ipaddress.ip_address(value) if value else None
-    except ValueError:
-        return None
-
-
-def _net(value: str) -> ipaddress.IPv4Network | ipaddress.IPv6Network | None:
-    try:
-        return ipaddress.ip_network(value, strict=False)
-    except ValueError:
-        return None
 
 
 def _ms(moment: dt.datetime | None) -> int | None:
