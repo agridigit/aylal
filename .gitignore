@@ -13,3 +13,7 @@ __pycache__/
 *.apk
 *.aab
 .pnpm-store/
+
+# AYLAL local state
+.worktrees/
+.aylal/green-*

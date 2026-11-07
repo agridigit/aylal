@@ -22,7 +22,8 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 
 ## Docker (obligatoire)
 - Tout tourne dans Docker : API, workers, base, synchronisation, stockage, tests, rendu des diagrammes.
-- Commandes autorisées pour tester : `make test`, `make test-api`, `make test-mobile`, `make e2e`, ou `docker compose ...`.
+- Commandes autorisées pour tester : `make test`, `make test-api`, `make test-domain`, `make test-mobile`, `make test-unit`, `make test-integration`, `make e2e`, `make check`, `make check-cached`, ou `docker compose ...`.
+- Vitesse sans compromis : pendant une tâche, ne lancer que les tests concernés (`ARGS=<fichiers>`) ; `make check` complet par `reviewer` en fin de groupe ; `make check-cached` ne saute la vérification que si le même commit est déjà vert.
 - Ne jamais installer de dépendance sur la machine hôte ; ajouter au Dockerfile concerné.
 
 ## Architecture (voir CPS section 16)
