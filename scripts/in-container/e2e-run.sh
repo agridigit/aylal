@@ -5,8 +5,10 @@
 set -euo pipefail
 apk="$1"; flows="$2"
 if [ -n "${ADB_SERVER_HOST:-}" ]; then
+  # adb client -> remote server directly (never spawns a local server); Maestro -> localhost:5037 proxy.
+  export ADB_SERVER_SOCKET="tcp:${ADB_SERVER_HOST}:5037"
   socat TCP-LISTEN:5037,bind=127.0.0.1,fork,reuseaddr "TCP:${ADB_SERVER_HOST}:5037" &
-  for _ in $(seq 1 20); do adb devices >/dev/null 2>&1 && break; sleep 0.5; done
+  for _ in $(seq 1 20); do (exec 3<>/dev/tcp/127.0.0.1/5037) 2>/dev/null && break; sleep 0.25; done
 fi
 [ -f "$apk" ] || { echo "e2e: APK introuvable ($apk) — lancer make apk" >&2; exit 1; }
 adb devices | grep -qE '\sdevice$' || { echo "e2e: aucun appareil Android connecté" >&2; exit 1; }

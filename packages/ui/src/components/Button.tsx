@@ -19,7 +19,7 @@ export function Button({ variant = "primary", state = "default", label, onPress 
         borderRadius: tokens.radius.md, alignItems: "center", justifyContent: "center", backgroundColor: bg,
         borderWidth: variant === "secondary" ? 2 : state === "error" ? 2 : 0, borderColor: state === "error" ? theme.danger : theme.primary,
         opacity: disabled ? tokens.states.disabledOpacity : state === "active" ? tokens.states.activeOpacity : 1,
-        outlineStyle: state === "active" ? "solid" : "none", outlineWidth: 3, outlineColor: theme.focus,
+        outlineStyle: "solid", outlineWidth: state === "active" ? 3 : 0, outlineColor: theme.focus,
       }}
     >
       <Text style={{ color: fg, fontFamily: tokens.typography.fontFamily, fontSize: tokens.typography.scale.body, fontWeight: "600" }}>

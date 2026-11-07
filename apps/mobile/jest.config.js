@@ -4,7 +4,7 @@ module.exports = {
   roots: ["<rootDir>/src"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testMatch: ["**/__tests__/**/*.test.ts"],
-  transform: { "^.+\\.ts$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.json", diagnostics: false }] },
+  transform: { "^.+\\.ts$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.jest.json", diagnostics: false }] },
   moduleNameMapper: {
     "^@aylal/domain/(.*)$": "<rootDir>/../../packages/domain/src/$1",
     "^@aylal/ui/motion$": "<rootDir>/../../packages/ui/src/motion.ts",
