@@ -1,0 +1,87 @@
+erDiagram
+  catalog_versions ||--o{ phyto_products : versionne
+  phyto_products ||--o{ phyto_product_uses : "usages par culture"
+  operations ||--o{ operation_parcels : "une ligne par parcelle"
+  operations ||--o{ operation_reminders : rappels
+  operations ||--o{ registry_entries : "grand livre"
+  operations ||--o{ operation_corrections : historique
+  registry_entries ||--o| registry_entries : supersedes_id
+  operation_corrections }o--o| registry_entries : registry_entry_id
+  phyto_products ||--o{ operations : product_id
+  label_uploads |o..o| operations : "label_photo_id consommé"
+  operations {
+    uuid id PK
+    uuid farm_id
+    text type
+    date performed_on
+    text status
+    uuid author_id
+    uuid season_id "dérivé serveur"
+    text label_photo_key "serveur seul"
+    jsonb product_lines
+  }
+  operation_parcels {
+    uuid id PK
+    uuid operation_id FK
+    uuid parcel_id
+    numeric allocated_dose
+    jsonb warnings
+    timestamptz parcel_archived_at
+  }
+  operation_reminders {
+    uuid id PK
+    date fire_on
+    text state
+  }
+  registry_entries {
+    uuid id PK
+    text entry_kind "application ou reversal"
+    uuid supersedes_id FK
+    text parcel_name "snapshot"
+    jsonb active_ingredients
+    uuid catalog_version_id
+    timestamptz recorded_at
+    date retain_until
+  }
+  operation_corrections {
+    uuid id PK
+    text field
+    jsonb before
+    jsonb after
+    text source "manual ou sync_conflict"
+  }
+  label_uploads {
+    uuid id PK
+    uuid user_id
+    text object_key "serveur"
+    timestamptz consumed_at
+  }
+  export_jobs {
+    uuid id PK
+    uuid requested_by
+    text state
+    jsonb file_keys "serveur seul"
+    text sha256
+    timestamptz expires_at
+  }
+  phyto_products {
+    uuid id PK
+    text name
+    date homologation_expires_on
+  }
+  phyto_product_uses {
+    uuid id PK
+    text crop_slug
+    numeric max_dose
+    int dar_days
+    int max_applications
+  }
+  catalog_versions {
+    uuid id PK
+    date source_date
+    text checksum
+  }
+  registry_current {
+    uuid id "vue : application sans reversal"
+  }
+  registry_entries ||..o{ registry_current : filtre
