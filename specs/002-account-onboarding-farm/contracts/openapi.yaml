@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info: { title: AYLAL API — F1 (extension de F0), version: 0.2.0 }
 x-conventions:
-  scope: "Toute route /farms/{farm_id}/* : non-membre -> 404 (identique à ferme inexistante) ; membre sans droit -> 403."
+  scope: "Toute route /farms/{farm_id}/* : non-membre -> 404 (identique à ferme inexistante) ; membre sans droit -> 403. Même règle de rôle pour /v1/sync/upload : toute écriture sur une table d'administration de ferme (farms, farm_members, worker_parcels, invitations) exige le rôle requis, sinon l'opération est rejetée (403), indépendamment du chemin REST."
 paths:
   /v1/auth/otp/request: { post: { summary: Demander un code, responses: { "202": {description: accepté}, "422": {description: numéro invalide}, "429": {description: trop de demandes} } } }
   /v1/auth/otp/verify: { post: { summary: Vérifier le code, responses: { "200": {description: session}, "400": {description: code erroné}, "410": {description: expiré}, "423": {description: verrouillé 5 min} } } }
@@ -16,7 +16,7 @@ paths:
   /v1/farms/{farm_id}: { get: { summary: Détail, responses: { "200": {description: ok}, "404": {description: non membre ou inexistante} } }, patch: { summary: Modifier (propriétaire/gestionnaire), responses: { "200": {description: ok}, "403": {description: droit insuffisant}, "404": {description: non membre} } } }
   /v1/farms/{farm_id}/members: { get: { summary: Équipe, responses: { "200": {description: ok}, "404": {description: non membre} } } }
   /v1/farms/{farm_id}/members/{user_id}: { patch: { summary: Changer le rôle (propriétaire), responses: { "200": {description: ok}, "403": {description: refusé}, "404": {description: non membre} } }, delete: { summary: Retirer (propriétaire non retirable), responses: { "204": {description: ok}, "403": {description: refusé}, "404": {description: non membre} } } }
-  /v1/farms/{farm_id}/members/{user_id}/parcels: { put: { summary: Attribuer des parcelles à un ouvrier, responses: { "200": {description: ok}, "404": {description: non membre} } } }
+  /v1/farms/{farm_id}/members/{user_id}/parcels: { put: { summary: Attribuer des parcelles à un ouvrier (propriétaire ou gestionnaire uniquement), responses: { "200": {description: ok}, "403": {description: rôle ouvrier ou droit insuffisant}, "404": {description: non membre ou autre ferme} } } }
   /v1/farms/{farm_id}/invitations: { get: {summary: Lister, responses: {"200": {description: ok}, "404": {description: non membre}}}, post: { summary: Inviter (propriétaire), responses: { "201": {description: ok}, "409": {description: déjà membre}, "422": {description: numéro ou rôle invalide} } } }
   /v1/farms/{farm_id}/invitations/{invitation_id}: { delete: { summary: Annuler, responses: { "204": {description: ok}, "404": {description: inexistante dans cette ferme} } } }
   /v1/geo/regions: { get: { summary: Régions, responses: { "200": {description: ok} } } }

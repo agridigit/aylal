@@ -16,4 +16,5 @@ Migration Alembic `0002_account_farm` (réversible). Identifiants UUID généré
 
 États : `users.status` pending -> active -> deletion_requested -> (purgé). `invitations.status` pending -> accepted | cancelled | expired.
 Migration des rôles F0 : `editor` -> `manager`, `viewer` -> `worker`. Index : `farm_members(user_id)`, `invitations(phone_e164)`.
+Écriture : `farms`, `farm_members`, `worker_parcels`, `invitations` sont des tables d'administration de ferme ; toute écriture (REST ou `/v1/sync/upload`) exige owner/manager (attribution de parcelles) ou owner (rôles, retraits, suppression), l'ouvrier n'y écrit jamais.
 Aucun champ financier dans F1 ; la sync-rule ouvrier exclut toute table future de F8 par liste blanche.

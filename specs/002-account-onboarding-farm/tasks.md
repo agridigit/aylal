@@ -19,6 +19,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [ ] T005 [P] RED sécurité-configuration : refus de démarrer hors dev/test sans secret, secret faible ou OTP de test activé, dans `services/api/tests/unit/test_f1_secrets_config.py` et `services/api/tests/integration/test_test_otp_gating.py` (garde-fou F0 n°1 ; FR-027).
 - [ ] T006 [P] **RED accès inter-ferme (404)** dans `services/api/tests/integration/test_farm_isolation.py` : pour CHAQUE route `/v1/farms/{farm_id}/...` (détail, patch, members, members/{id}, members/{id}/parcels, invitations, invitations/{id}), un utilisateur non membre reçoit **404 identique** à une ferme inexistante (corps et en-têtes comparés, pas de 403) ; membre au rôle insuffisant reçoit 403 ; un objet enfant (invitation, membre) d'une autre ferme adressé via sa propre ferme reçoit 404. Doit échouer avant T012 (FR-021, garde-fou F0 n°2).
 - [ ] T007 [P] RED non-régression ACL F0 après migration des rôles `editor->manager`, `viewer->worker` : étendre `services/api/tests/integration/test_acl.py` et `test_acl_conflict_ack.py` sans modifier leurs assertions existantes (noter tout écart dans `specs/002-account-onboarding-farm/decisions.md`).
+- [ ] T008a [P] **RED autorisation d'écriture par rôle** : un ouvrier reçoit 403 sur `PUT /v1/farms/{farm_id}/members/{user_id}/parcels` (REST) ET lors d'un `/v1/sync/upload` contenant une écriture sur `worker_parcels`, `farm_members`, `farms` ou `invitations` (rien n'est écrit) ; gestionnaire et propriétaire acceptés pour l'attribution ; non-membre/autre ferme -> 404, dans `services/api/tests/integration/test_admin_write_authz.py` (FR-021, FR-022, garde-fou n°3). Doit échouer avant T012b.
 - [ ] T008 [P] RED rôle lu en base à chaque requête (jeton périmé après retrait ou changement de rôle) dans `services/api/tests/integration/test_role_from_db.py` (R6-A4, R6-A5, garde-fou n°3).
 - [ ] T009 [P] RED règles de domaine partagées : format de numéro marocain, politique OTP (3 échecs, 5 min), rôles et droits, validation ferme/consentement/profil dans `packages/domain/tests/{phone,otp-policy,roles,farm,consent,onboarding}.test.ts` ; vecteurs partagés TS/Python dans `services/api/tests/unit/test_f1_shared_vectors.py`.
 - [ ] T010 [P] RED migration réversible `0002_account_farm` (up/down, index unique partiel un seul `owner`, FK composites `worker_parcels`) dans `services/api/tests/integration/test_migration_0002.py`.
@@ -27,6 +28,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ### Implémentation
 
 - [ ] T012 Dépendance unique `farm_context(farm_id, user)` : rôle lu en base, 404 non-membre, 403 rôle insuffisant dans `services/api/app/auth/farm_context.py` et `services/api/app/auth/access.py` ; fait passer T006 pour les routes existantes.
+- [ ] T012b Contrôle de rôle d'écriture commun REST et synchro : appliquer `farm_context` et la matrice de rôles dans `services/api/app/routers/sync.py` (chaque opération vers une table d'administration de ferme) et sur la route des parcelles ; fait passer T008a ; exception : la création d'une ferme par son futur propriétaire (R4-A3) reste permise via synchro.
 - [ ] T013 Règles Zod dans `packages/domain/src/{phone,otp-policy,roles,farm,consent,onboarding}.ts` puis génération JSON Schema -> Pydantic (chaîne F0) ; miroir `services/api/app/domain/{roles.py,otp_policy.py}`.
 - [ ] T014 Migration `services/api/alembic/versions/0002_account_farm.py` et modèles dans `services/api/app/db/models.py` (tables du data-model, migration des rôles F0).
 - [ ] T015 [P] Référentiel géo : import régions/provinces/communes, module `services/api/app/geo/`, routeur `services/api/app/routers/geo.py`.
@@ -34,7 +36,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 - [ ] T017 Règles de synchro PowerSync étendues par rôle (liste blanche, ouvrier sans table financière) dans `infra/powersync/sync-rules.yaml` conformes à `specs/002-account-onboarding-farm/contracts/powersync-sync-rules.yaml`, avec test `services/api/tests/integration/test_sync_rules_roles.py` écrit avant (RED puis GREEN).
 - [ ] T018 [P] Contrat : synchroniser `specs/002-account-onboarding-farm/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f1_openapi_sync.py` écrit avant.
 
-**Point de contrôle** : T005 à T011 verts, `make test-api` et `make test-domain` verts.
+**Point de contrôle** : T005 à T011 (dont T008a) verts, `make test-api` et `make test-domain` verts.
 
 ## Phase 3 : Récit 1 — Inscription par téléphone et code (P1)
 
@@ -121,7 +123,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 ## Phase 9 : Récit 6 — Invitation et rôles (P2)
 
 ### Tests RED
-- [ ] T063 [P] Unitaires : matrice des droits propriétaire/gestionnaire/ouvrier, gestionnaire sans suppression de ferme ni changement de propriétaire, propriétaire non retirable, dans `packages/domain/tests/roles.test.ts` et `services/api/tests/unit/test_roles.py` (R6-A2).
+- [ ] T063 [P] Unitaires : matrice des droits propriétaire/gestionnaire/ouvrier, gestionnaire sans suppression de ferme ni changement de propriétaire, propriétaire non retirable, dans `packages/domain/tests/roles.test.ts` et `services/api/tests/unit/test_roles.py` (R6-A2, FR-022).
 - [ ] T064 [P] Intégration : invitation (201, 409, 422, expiration 30 j), honorée à l'inscription du numéro, annulation, changement de rôle, retrait immédiat, attribution de parcelles, dans `services/api/tests/integration/test_invitations_members.py` (R6-A2 à A5).
 - [ ] T065 [P] Intégration : ouvrier ne voit que ses parcelles et aucun champ financier (API et règles PowerSync) dans `services/api/tests/integration/test_worker_visibility.py` (R6-A1).
 - [ ] T066 [P] Contrat invitations et membres dans `services/api/tests/contract/test_team_contract.py`.
@@ -141,7 +143,7 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 
 ## Dépendances
 
-Phase 1 -> Phase 2 (T006 RED avant T012) -> Récit 1 -> Récits 2, 3 -> Récit 4 -> Récit 8 -> P2 (Récits 5, 6) -> Phase 10. T004 précède tout écran. Dans chaque récit : RED -> GREEN. Les tâches [P] d'un même bloc de tests s'exécutent en parallèle.
+Phase 1 -> Phase 2 (T006 et T008a RED avant T012 et T012b) -> Récit 1 -> Récits 2, 3 -> Récit 4 -> Récit 8 -> P2 (Récits 5, 6) -> Phase 10. T004 précède tout écran. Dans chaque récit : RED -> GREEN. Les tâches [P] d'un même bloc de tests s'exécutent en parallèle.
 
 ## Reportés (P3, exclus)
 

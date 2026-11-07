@@ -234,7 +234,7 @@ Pour chaque écran : **Chargement** = squelette, jamais d'écran blanc ; **Vide*
 - **FR-019** : Le rôle gestionnaire DOIT permettre de tout voir et tout modifier dans la ferme, sauf supprimer la ferme et changer son propriétaire.
 - **FR-020** : Le rôle ouvrier DOIT permettre uniquement d'enregistrer des opérations sur les parcelles qui lui sont attribuées ; il ne voit que ces parcelles et aucun montant financier.
 - **FR-021** : Le contrôle d'accès par ferme et par rôle DOIT être appliqué côté serveur, indépendamment de l'interface.
-- **FR-022** : Le propriétaire DOIT pouvoir modifier le rôle d'un membre, lui attribuer ou retirer des parcelles et retirer son accès ; les changements s'appliquent à la prochaine synchronisation.
+- **FR-022** : Le propriétaire DOIT pouvoir modifier le rôle d'un membre, lui attribuer ou retirer des parcelles (attribution également permise au gestionnaire ; jamais à l'ouvrier, y compris via la synchro) et retirer son accès ; les changements s'appliquent à la prochaine synchronisation.
 - **FR-023** : Une invitation destinée à un numéro sans compte DOIT être honorée à l'inscription de cette personne.
 
 **Données, vie privée et appareils**
