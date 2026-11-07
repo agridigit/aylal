@@ -3,7 +3,8 @@
 bucket_definitions:
   # ajouts au seau farm_data (owner/manager)
   farm_data_f6_additions:
-    - SELECT * FROM operations WHERE farm_id = bucket.farm_id
+    # label_photo_key (et file_keys) JAMAIS synchronisées : colonnes explicites
+    - SELECT id, farm_id, type, performed_on, status, author_id, operator_user_id, operator_name, note, season_id, quantity_total, quantity_unit, product_id, free_product_name, dose, dose_unit, validated_by, validated_at, done_at, created_at, updated_at, server_version, field_versions FROM operations WHERE farm_id = bucket.farm_id
     - SELECT * FROM operation_parcels WHERE farm_id = bucket.farm_id
     - SELECT * FROM operation_reminders WHERE farm_id = bucket.farm_id
     - SELECT * FROM operation_corrections WHERE farm_id = bucket.farm_id

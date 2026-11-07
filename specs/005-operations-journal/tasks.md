@@ -44,17 +44,21 @@
 
 - [ ] T022 [P] RED contrat `services/api/tests/contract/test_f6_openapi_sync.py` : `specs/005-operations-journal/contracts/openapi.yaml` == schéma généré par l'API (routes `operations`, `phyto_products`, `registry`, export), schémas Pydantic générés depuis Zod à jour (`test_generated_schema_fresh.py` étendu).
 
+- [ ] T022a [P] **G1-RED références d'objets / IDOR (intégration + contrat)** `services/api/tests/integration/test_f6_object_refs.py` + `services/api/tests/contract/test_f6_object_key_schema.py` : sur **REST (`POST/PATCH operations`), `/v1/sync/upload` ET export (`POST registry/exports`, `GET exports/{job_id}`)** : (a) `label_photo_id` émis pour la ferme B présenté dans la ferme A -> 422 `invalid_object_ref` ; id d'un autre utilisateur -> 422 ; id inconnu ou déjà consommé -> 422 ; (b) clé brute forgée (`label_photo_key`, `file_keys`, `../`, `farms/{autre_ferme}/labels/{uuid}`, URL `http(s)://`) dans un corps -> 422 (champ refusé, jamais écrite, aucune lecture d'objet) ; via sync : résultat d'op en erreur, rien écrit ; (c) job d'export de la ferme B demandé via la ferme A -> 404, URL signée jamais renvoyée ; accès à l'objet toujours scopé ferme (404 inter-ferme) ; (d) `label_photo_key` et `file_keys` absents des réponses, du schéma OpenAPI d'entrée (`pattern` `ServerObjectKey` en `readOnly`) et des règles PowerSync ; (e) `CHECK` de motif en base. DOIT échouer avant T024/T036/T037/T049/T073.
+
+- FR-021 est couvert par T022a.
+
 ### Implémentation GREEN (ordre : domaine, base, garde-fous)
 
 - [ ] T023 **GREEN domaine** : règles Zod dans `packages/domain/src/{operation,operation-limits,allocation,units,registry}.ts` + `packages/domain/src/roles.ts` (étendu), vecteurs partagés, génération JSON Schema -> Pydantic, miroirs `services/api/app/domain/{operation_rules.py,allocation.py,units.py,operation_limits.py}` et rôles dans `services/api/app/domain/roles.py` ; fait passer T005, T006, T007.
-- [ ] T024 **GREEN migration** `services/api/alembic/versions/0006_operations_journal.py` + 7 modèles dans `services/api/app/db/models.py` (colonnes et contraintes **telles que dans data-model.md**, dont `note <= 500`, `operator_name <= 80`, `free_product_name <= 80`, `entry_kind IN (application, reversal)`) ; triggers append-only, GRANT sans UPDATE/DELETE, fonctions `SECURITY DEFINER` `anonymize_registry_operator` et purge après `retain_until`, trigger de recopie `parcel_archived_at` ; fixtures de test seulement ; fait passer T021.
+- [ ] T024 **GREEN migration** `services/api/alembic/versions/0006_operations_journal.py` + 10 modèles (dont `label_uploads`) dans `services/api/app/db/models.py` (colonnes et contraintes **telles que dans data-model.md**, dont `note <= 500`, `operator_name <= 80`, `free_product_name <= 80`, `entry_kind IN (application, reversal)`) ; triggers append-only, GRANT sans UPDATE/DELETE, fonctions `SECURITY DEFINER` `anonymize_registry_operator` et purge après `retain_until`, trigger de recopie `parcel_archived_at` ; fixtures de test seulement ; fait passer T021 et la part base de T022a (table `label_uploads`, `CHECK` de motif).
 - [ ] T025 **G1-GREEN accès scopé et parité** : `services/api/app/operations/access.py` (prédicats `visible_lines(role, user_id)` et `authorize(ops)`), appelé par `services/api/app/routers/operations.py`, `services/api/app/sync/operations.py`, `services/api/app/accounts/export.py`, `services/api/app/accounts/purge.py`, l'export de registre et le calcul DAR ; toutes les routes `/v1/farms/{farm_id}/…` via `farm_context`/`require(action)` ; fait passer T010, T011, T012, T013, T014.
 - [ ] T026 **G2-GREEN règles PowerSync** : règles F6 dans `infra/powersync/sync-rules.yaml` (colonnes dénormalisées `farm_id`, `parcel_id`, `author_id`, `parcel_archived_at` + en-tête d'opération dans `operation_parcels`), cas dans `scripts/validate-sync-rules.sh`, trigger serveur de recopie ; fait passer T015 et la partie seau de T014 (`scripts/validate-sync-rules.sh` vert, inclus dans `make check`).
 - [ ] T027 **G3-GREEN plafonds et quotas** : application des plafonds avant tout parsing lourd/I/O/rendu dans `services/api/app/routers/operations.py` et `services/api/app/sync/operations.py` ; helper de verrou et de quota dans `services/api/app/operations/service.py` (verrou puis comptage puis écriture, même transaction, y compris chemin synchro) ; fait passer T016, T017.
 - [ ] T028 **G4-GREEN registre réglementaire** : `services/api/app/operations/registry.py` (écritures `application`/`reversal` compensatoires, snapshot, `retain_until`), `services/workers/tasks/purge_expired_registry.py`, extension de `services/api/app/accounts/{export.py,purge.py}` (anonymisation, export préalable), config `AYLAL_REGISTRY_RETENTION_YEARS`, `AYLAL_VISION_URL`, `AYLAL_NLU_URL` dans `services/api/app/config.py` et `docker-compose.yml` (`${VAR:-}` vides) ; fait passer T008, T018, T019.
 - [ ] T029 **G5-GREEN IP de confiance et limiteur** : extraire `client_ip()` de `services/api/app/routers/auth.py` vers `services/api/app/auth/client_ip.py` (comportement inchangé) ; limiteur Redis partagé `services/api/app/auth/rate_limit.py` ; fait passer T009, T020 ; tests F1 verts.
 - [ ] T030 **GREEN contrat** : `specs/005-operations-journal/contracts/openapi.yaml` synchronisé, squelettes de routeurs `services/api/app/routers/{operations,phyto_products,registry}.py` enregistrés ; fait passer T022.
-- [ ] T031 REFACTOR fondations : dédupliquer sans changer le comportement, tous les tests T005-T022 verts (`refactor(005-operations-journal): foundations`).
+- [ ] T031 REFACTOR fondations : dédupliquer sans changer le comportement, tous les tests T005-T022a verts (`refactor(005-operations-journal): foundations`).
 
 ## Phase 3 : Récit 1 — Enregistrer une opération par son icône (P1) [US1]
 
@@ -65,12 +69,12 @@
 - [ ] T032 [P] [US1] RED unitaire R1-A1, R1-A3 : `packages/domain/tests/allocation.test.ts` (étendu : prorata, affichage de la répartition) et `apps/mobile/src/operations/__tests__/operationFormViewModel.test.ts` (seuls type, parcelle, date obligatoires ; répartition affichée ; 9 types).
 - [ ] T033 [P] [US1] RED intégration R1-A1, R1-A2, R1-A3, R1-A5 : `services/api/tests/integration/test_f6_operations_create.py` (création minimale 3 champs, 9 types, répartition au prorata, journal chronologique paginé, `applied_ops` idempotent) et `services/api/tests/integration/test_f6_offline_sync.py` (30 jours hors ligne, aucune perte, conflit champ par champ : deux versions dans `operation_corrections`, CL).
 - [ ] T034 [P] [US1] RED contrat R1 : `services/api/tests/contract/test_f6_operations_contract.py` (`POST/GET /v1/farms/{farm_id}/operations`, schémas et codes de `contracts/openapi.yaml`).
-- [ ] T035 [US1] RED bout en bout (API) R1-A2 : `services/api/tests/e2e/test_f6_offline_operations_e2e.py` (pile Docker complète : saisie locale -> `/v1/sync/upload` -> `operation_parcels` côté lecture, sans perte).
+- [ ] T035 [US1] RED bout en bout (API) R1-A2 : `services/api/tests/e2e/test_f6_offline_operations_e2e.py` (pile Docker complète : saisie locale -> `/v1/sync/upload` -> `operation_parcels` côté lecture, sans perte ; SC-004 : file de 30 jours d'opérations hors ligne (FR-016) rejouée sans perte ni doublon, idempotence par id client ; FR-015 : les opérations `done` sont lisibles par un point de lecture stable pour F8/F4, les `planned`/`cancelled` exclues).
 
 ### Implémentation GREEN (non-écran)
 
 - [ ] T036 [US1] GREEN création et lecture : `services/api/app/operations/service.py` (création, répartition, statut initial, éligibilité de rôle), `services/api/app/routers/operations.py` ; fait passer T033, T034.
-- [ ] T037 [US1] GREEN synchro écriture/lecture : `services/api/app/sync/operations.py` (`authorize` + `apply` via `access.py`, quota sous verrou, conflits champ par champ) ; fait passer T035.
+- [ ] T037 [US1] GREEN synchro écriture/lecture : `services/api/app/sync/operations.py` (`authorize` + `apply` via `access.py`, quota sous verrou, conflits champ par champ ; résolution de `label_photo_id` sur (id, farm_id, user_id), aucune clé client lue) ; fait passer T035 et T022a (voie sync).
 - [ ] T038 [P] [US1] GREEN view models mobiles : `apps/mobile/src/operations/viewModels/operationForm.ts`, `journal.ts` (SQLite local, indicateur « à envoyer ») ; fait passer T032.
 - [ ] T039 [US1] REFACTOR récit 1.
 
@@ -95,7 +99,7 @@
 
 - [ ] T047 [US2] GREEN contrôles : `packages/domain/src/phyto-controls.ts`, `services/api/app/domain/phyto_controls.py`, intégration dans `services/api/app/operations/service.py` et `registry.py` ; fait passer T042, T043 (partie avertissements), T046.
 - [ ] T048 [P] [US2] GREEN catalogue : `services/api/app/routers/phyto_products.py`, `services/workers/tasks/import_phyto_catalog.py` (import mensuel, `catalog_versions`, budget <= 3 Mo compressé) ; fait passer T043 (catalogue), T044.
-- [ ] T049 [P] [US2] GREEN étiquette : `services/api/app/operations/label.py` (port `LabelRecognizer`, repli) ; fait passer T045.
+- [ ] T049 [P] [US2] GREEN étiquette : `services/api/app/operations/label.py` (port `LabelRecognizer`, repli ; clé générée serveur `farms/{farm_id}/labels/{uuid}`, émission de `label_photo_id`, vérification ferme + utilisateur, purge à 24 h) ; fait passer T045 et T022a (voie REST).
 - [ ] T050 [P] [US2] GREEN local : `apps/mobile/src/operations/localControls.ts`, `catalogCache.ts` (< 50 ms, date du catalogue) avec tests Jest `apps/mobile/src/operations/__tests__/localControls.test.ts` écrits avant (RED).
 - [ ] T051 [US2] REFACTOR récit 2.
 
@@ -142,7 +146,7 @@
 - [ ] T070 [P] [US6] RED unitaire R6-A1, R6-A4 : `services/api/tests/unit/test_f6_registry_columns.py` (mêmes colonnes PDF/XLSX : date, parcelle, culture, produit, matière active, dose, surface, opérateur, avertissements, « non contrôlé », écritures corrigées ; empreinte SHA-256 en pied).
 - [ ] T071 [P] [US6] RED intégration R6-A1 à R6-A5, SC-005 : `services/api/tests/integration/test_f6_registry_export.py` (période/parcelle, <= 10 000 lignes, <= 5 ans, 1 export actif/ferme, 403 ouvrier, 404 inter-ferme, URL signée courte MinIO) et contrat `services/api/tests/contract/test_f6_registry_contract.py`.
 - [ ] T072 [US6] RED e2e (API) : `services/api/tests/e2e/test_f6_registry_export_e2e.py` (worker, PDF et XLSX produits, 10 000 lignes < 60 s).
-- [ ] T073 [US6] GREEN : `services/api/app/operations/export_job.py`, `services/workers/tasks/build_registry_export.py`, `services/api/app/routers/registry.py`, `apps/mobile/src/operations/share.ts` ; fait passer T070 à T072.
+- [ ] T073 [US6] GREEN : `services/api/app/operations/export_job.py`, `services/workers/tasks/build_registry_export.py`, `services/api/app/routers/registry.py`, `apps/mobile/src/operations/share.ts` ; clés d'export générées serveur, URL signée après contrôle ferme ; fait passer T070 à T072 et T022a (voie export).
 - [ ] T074 [US6] [écran] RED puis GREEN F6-E11 `apps/mobile/src/screens/RegistryExport/` (+ `__tests__`, Maestro `apps/mobile/maestro/registry_export.yaml`), partage WhatsApp ; dépend de T004 + fusion 004.
 
 ## Phase 9 : Récit 7 — Validation par le gestionnaire (P2) [US7]
@@ -162,7 +166,7 @@
 
 ## Dépendances et exécution
 
-- Phase 1 -> Phase 2 (RED T005-T022 [P] possibles ensemble, GREEN T023 -> T024 -> T025..T030) -> récits P1 (R1 d'abord ; R2 -> R3 ; R4 et R5 après R1) -> P2 (R6, R7).
+- Phase 1 -> Phase 2 (RED T005-T022a [P] possibles ensemble, GREEN T023 -> T024 -> T025..T030) -> récits P1 (R1 d'abord ; R2 -> R3 ; R4 et R5 après R1) -> P2 (R6, R7).
 - T004 (porte design + fusion 004) bloque UNIQUEMENT les tâches `[écran]` : T040, T041, T052, T053, T058, T064, T069, T074, T078. Tout le reste progresse sans elle.
 - MVP : Phases 1-2 + Récit 1 non-écran, puis Récit 2.
 

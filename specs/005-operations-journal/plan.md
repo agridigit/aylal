@@ -16,12 +16,12 @@ F6 ajoute le **journal des opérations** (9 types, multi-parcelles, statuts plan
 
 **Langages** : TypeScript 5.x strict, Python 3.13.
 **Dépendances** : celles de F0-F2. Ajouts API/worker : `reportlab` (PDF, polices IBM Plex Sans Arabic embarquées, texte arabe via `arabic-reshaper` + `python-bidi`), `openpyxl` (XLSX). Ajouts mobiles : `expo-notifications` (locales uniquement), `expo-camera` (déjà prévu F5, sinon `expo-image-picker`), `expo-sharing` (WhatsApp). Aucun SaaS étranger, aucune clé FCM.
-**Stockage** : PostgreSQL 16 (7 tables nouvelles, 1 migration `0006_operations_journal`), SQLite local PowerSync, MinIO (photos d'étiquette, exports), Redis/Arq (export, bascule « en retard »).
+**Stockage** : PostgreSQL 16 (10 tables nouvelles (dont `label_uploads`), 1 migration `0006_operations_journal`), SQLite local PowerSync, MinIO (photos d'étiquette, exports), Redis/Arq (export, bascule « en retard »).
 **Tests** : pytest (unit, integration, contrat, e2e), Vitest (domain + vecteurs), Jest + RNTL (écrans, view models), Maestro (parcours).
 **Plateforme** : Android 9+, 2 Go RAM ; API Linux conteneurisée.
 **Performance** : saisie < 15 s (SC-001) ; journal de 5 000 lignes affiché < 2 s depuis SQLite ; contrôles phyto < 50 ms locaux ; catalogue embarqué ≤ 3 Mo compressé (budget app < 40 Mo, sync initiale < 5 Mo) ; export de 10 000 lignes < 60 s.
 **Contraintes** : hors ligne complet 30 jours ; hébergement Maroc ; gratuit ; 4 états + RTL par écran.
-**Échelle** : 11 écrans (F6-E1 à F6-E11), ~20 routes, 7 tables, 1 migration.
+**Échelle** : 11 écrans (F6-E1 à F6-E11), ~20 routes, 10 tables, 1 migration.
 
 ## Vérification de la constitution (avant recherche)
 
@@ -95,6 +95,7 @@ Contrôles **avant** parsing lourd, I/O ou rendu (taille de corps lue d'abord, 4
 - **Snapshot** : l'écriture fige nom de parcelle, culture, surface, produit, matière active, DAR, dose max, unité, opérateur (nom), avertissements et **version du catalogue** : un registre exporté plus tard reste identique, même si la parcelle est purgée ou le catalogue mis à jour. Pas de clé étrangère bloquante vers `parcels` (la purge à 90 jours F2 ne détruit pas le registre).
 - **Conservation légale** : le CPS est silencieux sur la durée. **Décision par défaut prudente : 5 ans à compter de la date de l'opération** (`AYLAL_REGISTRY_RETENTION_YEARS=5`, ≥ aux 2-3 ans exigés par les référentiels d'export type GlobalG.A.P.), **point ouvert à confirmer** (juriste / CNDP / ONSSA) dans `decisions.md`. Pendant cette durée, la suppression de compte (loi 09-08, 30 j) **anonymise les données personnelles** (opérateur nommé -> « opérateur supprimé », téléphone absent du registre) mais conserve les lignes du registre rattachées à la ferme ; si l'unique propriétaire demande la suppression, le registre est **exporté au demandeur d'abord** puis conservé pseudonymisé jusqu'à l'échéance, puis purgé par tâche worker (`purge_expired_registry`). `accounts/purge.py` est étendu et testé (RED : purge avant échéance ne supprime pas le registre ; après échéance le supprime).
 - **Export** : PDF et XLSX avec les mêmes lignes/colonnes (date, parcelle, culture, produit, matière active, dose, surface, opérateur, avertissements, statut produit libre « non contrôlé », écritures corrigées indiquées) ; empreinte SHA-256 du contenu imprimée en pied de page. Inclus dans l'export de compte JSON.
+- **Références d'objets (anti-IDOR)** : le client n'envoie JAMAIS une clé ou URL de stockage. `POST /operations/label` stocke la photo sous `farms/{farm_id}/labels/{uuid}` (clé générée serveur) et renvoie un `label_photo_id` opaque lié à `(farm_id, user_id)` (table `label_uploads`, usage unique, 24 h). `OperationInput.label_photo_id` est résolu côté serveur sur `(id, farm_id, user_id)` ; inconnu, autre ferme, autre utilisateur, consommé ou clé forgée (`label_photo_key`/`file_keys` dans un corps -> champ refusé, `extra=forbid`) => 422 `invalid_object_ref` identique (pas d'oracle). Même règle sur REST, `/v1/sync/upload` et export (clés d'export générées par le job, jamais lues du client ; téléchargement = URL signée 15 min après contrôle ferme, job d'une autre ferme => 404). Les règles PowerSync n'exposent ni `label_photo_key` ni `file_keys`. Tests : T022a.
 - **Maroc, pas de secret par défaut** : MinIO/DB au Maroc ; identifiants via `${VAR:-}` vides dans `docker-compose.yml`, démarrage refusé hors dev/test si absents ; aucune URL de fournisseur de reconnaissance/STT en dur (`AYLAL_VISION_URL`, `AYLAL_NLU_URL` vides = fonctions indisponibles, repli par nom/icônes) ; test d'allowlist : le code F6 n'appelle aucun domaine étranger ; test de configuration sans valeur secrète par défaut.
 
 ### G5 — Limites de débit et IP
@@ -128,7 +129,7 @@ services/api/app/operations/{access.py,service.py,registry.py,export_job.py,pars
 services/api/app/routers/{operations.py,phyto_products.py,registry.py}
 services/api/app/sync/operations.py                      # authorize + apply (même access.py)
 services/api/app/auth/client_ip.py                       # extrait de routers/auth.py (inchangé fonctionnellement)
-services/api/app/db/models.py (+ 7 modèles)
+services/api/app/db/models.py (+ 10 modèles)
 services/api/alembic/versions/0006_operations_journal.py # tables, triggers append-only, GRANT, seed de fixtures de test seulement
 services/api/app/accounts/{export.py,purge.py} (étendus)
 services/workers/tasks/{build_registry_export.py,mark_overdue_operations.py,purge_expired_registry.py,import_phyto_catalog.py}

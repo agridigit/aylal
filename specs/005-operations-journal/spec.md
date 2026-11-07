@@ -185,6 +185,7 @@ Pour chaque écran, les quatre états sont conçus : chargement (squelettes, jam
 - **FR-017** : Aucune recommandation de produit non homologué au Maroc pour l'usage ne DOIT être faite ; un produit libre est signalé comme non contrôlé.
 - **FR-018** : L'accès aux opérations DOIT respecter la ferme et le rôle de l'utilisateur, côté serveur ; les données ne sont partagées qu'avec accord explicite et révocable.
 - **FR-019** : Aucun texte d'interface en dur ; les trois langues (darija, arabe, français) et le RTL complet sont requis, avec lecture vocale des écrans.
+- **FR-021** : Le système NE DOIT JAMAIS accepter du client une clé ou URL d'objet de stockage (photo d'étiquette, export, pièce jointe) ; les références sont des identifiants opaques émis par le serveur, liés à la ferme et à l'utilisateur, vérifiés côté serveur (sinon 422), et l'accès à l'objet reste scopé à la ferme (404 inter-ferme), sur REST, synchronisation et export.
 - **FR-020** : Chaque écran DOIT avoir ses quatre états conçus, des boutons d'au moins 48 dp et un contraste lisible en plein soleil.
 
 ### Entités principales

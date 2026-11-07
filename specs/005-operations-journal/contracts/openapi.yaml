@@ -24,15 +24,15 @@ paths:
   /v1/farms/{farm_id}/operations/parse:
     post: {summary: Analyse d'une phrase dictee (<= 500 car.), pre-remplissage sans enregistrement ; 429 par utilisateur, responses: {"200": {description: draft + champs ambigus}}}
   /v1/farms/{farm_id}/operations/label:
-    post: {summary: Reconnaissance d'etiquette (photo <= 3 Mo) ; 503 code label_unavailable => repli par nom, responses: {"200": {description: produits candidats}}}
+    post: {summary: "Reconnaissance d'etiquette (photo <= 3 Mo, multipart). Le serveur stocke la photo sous une cle qu'il genere (farms/{farm_id}/labels/{uuid}), jamais choisie par le client, et renvoie label_photo_id (opaque, lie a farm_id + user_id, usage unique, expire apres 24 h si non rattache). 503 code label_unavailable => repli par nom (la photo est quand meme stockee et un label_photo_id est renvoye)", responses: {"200": {description: "{label_photo_id: uuid, candidates: [...]}"}, "413": {description: photo > 3 Mo}, "422": {description: signature JPEG/WebP invalide}, "503": {description: label_unavailable}}}
   /v1/farms/{farm_id}/fields/{field_id}/earliest-harvest:
     get: {summary: Date de recolte au plus tot ; worker : parcelle attribuee non archivee sinon 404, responses: {"200": {description: "{date|null, unknown_dar: bool, limiting_product}"}}}
   /v1/farms/{farm_id}/registry:
     get: {summary: Vue courante du registre (owner/manager ; worker 403), parameters: [{name: parcel_id, in: query, schema: {type: string, format: uuid}}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}, {name: limit, in: query, schema: {type: integer, maximum: 200}}], responses: {"200": {description: page}}}
   /v1/farms/{farm_id}/registry/exports:
-    post: {summary: Demander un export PDF/XLSX (<= 10 000 lignes, 1 actif par ferme, 10/h), responses: {"202": {description: job}, "409": {description: export deja actif}, "422": {description: periode > 5 ans ou > 10000 lignes}}}
+    post: {summary: "Demander un export PDF/XLSX (<= 10 000 lignes, 1 actif par ferme, 10/h). Corps strict (additionalProperties false) : aucune cle/URL d'objet acceptee, cle de fichier generee par le serveur (farms/{farm_id}/exports/{job_id}/...)", responses: {"202": {description: job}, "409": {description: export deja actif}, "422": {description: periode > 5 ans ou > 10000 lignes}}}
   /v1/farms/{farm_id}/registry/exports/{job_id}:
-    get: {summary: Etat et URL signee 15 min, responses: {"200": {description: ok}}}
+    get: {summary: "Etat et URL signee 15 min generee par le serveur pour la cle du job (file_keys jamais exposees ni acceptees du client ; job d'une autre ferme => 404)", responses: {"200": {description: ok}, "404": {description: job inconnu ou d'une autre ferme}}}
   /v1/phyto-products:
     get: {summary: Recherche par nom ou matiere active (utilisateur authentifie), parameters: [{name: q, in: query, schema: {type: string, maxLength: 80}}, {name: crop, in: query, schema: {type: string}}, {name: limit, in: query, schema: {type: integer, maximum: 50}}], responses: {"200": {description: produits + catalog_version.source_date}}}
   /v1/sync/upload:
@@ -54,7 +54,13 @@ components:
         quantity_total: {type: number, exclusiveMinimum: 0, maximum: 100000, nullable: true}
         operator_name: {type: string, maxLength: 80, nullable: true}
         note: {type: string, maxLength: 500, nullable: true}
-        label_photo_key: {type: string, nullable: true}
+        label_photo_id: {type: string, format: uuid, nullable: true, description: "Identifiant OPAQUE emis par le serveur par POST /operations/label, lie a (farm_id, user_id). Jamais de cle de stockage fournie par le client. Inconnu, d'une autre ferme, d'un autre utilisateur ou deja consomme => 422 invalid_object_ref (reponse identique, pas d'oracle)."}
+    # Regle transverse : aucune cle ni URL d'objet de stockage n'est jamais lue dans un corps client (REST, /v1/sync/upload, export).
+    # Les cles serveur respectent farms/{farm_id}/(labels|exports)/{uuid} et sont verifiees (ferme + utilisateur) avant tout usage.
+    ServerObjectKey:
+      type: string
+      readOnly: true
+      pattern: '^farms/[0-9a-f-]{36}/(labels|exports)/[0-9a-f-]{36}(/[A-Za-z0-9._-]+)?$'
     Warning:
       type: object
       properties:

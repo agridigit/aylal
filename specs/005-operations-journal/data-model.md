@@ -11,7 +11,7 @@ Migration `0006_operations_journal`. Types PostgreSQL ; UUID v7 générés côt�
 
 ## Opérations (par ferme)
 
-**operations** : `id`, `farm_id`, `type` (`phyto|fertilization|irrigation|tillage|sowing_planting|pruning|weeding|harvest|other`), `performed_on date`, `status` (`planned|done|pending_validation|validated|cancelled`), `author_id`, `operator_user_id NULL`, `operator_name NULL` (≤ 80), `note` (≤ 500), `season_id NULL`, `quantity_total numeric NULL`, `quantity_unit NULL`, `label_photo_key NULL` (MinIO), `product_id NULL`, `free_product_name NULL` (≤ 80), `dose numeric NULL`, `dose_unit NULL`, `validated_by NULL`, `validated_at NULL`, `done_at NULL`, `created_at`, `updated_at`, `server_version`, `field_versions jsonb`.
+**operations** : `id`, `farm_id`, `type` (`phyto|fertilization|irrigation|tillage|sowing_planting|pruning|weeding|harvest|other`), `performed_on date`, `status` (`planned|done|pending_validation|validated|cancelled`), `author_id`, `operator_user_id NULL`, `operator_name NULL` (≤ 80), `note` (≤ 500), `season_id NULL`, `quantity_total numeric NULL`, `quantity_unit NULL`, `label_photo_key NULL` (MinIO ; **serveur seulement** : posée à partir d'un `label_upload` vérifié, jamais lue d'un corps client, exposée uniquement par URL signée courte scopée ferme ; motif `farms/{farm_id}/labels/{uuid}`, `CHECK` sur le motif), `product_id NULL`, `free_product_name NULL` (≤ 80), `dose numeric NULL`, `dose_unit NULL`, `validated_by NULL`, `validated_at NULL`, `done_at NULL`, `created_at`, `updated_at`, `server_version`, `field_versions jsonb`.
 Contraintes : `CHECK (product_id IS NULL OR free_product_name IS NULL)` ; `performed_on` borné ; aucune suppression physique (pas de DELETE en GRANT pour `phyto`).
 
 **operation_parcels** (modèle de lecture dénormalisé, synchronisé) : `id`, `farm_id`, `operation_id`, `parcel_id`, `author_id`, `type`, `performed_on`, `status`, `product_id`, `free_product_name`, `allocated_quantity`, `allocated_dose`, `dose_unit`, `area_ha_snapshot`, `crop_slug`, `warnings jsonb`, `parcel_archived_at` (recopié par le serveur, triggers à l'archivage/restauration), `updated_at`. Unique `(operation_id, parcel_id)`. FK composite `(farm_id, parcel_id)`.
@@ -28,7 +28,9 @@ Triggers : `BEFORE UPDATE OR DELETE` -> `RAISE EXCEPTION 'registry_append_only'`
 
 ## Exports
 
-**export_jobs** : `id`, `farm_id`, `requested_by`, `scope` (`farm|parcel`), `parcel_id NULL`, `period_from`, `period_to`, `format` (`pdf|xlsx|both`), `lang`, `state` (`queued|running|done|failed`), `file_keys jsonb`, `sha256 NULL`, `row_count`, `expires_at`, `created_at`. Un seul job `queued|running` par ferme (index unique partiel).
+**label_uploads** : `id` (identifiant opaque renvoyé au client = `label_photo_id`), `farm_id`, `user_id`, `object_key` (générée par le serveur, motif `farms/{farm_id}/labels/{uuid}`, `CHECK`), `consumed_at NULL`, `created_at`. Usage unique ; non rattachée sous 24 h -> purge de l'objet et de la ligne. Résolution d'un `label_photo_id` : `(id, farm_id, user_id)` doivent correspondre, sinon 422 `invalid_object_ref`.
+
+**export_jobs** : `id`, `farm_id`, `requested_by`, `scope` (`farm|parcel`), `parcel_id NULL`, `period_from`, `period_to`, `format` (`pdf|xlsx|both`), `lang`, `state` (`queued|running|done|failed`), `file_keys jsonb` (**serveur seulement**, motif `farms/{farm_id}/exports/{job_id}/...`, jamais fournie ni renvoyée au client ; seule l'URL signée 15 min est exposée, après contrôle ferme), `sha256 NULL`, `row_count`, `expires_at`, `created_at`. Un seul job `queued|running` par ferme (index unique partiel).
 
 ## Transitions d'état d'une opération
 
