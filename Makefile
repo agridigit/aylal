@@ -37,6 +37,7 @@ test-unit:     ## tests unitaires seuls
 test-integration: ## tests d'intégration seuls (dont contrats)
 	$(DC) --profile test run --rm api-test pytest -q tests/integration tests/contract /repo/tests/contract
 	$(DC) --profile test run --rm js-test pnpm -r --filter "./packages/**" test -- tests/integration --passWithNoTests
+	$(DC) --profile test run --rm js-test pnpm --filter mobile test -- __tests__/integration
 test-pyramid:  ## chaque module a ses tests unitaires, d'intégration et de bout en bout
 	bash scripts/check-test-pyramid.sh
 e2e: e2e-api   ## bout en bout : API + mobile (Maestro sur émulateur ; macOS : émulateur natif, voir scripts/e2e-mobile.sh)
