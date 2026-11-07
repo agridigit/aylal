@@ -9,7 +9,7 @@ from tests.helpers import auth, op, sql
 @pytest.fixture
 def conflict(client, token_for, make_farm, upload):
     owner, editor, viewer, stranger = (uuid.uuid4() for _ in range(4))
-    farm = make_farm({owner: "owner", editor: "editor", viewer: "viewer"})
+    farm = make_farm({owner: "owner", editor: "manager", viewer: "worker"})
     other_farm = make_farm({stranger: "owner"})
     rid = uuid.uuid4()
     t = token_for(owner)

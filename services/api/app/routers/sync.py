@@ -12,6 +12,7 @@ from app.auth import WRITE_ROLES, current_user, farm_role, issue_token
 from app.config import get_settings
 from app.db.models import FarmMember, SyncConflict, TrialRecord
 from app.db.session import get_session
+from app.sync.admin import ADMIN_TABLES, apply_admin_op, authorize
 from app.sync.apply import apply_op
 
 router = APIRouter()
@@ -24,7 +25,7 @@ class DevTokenRequest(BaseModel):
 
 class Op(BaseModel):
     op_id: uuid.UUID
-    table: Literal["trial_records"]
+    table: Literal["trial_records", "farms", "farm_members", "worker_parcels", "invitations"]
     kind: Literal["put", "patch", "delete"]
     record_id: uuid.UUID
     farm_id: uuid.UUID | None = None
@@ -41,12 +42,17 @@ class UploadBatch(BaseModel):
 async def dev_token(
     body: DevTokenRequest, session: AsyncSession = Depends(get_session)
 ) -> dict[str, str]:
+    if os.environ.get("AYLAL_ENABLE_DEV_TOKEN") != "1" or os.environ.get("AYLAL_ENV", "prod") not in (
+        "dev",
+        "test",
+    ):
+        raise NOT_FOUND  # decided from the raw environment: no settings (and no secret) needed
     settings = get_settings()
-    if os.environ.get("AYLAL_ENABLE_DEV_TOKEN") != "1" or settings.env not in ("dev", "test"):
-        raise NOT_FOUND
     rows = (
         await session.execute(
-            select(FarmMember.farm_id, FarmMember.role).where(FarmMember.user_id == body.user_id)
+            select(FarmMember.farm_id, FarmMember.role).where(
+                FarmMember.user_id == body.user_id, FarmMember.removed_at.is_(None)
+            )
         )
     ).all()
     token, expires = issue_token(
@@ -66,10 +72,13 @@ async def upload(
 ) -> dict[str, list[dict[str, Any]]]:
     results = []
     async with session.begin():  # one commit per batch: a cut connection never leaves a half batch
-        for op in batch.ops:
-            results.append(
-                await apply_op(session, user_id, {**op.model_dump(), "author_id": user_id})
-            )
+        ops = [{**op.model_dump(), "author_id": user_id} for op in batch.ops]
+        await authorize(session, user_id, ops)  # whole batch refused (403/404) before any write
+        for data in ops:
+            if data["table"] in ADMIN_TABLES:
+                results.append(await apply_admin_op(session, user_id, data))
+            else:
+                results.append(await apply_op(session, user_id, data))
     return {"results": results}
 
 

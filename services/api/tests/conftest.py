@@ -12,7 +12,10 @@ from fastapi.testclient import TestClient
 
 from tests.helpers import auth, sql
 
-TABLES = "sync_conflicts, applied_ops, trial_records, parcels, farm_members, farms"
+TABLES = (
+    "sync_conflicts, applied_ops, trial_records, worker_parcels, invitations, parcels,"
+    " farm_members, farms, refresh_tokens, consents, otp_challenges, users"
+)
 
 
 @pytest.fixture(scope="session")

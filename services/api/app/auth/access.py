@@ -10,8 +10,8 @@ from app.auth.tokens import verify_token
 from app.config import get_settings
 from app.db.models import FarmMember
 
-Role = Literal["owner", "editor", "viewer"]
-WRITE_ROLES = {"owner", "editor"}
+Role = Literal["owner", "manager", "worker"]
+WRITE_ROLES = {"owner", "manager"}  # trial-record writers (a worker records only via F2 parcels)
 
 
 async def current_user(authorization: str | None = Header(default=None)) -> uuid.UUID:
@@ -24,6 +24,10 @@ async def current_user(authorization: str | None = Header(default=None)) -> uuid
 
 async def farm_role(session: AsyncSession, farm_id: uuid.UUID, user_id: uuid.UUID) -> str | None:
     result = await session.execute(
-        select(FarmMember.role).where(FarmMember.farm_id == farm_id, FarmMember.user_id == user_id)
+        select(FarmMember.role).where(
+            FarmMember.farm_id == farm_id,
+            FarmMember.user_id == user_id,
+            FarmMember.removed_at.is_(None),
+        )
     )
     return result.scalar_one_or_none()

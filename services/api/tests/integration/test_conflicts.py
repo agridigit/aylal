@@ -6,7 +6,7 @@ from tests.helpers import op, record_row, sql
 
 def _two_device_conflict(token_for, make_farm, upload, clock_a=None, clock_b=None):
     user_a, user_b, rid = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
-    farm = make_farm({user_a: "editor", user_b: "editor"})
+    farm = make_farm({user_a: "manager", user_b: "manager"})
     ta, tb = token_for(user_a), token_for(user_b)
     v1 = upload(ta, [op(farm, rid, kind="put", fields={"title": "base", "note": "n"})])["results"][0][
         "server_version"
@@ -39,7 +39,7 @@ def test_given_a_conflict_when_other_fields_changed_then_they_merge_without_conf
     client, token_for, make_farm, upload
 ) -> None:
     user, rid = uuid.uuid4(), uuid.uuid4()
-    farm = make_farm({user: "editor"})
+    farm = make_farm({user: "manager"})
     t = token_for(user)
     v1 = upload(t, [op(farm, rid, kind="put", fields={"title": "t", "note": "n"})])["results"][0][
         "server_version"

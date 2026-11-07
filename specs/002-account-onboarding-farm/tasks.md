@@ -27,12 +27,12 @@ Chemins : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mo
 
 ### Implémentation
 
-- [ ] T012 Dépendance unique `farm_context(farm_id, user)` : rôle lu en base, 404 non-membre, 403 rôle insuffisant dans `services/api/app/auth/farm_context.py` et `services/api/app/auth/access.py` ; fait passer T006 pour les routes existantes.
-- [ ] T012b Contrôle de rôle d'écriture commun REST et synchro : appliquer `farm_context` et la matrice de rôles dans `services/api/app/routers/sync.py` (chaque opération vers une table d'administration de ferme) et sur la route des parcelles ; fait passer T008a ; exception : la création d'une ferme par son futur propriétaire (R4-A3) reste permise via synchro.
-- [ ] T013 Règles Zod dans `packages/domain/src/{phone,otp-policy,roles,farm,consent,onboarding}.ts` puis génération JSON Schema -> Pydantic (chaîne F0) ; miroir `services/api/app/domain/{roles.py,otp_policy.py}`.
-- [ ] T014 Migration `services/api/alembic/versions/0002_account_farm.py` et modèles dans `services/api/app/db/models.py` (tables du data-model, migration des rôles F0).
-- [ ] T015 [P] Référentiel géo : import régions/provinces/communes, module `services/api/app/geo/`, routeur `services/api/app/routers/geo.py`.
-- [ ] T016 [P] Configuration et refus de démarrer (T005) dans `services/api/app/config.py`.
+- [x] T012 Dépendance unique `farm_context(farm_id, user)` : rôle lu en base, 404 non-membre, 403 rôle insuffisant dans `services/api/app/auth/farm_context.py` et `services/api/app/auth/access.py` ; fait passer T006 pour les routes existantes.
+- [x] T012b Contrôle de rôle d'écriture commun REST et synchro : appliquer `farm_context` et la matrice de rôles dans `services/api/app/routers/sync.py` (chaque opération vers une table d'administration de ferme) et sur la route des parcelles ; fait passer T008a ; exception : la création d'une ferme par son futur propriétaire (R4-A3) reste permise via synchro.
+- [x] T013 Règles Zod dans `packages/domain/src/{phone,otp-policy,roles,farm,consent,onboarding}.ts` puis génération JSON Schema -> Pydantic (chaîne F0) ; miroir `services/api/app/domain/{roles.py,otp_policy.py}`.
+- [x] T014 Migration `services/api/alembic/versions/0002_account_farm.py` et modèles dans `services/api/app/db/models.py` (tables du data-model, migration des rôles F0).
+- [x] T015 [P] Référentiel géo : import régions/provinces/communes, module `services/api/app/geo/`, routeur `services/api/app/routers/geo.py`.
+- [x] T016 [P] Configuration et refus de démarrer (T005) dans `services/api/app/config.py`.
 - [ ] T017 Règles de synchro PowerSync étendues par rôle (liste blanche, ouvrier sans table financière) dans `infra/powersync/sync-rules.yaml` conformes à `specs/002-account-onboarding-farm/contracts/powersync-sync-rules.yaml`, avec test `services/api/tests/integration/test_sync_rules_roles.py` écrit avant (RED puis GREEN).
 - [ ] T018 [P] Contrat : synchroniser `specs/002-account-onboarding-farm/contracts/openapi.yaml` avec l'API réelle, test `services/api/tests/contract/test_f1_openapi_sync.py` écrit avant.
 
