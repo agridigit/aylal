@@ -77,6 +77,13 @@ services:
       POWERSYNC_CONFIG_PATH: /config/config.yaml
       PS_DATA_SOURCE_URI: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
       PS_STORAGE_SOURCE_URI: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/powersync_storage
+      AYLAL_JWT_SECRET: ${AYLAL_JWT_SECRET:-}
+    # client_auth key = base64url(AYLAL_JWT_SECRET), derived here so the secret lives in .env/CI only.
+    # Without a secret the key is random: no token validates (fail closed), the service still starts.
+    entrypoint:
+      - sh
+      - -c
+      - 'S="$$AYLAL_JWT_SECRET"; [ -n "$$S" ] || S="$$(head -c 32 /dev/urandom | base64)"; PS_JWT_KEY="$$(printf %s "$$S" | base64 | tr -d "\n=" | tr "+/" "-_")"; export PS_JWT_KEY; exec node service/lib/entry.js start'
     depends_on:
       db: { condition: service_healthy }
       api: { condition: service_healthy }
@@ -87,6 +94,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 20
+
+  # One-shot: applies the database migrations before the API starts (make up must leave a usable schema).
+  migrate:
+    build: { context: ., dockerfile: services/api/Dockerfile, target: runtime }
+    <<: *env
+    environment:
+      AYLAL_DATABASE_URL: postgresql://aylal:${POSTGRES_PASSWORD:-aylal_dev}@db:5432/aylal
+      AYLAL_ENV: ${AYLAL_ENV:-dev}
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
 
   api:
     build: { context: ., dockerfile: services/api/Dockerfile, target: runtime }
@@ -101,6 +120,7 @@ services:
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
     ports: ["8000:8000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/v1/health', timeout=3).status == 200 else 1)"]
@@ -195,9 +215,27 @@ services:
       dockerfile: infra/docker/e2e.Dockerfile
       args:
         MAESTRO_URL: ${MAESTRO_URL:-}
+    extra_hosts: ["host.docker.internal:host-gateway"]
     volumes: [".:/repo"]
 
+  # ---------- Build Android (profil "build") : APK release arm64, linux/amd64 via Rosetta ----------
+  android-build:
+    profiles: ["build"]
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: infra/docker/android-build.Dockerfile
+      args:
+        ANDROID_CMDLINE_URL: ${ANDROID_CMDLINE_URL:-}
+    volumes: [".:/repo", "android-build:/build", "android-sdk:/opt/android-sdk", "gradle-cache:/cache/gradle", "pnpm-store-amd64:/pnpm/store"]
+
 volumes:
+  # Build caches: shared by every branch (fixed names).
+  android-build: { name: aylal-cache-android-build }
+  android-sdk: { name: aylal-cache-android-sdk }
+  gradle-cache: { name: aylal-cache-gradle }
+  pnpm-store-amd64: { name: aylal-cache-pnpm-amd64 }
+  pnpm-store: { name: aylal-cache-pnpm }
+  # Data: one set per branch (compose project aylal-<branch>, see scripts/dc.sh).
   db-data:
   minio-data:
-  pnpm-store:

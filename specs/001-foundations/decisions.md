@@ -28,3 +28,24 @@
 - L'image `aylal-android-build` ne contient que JDK 17 et pnpm, sans Android SDK. L'hôte Docker est aarch64 (Apple Silicon) : Google ne publie pas de build-tools Android pour Linux arm64 (aapt2 x86_64 seulement), donc `gradle assembleRelease` n'est pas fiable sans émulation x86_64 (QEMU), non validée ici.
 - Décision : rien n'est inventé. `make apk-size` affiche « NON MESURE » et échoue (code 1) tant que la chaîne n'existe pas ; le test `tests/report/test_apk_size.sh` (logique de seuil via APK_PATH) reste inchangé et vert.
 - À faire (T110/T111) : ajouter expo/react-native épinglés, `expo prebuild`, SDK Android épinglé dans le Dockerfile (plateforme linux/amd64), script `build:android:release`, puis mesurer.
+
+## Hotfix android-e2e : synchro réelle sur émulateur
+- PowerSync 1.28.1 refuse la sous-requête de `sync_conflicts` (« select not supported here ») : la règle devient `WHERE farm_id = bucket.farm_id AND acknowledged_at IS NULL` (contrat et infra restent identiques).
+- L'API n'expose pas de JWKS : PowerSync valide les jetons HS256 avec une clé inline dérivée de `AYLAL_JWT_SECRET` (entrypoint compose). Sans secret, clé aléatoire (aucun jeton valide).
+- `@powersync/op-sqlite` abandonné (incompatible avec `@powersync/react-native` 2.4 qui embarque l'adaptateur op-sqlite).
+- Identité ferme/utilisateur : constantes du seed, builds E2E uniquement. Opération rejetée par l'API : reste en file (pas de perte), à traiter en F suivante.
+
+## T110 : device_measures sur émulateur
+- `device_measures.yaml` : ajout de `- back` entre `home.openMap` et `home.openShowcase` (l'écran Map n'a pas de bouton vers la démo ; la navigation de la spec revient à l'accueil). Commentaire « NON EXÉCUTABLE ICI » retiré.
+- Mesures PROVISOIRES (émulateur aylal-2go, pas l'appareil 2 Go réel) : démarrage = du chargement JS à l'affichage de l'accueil ; carte = du tap à l'écran Map monté ; fps = compteur requestAnimationFrame côté JS pendant l'animation de la démo.
+- `Map.tsx` reste la vue existante (testID `map.parcels.N`, pas de MapLibre natif ni fond de carte distant) ; les 50 parcelles viennent d'un jeu local dans les builds E2E uniquement, la lecture de la table locale `parcels` reste à brancher.
+
+## Hotfix android-e2e : app mobile réelle et e2e sur macOS (v0.1.1)
+- Constat : F0 avait été fusionnée avec `apps/mobile` sans dépendances Expo/React Native (stub `any` de `react-native`) : APK non constructible, récits « app mobile » et « synchro » non vérifiés sur appareil. Garde ajoutée : `make test-deps` (dans `make check`) refuse une dépendance importée non déclarée et tout stub de bibliothèque native.
+- Stack mobile : Expo SDK 58, React Native 0.88, React 19.3 (versions fixées par `create-expo-app`), React unique en peer de `@aylal/ui` ; tests visuels inchangés (73/73).
+- Exception approuvée par l'utilisateur (macOS, pas de KVM dans Docker) : l'émulateur Android `aylal-2go` tourne nativement sur le Mac ; adb, installation de l'APK et Maestro restent dans Docker via `host.docker.internal` (adb lié à 127.0.0.1, rien d'exposé sur le réseau). Linux + KVM : chemin tout-Docker inchangé. `E2E_SKIP` n'est plus utilisé.
+- APK : build release `arm64-v8a` uniquement (ABI de l'émulateur et des téléphones 2 Go), dans une image `linux/amd64` (outils Google x86_64 seulement, Rosetta). Taille mesurée 38,3 Mo pour 40 Mo de limite : marge faible, à surveiller à chaque fonctionnalité.
+- Les APK construits par `make apk` sont des builds E2E (`EXPO_PUBLIC_E2E=1` : lien profond `debugState`, URL locales, trafic en clair vers 10.0.2.2). Un build de production distinct reste à définir avant toute distribution.
+- Mesures T110 provisoires : l'émulateur impose 2,5 Go de RAM minimum (Android 14) ; le « démarrage » mesuré n'inclut pas le lancement du processus natif. Les mesures sur un vrai Android 2 Go sont reportées aux tests terrain avec les agriculteurs (principe VIII).
+- Tests d'intégration API : base jetable par session (`aylal_test_<aléa>`) au lieu de vider la base de développement partagée entre branches.
+- Pile Docker partagée : un même projet compose `aylal` sert à tous les checkouts (worktrees inclus) ; à isoler par branche avant de paralléliser des fonctionnalités.

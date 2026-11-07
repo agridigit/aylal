@@ -3,7 +3,7 @@ import { useTheme } from "../theme";
 import { tokens } from "../tokens";
 import type { BaseProps } from "./types";
 
-export function TextField({ variant = "outlined", state = "default", label, placeholder, value }: BaseProps & { variant?: "outlined" | "filled"; placeholder?: string; value?: string }) {
+export function TextField({ variant = "outlined", state = "default", label, placeholder, value, testID, onChangeText }: BaseProps & { variant?: "outlined" | "filled"; placeholder?: string; value?: string; testID?: string; onChangeText?: (text: string) => void }) {
   const { theme } = useTheme();
   const disabled = state === "disabled" || state === "loading";
   const border = state === "error" ? theme.danger : state === "active" ? theme.focus : theme.border;
@@ -13,6 +13,8 @@ export function TextField({ variant = "outlined", state = "default", label, plac
       <TextInput
         editable={!disabled}
         defaultValue={value}
+        testID={testID}
+        onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={theme.textMuted}
         accessibilityLabel={label}

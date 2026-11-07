@@ -6,12 +6,17 @@ from typing import Any
 
 import asyncpg
 
-DB_URL = os.environ.get("AYLAL_DATABASE_URL", "postgresql://aylal:aylal_dev@db:5432/aylal")
+DEFAULT_DB_URL = "postgresql://aylal:aylal_dev@db:5432/aylal"
+
+
+def db_url() -> str:
+    """Read at call time: tests/conftest.py switches it to the per-session test database."""
+    return os.environ.get("AYLAL_DATABASE_URL", DEFAULT_DB_URL)
 
 
 def sql(query: str, *args: Any) -> list[asyncpg.Record]:
     async def _run() -> list[asyncpg.Record]:
-        conn = await asyncpg.connect(DB_URL)
+        conn = await asyncpg.connect(db_url())
         try:
             return await conn.fetch(query, *args)
         finally:

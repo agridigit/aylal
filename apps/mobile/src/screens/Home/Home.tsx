@@ -4,10 +4,16 @@ import { Button, EmptyState, ErrorState, OfflineBanner, Skeleton, Text } from "@
 import { LOCALES, type I18n, type Locale } from "@aylal/i18n";
 import { speak } from "../../voice/speak";
 import { createStartupMark } from "../../perf/startupMark";
+import { measureSession } from "../../perf/measureSession";
 import { layoutFor } from "./direction";
 import { buildHomeViewModel, type HomeInput } from "./homeViewModel";
 
-export const startupMark = createStartupMark();
+export const startupMark = createStartupMark({
+  emit: (e) => {
+    (globalThis as { performance?: { mark?: (n: string, o?: unknown) => void } }).performance?.mark?.(e.name, { detail: e });
+    measureSession.markStartup(e.durationMs);
+  },
+});
 
 interface HomeProps extends HomeInput {
   i18n: I18n;
@@ -42,7 +48,7 @@ export function Home(props: HomeProps) {
   if (props.onOpenShowcase) extraButtons.push({ id: "home.openShowcase" });
 
   return (
-    <View style={{ flex: 1, gap: 16, padding: 16, direction: layout.writingDirection }}>
+    <View testID="home.root" style={{ flex: 1, gap: 16, padding: 16, direction: layout.writingDirection }}>
       <View testID="home.title">
         <Text variant="heading" label={t("home.title")} locale={i18n.locale} />
         <Text variant="caption" label={t("home.subtitle")} locale={i18n.locale} />

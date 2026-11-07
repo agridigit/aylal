@@ -1,5 +1,5 @@
 # E2E AC6.1 + AC6.2 + AC6.3 : mesures sur Android 2 Go de référence (démarrage < 3 s, carte < 2 s, 60 i/s).
-# NON EXÉCUTABLE ICI : requiert émulateur/appareil (KVM indisponible sur macOS). À lancer en CI Linux/KVM ou sur l'appareil.
+# Mesures PROVISOIRES sur émulateur (aylal-2go), pas sur l'appareil réel de référence.
 appId: ma.aylal.app
 ---
 - launchApp:
@@ -15,6 +15,7 @@ appId: ma.aylal.app
     visible:
       id: "map.parcels.50"
     timeout: 2000
+- back
 - tapOn:
     id: "home.openShowcase"
 - assertVisible:
@@ -23,3 +24,4 @@ appId: ma.aylal.app
     id: "measures.export"
 - assertVisible:
     id: "measures.verdict.fps"
+- setAirplaneMode: disabled
