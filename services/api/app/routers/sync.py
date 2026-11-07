@@ -14,6 +14,9 @@ from app.db.models import FarmMember, SyncConflict, TrialRecord
 from app.db.session import get_session
 from app.sync.admin import ADMIN_TABLES, apply_admin_op, authorize
 from app.sync.apply import apply_op
+from app.sync.fields import F2_TABLES
+from app.sync.fields import apply_op as apply_f2_op
+from app.sync.fields import authorize as authorize_f2
 
 router = APIRouter()
 NOT_FOUND = HTTPException(status_code=404, detail="not_found")
@@ -25,7 +28,10 @@ class DevTokenRequest(BaseModel):
 
 class Op(BaseModel):
     op_id: uuid.UUID
-    table: Literal["trial_records", "farms", "farm_members", "worker_parcels", "invitations"]
+    table: Literal[
+        "trial_records", "farms", "farm_members", "worker_parcels", "invitations",
+        "parcels", "seasons", "field_blocks", "crops", "field_commands",
+    ]
     kind: Literal["put", "patch", "delete"]
     record_id: uuid.UUID
     farm_id: uuid.UUID | None = None
@@ -74,9 +80,12 @@ async def upload(
     async with session.begin():  # one commit per batch: a cut connection never leaves a half batch
         ops = [{**op.model_dump(), "author_id": user_id} for op in batch.ops]
         await authorize(session, user_id, ops)  # whole batch refused (403/404) before any write
+        await authorize_f2(session, user_id, ops)
         for data in ops:
             if data["table"] in ADMIN_TABLES:
                 results.append(await apply_admin_op(session, user_id, data))
+            elif data["table"] in F2_TABLES:
+                results.append(await apply_f2_op(session, user_id, data))
             else:
                 results.append(await apply_op(session, user_id, data))
     return {"results": results}

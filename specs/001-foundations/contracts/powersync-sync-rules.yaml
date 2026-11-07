@@ -6,6 +6,9 @@
 # Contraintes du service : chaque requête retourne une colonne id, couvre tous les paramètres du seau,
 # pas de liste IN (...) ni de sous-requête ; farm_members et worker_parcels (clé composite) ont un id calculé.
 # Vérifié par scripts/validate-sync-rules.sh (make check) et tests/platform/test_powersync_rules_valid.sh.
+# F2 : le référentiel des 16 cultures (farm_id NULL) n'est pas synchronisé ici (voir specs/003-fields-crops/decisions.md).
+# F2 (specs/003-fields-crops/contracts/powersync-sync-rules.yaml) : l'ouvrier est borné par worker_parcels ; les enfants de
+# parcelle portent parcel_archived_at (copie de parcels.archived_at posée par le serveur) car le service refuse jointures/sous-requêtes.
 bucket_definitions:
   farm_data:
     parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role != 'worker' AND removed_at IS NULL
@@ -15,12 +18,17 @@ bucket_definitions:
       - SELECT * FROM invitations WHERE farm_id = bucket.farm_id
       - SELECT farm_id || ':' || user_id || ':' || parcel_id AS id, farm_id, user_id, parcel_id, assigned_at FROM worker_parcels WHERE farm_id = bucket.farm_id
       - SELECT * FROM parcels WHERE farm_id = bucket.farm_id
+      - SELECT * FROM seasons WHERE farm_id = bucket.farm_id
+      - SELECT * FROM field_blocks WHERE farm_id = bucket.farm_id
+      - SELECT * FROM crops WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, kind, applied_at, result FROM field_commands WHERE farm_id = bucket.farm_id
       - SELECT * FROM trial_records WHERE farm_id = bucket.farm_id AND deleted_at IS NULL
       - SELECT * FROM sync_conflicts WHERE farm_id = bucket.farm_id AND acknowledged_at IS NULL
   farm_worker_farm:
     parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
     data:
       - SELECT id, name FROM farms WHERE id = bucket.farm_id
+      - SELECT id, farm_id, slug, name_ary, name_ar, name_fr, cycle, photo_key FROM crops WHERE farm_id = bucket.farm_id
   farm_worker:
     parameters: SELECT farm_id, request.user_id() AS user_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
     data:
@@ -30,5 +38,7 @@ bucket_definitions:
     # worker_parcels est purgé à la sortie du membre ou au changement de rôle (routers/farms.py) : seules les lignes d'ouvriers actifs existent
     parameters: SELECT parcel_id FROM worker_parcels WHERE user_id = request.user_id()
     data:
-      - SELECT id, farm_id, name, geometry, vigor FROM parcels WHERE id = bucket.parcel_id
+      - SELECT id, farm_id, name, geometry, area_calc_ha, area_declared_ha, irrigation, greenhouse, soil, status_summary FROM parcels WHERE id = bucket.parcel_id AND archived_at IS NULL
+      - SELECT id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, ended_at, stage_estimated, stage_corrected FROM seasons WHERE field_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, field_id, name, kind, geometry, area_calc_ha FROM field_blocks WHERE field_id = bucket.parcel_id AND archived_at IS NULL AND parcel_archived_at IS NULL
 # Les écritures ne passent PAS par PowerSync : le connecteur mobile envoie ps_crud vers POST /v1/sync/upload.

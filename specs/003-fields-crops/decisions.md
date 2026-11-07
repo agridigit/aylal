@@ -10,3 +10,11 @@ Ces tâches sont des tests d'intégration (PostgreSQL réel, API réelle) : `ser
 ## Règles PowerSync F2 : colonnes dénormalisées
 
 Le service PowerSync refuse jointures, sous-requêtes et listes `IN (...)`. Le contrat `contracts/powersync-sync-rules.yaml` est réécrit : l'ouvrier est borné par le paramètre `worker_parcels.parcel_id` ; les enfants de parcelle (`seasons`, `field_blocks`) portent `parcel_archived_at`, copie de `parcels.archived_at` posée/remise à NULL par le serveur (archivage, restauration) dans la même transaction. Le GREEN doit donc ajouter cette colonne dans la migration `0004`.
+
+## T013 : `crops.farm_id` sans clé étrangère vers `farms`
+
+Un `TRUNCATE farms CASCADE` (fixtures d'intégration, `tests/conftest.py`) viderait aussi `crops` et détruirait le référentiel des 16 cultures (lignes `farm_id IS NULL`). `crops.farm_id` reste donc une colonne simple ; le contrôle d'appartenance est fait par l'API (`farm_id` dans toutes les clauses WHERE) et la purge de ferme (F1, à étendre) supprime explicitement les cultures libres. `seasons.crop_id` référence `crops(id)` (le contrôle « référentiel ou culture de la ferme » est dans l'API, un FK composite ne pouvant pas exprimer `farm_id NULL`).
+
+## T018 : pas de seau « référentiel des cultures » dans `infra/powersync/sync-rules.yaml`
+
+Le service PowerSync refuse un seau sans paramètre cohérent avec `farm_id` (`farm_id = bucket.farm_id OR farm_id IS NULL` rejeté : « Left and right sides of OR must use the same parameters »), et les tests F1 existants (`test_worker_visibility.py`) exigent que tout seau soit filtré par rôle/appartenance. Le contrat F2 proposait `crops_reference` sans paramètre : non retenu. Les 16 cultures du référentiel (lignes `farm_id IS NULL`) sont lues via `GET /v1/crops` et embarquées dans l'application ; seules les cultures libres de la ferme sont synchronisées (seaux gestionnaire et `farm_worker_farm`). Le contrat F1 `specs/001-foundations/contracts/powersync-sync-rules.yaml` est resynchronisé sur l'infra (test `tests/contract/test_powersync_rules.py`). À confirmer à la revue (T018).
