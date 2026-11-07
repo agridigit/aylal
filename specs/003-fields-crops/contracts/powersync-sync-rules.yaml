@@ -1,0 +1,21 @@
+# Extension de infra/powersync/sync-rules.yaml pour F2 (à fusionner ; lecture seule, l'écriture passe par POST /v1/sync/upload).
+# Aucun SELECT * pour l'ouvrier ; aucune donnée d'une autre ferme ; référentiel global en lecture seule.
+bucket_definitions:
+  crops_reference:
+    data:
+      - SELECT * FROM crops WHERE farm_id IS NULL
+  farm_data:            # ajouts au seau gestionnaire/propriétaire existant
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role IN ('owner','manager') AND removed_at IS NULL
+    data:
+      - SELECT * FROM parcels WHERE farm_id = bucket.farm_id          # archivées incluses (restauration), status_summary en lecture
+      - SELECT * FROM seasons WHERE farm_id = bucket.farm_id
+      - SELECT * FROM field_blocks WHERE farm_id = bucket.farm_id
+      - SELECT * FROM crops WHERE farm_id = bucket.farm_id            # cultures libres de la ferme
+      - SELECT id, farm_id, kind, applied_at, result FROM field_commands WHERE farm_id = bucket.farm_id
+  farm_worker:          # ajouts au seau ouvrier existant : parcelles attribuées seulement, non archivées
+    parameters: SELECT farm_id, request.user_id() AS user_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
+    data:
+      - SELECT id, farm_id, name, geometry, area_calc_ha, area_declared_ha, irrigation, greenhouse, soil, status_summary FROM parcels WHERE farm_id = bucket.farm_id AND archived_at IS NULL AND id IN (SELECT parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id)
+      - SELECT id, farm_id, field_id, crop_id, variety, planting_year, sowing_date, started_at, ended_at, stage_estimated, stage_corrected FROM seasons WHERE farm_id = bucket.farm_id AND field_id IN (SELECT parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id)
+      - SELECT id, farm_id, field_id, name, kind, geometry, area_calc_ha FROM field_blocks WHERE farm_id = bucket.farm_id AND archived_at IS NULL AND field_id IN (SELECT parcel_id FROM worker_parcels WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id)
+      - SELECT id, farm_id, slug, name_ary, name_ar, name_fr, cycle, photo_key FROM crops WHERE farm_id = bucket.farm_id
