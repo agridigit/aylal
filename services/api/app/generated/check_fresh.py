@@ -10,7 +10,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from datamodel_code_generator import DataModelType, InputFileType, generate
+from datamodel_code_generator import DataModelType, InputFileType, generate  # type: ignore[attr-defined]
 
 HERE = Path(__file__).resolve().parent
 SCHEMA_DIR = HERE / "schema"

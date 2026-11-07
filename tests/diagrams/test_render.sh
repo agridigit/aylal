@@ -9,6 +9,6 @@ for n in flow seq er state; do
   [ -s "$MOD/img/$n.svg" ] || fail "missing $MOD/img/$n.svg"
   [ -s "$MOD/img/$n.png" ] || fail "missing $MOD/img/$n.png"
 done
-head -c 4 "$MOD/img/flow.png" 2>/dev/null | grep -q PNG || fail "flow.png is not a PNG"
-grep -q '<svg' "$MOD/img/flow.svg" 2>/dev/null || fail "flow.svg is not an SVG"
+head -c 4 "$MOD/img/flow.png" 2>/dev/null | LC_ALL=C grep -aq PNG || fail "flow.png is not a PNG"
+LC_ALL=C grep -aq '<svg' "$MOD/img/flow.svg" 2>/dev/null || fail "flow.svg is not an SVG"
 finish
