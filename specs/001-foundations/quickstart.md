@@ -24,6 +24,7 @@ make test-domain   # vecteurs partagés TS (mêmes vecteurs que pytest)
 ## 4. Langues, RTL, 4 états (Récit 2)
 ```bash
 make test-mobile   # RNTL : 3+1 langues, états, zones tactiles >= 48 dp, aucune clé manquante
+E2E_SKIP=1 make e2e  # sans KVM (macOS) : e2e mobile ignoré avec avertissement ; en CI Linux/KVM : make e2e
 make e2e           # Maestro : ouverture < 3 s, bascule de langue, mode avion -> saisie -> retour réseau
 ```
 

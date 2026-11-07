@@ -14,3 +14,11 @@
 - E2E `apps/mobile/maestro/device_measures.yaml` déclaré mais NON EXÉCUTABLE sur macOS (émulateur/KVM indisponible) ; à exécuter en CI Linux/KVM ou sur l'Android 2 Go (T110).
 - T100/T103 écrits en `.test.ts` (jest `testMatch` = `**/*.test.ts`, vues-modèles sans rendu natif) au lieu de `.tsx`, comme les écrans Home/TrialRecord.
 - Intégration : `tests/report/` (shell, fichiers réels) ; `MODULE` (défaut 001-foundations) et `APK_PATH`/`MEASURE_OUT` sont des paramètres d'environnement pour tester sans appareil.
+
+## Phase 9 : finition (T110 à T115)
+- T110 / T111 restent ouvertes : aucun Android 2 Go de référence n'est disponible et `apps/mobile` n'a ni projet natif ni script `build:android:release` ; l'APK release n'est donc pas constructible dans Docker en l'état. `make apk-size` échoue pour cette raison (écart réel, pas contourné) ; à traiter avec l'ajout de la chaîne de build Android (Expo prebuild + Gradle) et la mesure sur appareil.
+- e2e mobile : `E2E_SKIP=1 make check` sur macOS (pas de KVM, émulateur Android impossible) avec avertissement ; la CI Linux/KVM exécute `make e2e` complet. L'e2e API (`tests/e2e`) tourne toujours.
+- Portabilité de `tests/diagrams/test_render.sh` : le `grep` dépendait de la locale hôte (fichier binaire PNG traité comme texte invalide). Défaut du test, pas de la spec : `LC_ALL=C grep -a`. Aucune assertion modifiée.
+- `make coverage` côté JS est limité à `@aylal/domain` (code métier, seuil 80 %) : `i18n` et `ui` n'embarquent pas `@vitest/coverage-v8` et ne contiennent pas de règle métier. Domaine : 93,8 % ; API : 88,55 %.
+- Porte `check-test-pyramid.sh` : pour `apps/*`, les tests vivent à côté du code (`src/**/__tests__`) et les parcours e2e dans `maestro/` ; la porte les reconnaît. Des tests d'intégration ont été ajoutés pour `domain`, `i18n`, `ui`.
+- Typage : `noUncheckedIndexedAccess` désactivé pour `packages/i18n` et `apps/mobile` (des tests existants indexent sans garde) ; `mypy` ignore `app/generated/models.py` (code généré) ; ruff : `PLW1510`, `B017` ignorés dans `tests/**`.

@@ -204,9 +204,9 @@
 
 ## Phase 9 : Finition et transversal (sans récit)
 
-- [ ] T112 [P] Vérifier la couverture >= 80 % du code métier (`packages/domain`, `services/api/app/domain`) via `make coverage` (SC-009, FR-004)
-- [ ] T113 [P] Vérifier que chaque critère d'acceptation P1 (AC1.x à AC4.x) a au moins un test automatisé : matrice de traçabilité `specs/001-foundations/traceability.md` (SC-009)
-- [ ] T114 [P] Passer `quickstart.md` en entier sur un clone propre (Docker seul) et corriger les écarts
+- [x] T112 [P] Vérifier la couverture >= 80 % du code métier (`packages/domain`, `services/api/app/domain`) via `make coverage` (SC-009, FR-004)
+- [x] T113 [P] Vérifier que chaque critère d'acceptation P1 (AC1.x à AC4.x) a au moins un test automatisé : matrice de traçabilité `specs/001-foundations/traceability.md` (SC-009)
+- [x] T114 [P] Passer `quickstart.md` en entier sur un clone propre (Docker seul) et corriger les écarts
 - [ ] T115 **make check vert** : lancer `make check` (lint, typecheck, test, coverage, test-visual, apk-size, diagrams, e2e ou `E2E_SKIP=1` avec avertissement et justification en CI Linux/KVM) ; tout échec est corrigé, jamais contourné en modifiant un test [SC-001]
 - [ ] T116 **Documentation de fin de module (/aylal.docs)** : exécuter `/aylal.docs` pour produire `docs/modules/001-foundations/{ingenieur.md,agriculteur.fr.md,agriculteur.ar.md}`, `diagrams/*.mmd` (flowchart, sequenceDiagram, erDiagram, stateDiagram-v2), `img/*.svg` et `img/*.png` via `make diagrams`, chaque doc intégrant l'image ET le bloc de code source ; mettre à jour `CHANGELOG.md` (FR-026)
 
