@@ -1,6 +1,6 @@
 [project]
 name = "aylal-workers"
-version = "0.0.0"
+version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = ["arq>=0.26"]
 
