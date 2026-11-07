@@ -1,0 +1,14 @@
+[project]
+name = "aylal-workers"
+version = "0.0.0"
+requires-python = ">=3.13"
+dependencies = ["arq>=0.26"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools]
+packages = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

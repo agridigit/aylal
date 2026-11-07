@@ -13,13 +13,13 @@
 
 ## Phase 1 : Socle du dépôt (sans récit)
 
-- [ ] T001 Créer le monorepo pnpm : `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json` (TypeScript strict), `.dockerignore`, `.gitignore` complété à la racine
-- [ ] T002 [P] Créer les squelettes d'espaces `apps/web/{README.md,package.json}` et `apps/desktop/{README.md,package.json}` (FR-005)
-- [ ] T003 [P] Créer `.env.example` et `.env.test` (secrets factices, aucun domaine externe, `scram-sha-256`) à la racine
-- [ ] T004 [P] Créer `infra/docker/js.Dockerfile` (Node + pnpm, lockfile figé) pour domain, i18n, ui, mobile (Jest), Storybook
-- [ ] T005 [P] Créer `services/api/Dockerfile` et `services/api/pyproject.toml` (Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, pytest, pytest-cov, Ruff, mypy)
-- [ ] T006 [P] Créer `services/workers/Dockerfile` et `services/workers/pyproject.toml` (Python 3.13, Arq, pytest)
-- [ ] T007 [P] Créer `infra/docker/e2e.Dockerfile`, `infra/docker/android-build.Dockerfile`, `infra/docker/visual.Dockerfile` (Playwright), `infra/caddy/Caddyfile` (TLS interne), `infra/minio/init.sh`, `infra/powersync/config.yaml`
+- [x] T001 Créer le monorepo pnpm : `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json` (TypeScript strict), `.dockerignore`, `.gitignore` complété à la racine
+- [x] T002 [P] Créer les squelettes d'espaces `apps/web/{README.md,package.json}` et `apps/desktop/{README.md,package.json}` (FR-005)
+- [x] T003 [P] Créer `.env.example` et `.env.test` (secrets factices, aucun domaine externe, `scram-sha-256`) à la racine
+- [x] T004 [P] Créer `infra/docker/js.Dockerfile` (Node + pnpm, lockfile figé) pour domain, i18n, ui, mobile (Jest), Storybook
+- [x] T005 [P] Créer `services/api/Dockerfile` et `services/api/pyproject.toml` (Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, pytest, pytest-cov, Ruff, mypy)
+- [x] T006 [P] Créer `services/workers/Dockerfile` et `services/workers/pyproject.toml` (Python 3.13, Arq, pytest)
+- [x] T007 [P] Créer `infra/docker/e2e.Dockerfile`, `infra/docker/android-build.Dockerfile`, `infra/docker/visual.Dockerfile` (Playwright), `infra/caddy/Caddyfile` (TLS interne), `infra/minio/init.sh`, `infra/powersync/config.yaml`
 
 ## Phase 2 : Fondations bloquantes (sans récit)
 
