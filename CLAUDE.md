@@ -37,3 +37,11 @@ Dossier `docs/modules/<NNN-feature>/` :
 - Déléguer aux sous-agents définis dans `.claude/agents/` (modèles sonnet ou haiku). Jamais opus.
 - Réponses courtes ; pas de récapitulatif de ce qui vient d'être fait.
 - Une session = une étape Spec Kit. L'état passe par les fichiers (`specs/`, git), pas par la conversation.
+
+## Versionnement git (100 % Claude, local uniquement)
+- Une branche par fonctionnalité (`NNN-slug`) ; `hotfix/<slug>` pour les bugs ; `main` toujours vert.
+- Un commit Conventional Commits par étape TDD : `test(<Fx>)` → RED, `feat(<Fx>)` → GREEN, `refactor(<Fx>)` → REFACTOR (types : feat, fix, test, refactor, docs, chore, ci, build).
+- SemVer depuis la dernière balise `vX.Y.Z` (aucune → v0.0.0) : fonctionnalité = MINOR+1, uniquement des correctifs = PATCH+1, v1.0.0 quand F0 à F7 sont fusionnées. Version reportée dans tous les `package.json` et `services/*/pyproject.toml`.
+- `CHANGELOG.md` tenu par le sous-agent `git-keeper` (Ajouts / Corrections / Documentation / Technique).
+- Fin de fonctionnalité = `/aylal.release <branche> <Fx>` ; bug = `/aylal.hotfix <description>`.
+- Aucun push, fetch, pull, remote ni `gh` ; jamais `reset --hard` ni réécriture d'historique (garde : `scripts/guard-git.sh`).
