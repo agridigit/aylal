@@ -7,6 +7,7 @@ info:
     Parcelle non attribuée (ouvrier), archivée (ouvrier) ou inconnue => 404 identique. Rôle insuffisant sur une parcelle visible => 403.
     Agrégats calculés sur la portée de l'appelant. Aucune clé de stockage ni URL n'est acceptée en entrée ; extra=forbid.
     Corps lus avec plafond avant parsing (413). Limiteur Redis par IP/utilisateur/ferme ; 429 + Retry-After. IP via client_ip() (AYLAL_TRUSTED_PROXIES).
+    VUE OUVRIER (worker-safe, décisions point 19) : pour le rôle worker, Advice/AdviceList sont servis sous la forme AdviceWorker (pas de leaching_fraction ; assumptions = worker_assumptions, liste blanche de clés, aucune clé d'analyse d'eau, de sol ou de salinité) ; BalanceDay sans taw_mm/raw_mm/moisture_source ; même expurgation pour l'export, les rappels et la synchro.
     Aucune lecture ne déclenche de calcul ni d'appel sortant. Aucune valeur agronomique par défaut : donnée absente => kind=unavailable + unavailable_reason.
 servers: [{url: /v1}]
 components:
@@ -66,7 +67,26 @@ components:
         computed_at: {type: string, format: date-time}
         is_last_known: {type: boolean, description: "true si le conseil du jour n'a pas pu être calculé (météo absente) : date + confiance abaissée"}
         ready_before_7: {type: boolean}
-    AdviceList: {type: object, required: [items, generated_at], properties: {items: {type: array, maxItems: 100, items: {$ref: "#/components/schemas/Advice"}}, next_cursor: {type: [string, "null"]}, to_irrigate_count: {type: integer, description: "calculé sur la portée de l'appelant"}, generated_at: {type: string, format: date-time}}}
+    AdviceWorker:
+      description: "Vue ouvrier de Advice : sans leaching_fraction ; assumptions = worker_assumptions (liste blanche de clés : et0, kc, effective_rain, efficiency, application_rate, rain_source) ; aucune clé ece/ecw/salinity/water_source/analysis_age/soil/taw/raw/moisture/leaching/cost"
+      type: object
+      additionalProperties: false
+      required: [parcel_id, for_date, kind, confidence, assumptions, computed_at]
+      properties:
+        parcel_id: {type: string, format: uuid}
+        for_date: {type: string, format: date}
+        kind: {type: string, enum: [irrigate, postpone_rain, no_need, rainfed_stress, unavailable]}
+        total_minutes: {type: [integer, "null"]}
+        sectors: {type: array, maxItems: 50, items: {$ref: "#/components/schemas/SectorAdvice"}}
+        net_need_mm: {type: [number, "null"]}
+        stress_level: {type: [string, "null"], enum: [none, watch, high, null]}
+        confidence: {$ref: "#/components/schemas/Confidence"}
+        assumptions: {type: array, items: {$ref: "#/components/schemas/Assumption"}}
+        unavailable_reason: {type: [string, "null"]}
+        computed_at: {type: string, format: date-time}
+        is_last_known: {type: boolean}
+        ready_before_7: {type: boolean}
+    AdviceList: {type: object, required: [items, generated_at], properties: {items: {type: array, maxItems: 100, items: {oneOf: [{$ref: "#/components/schemas/Advice"}, {$ref: "#/components/schemas/AdviceWorker"}], description: "AdviceWorker si l'appelant est ouvrier"}}, next_cursor: {type: [string, "null"]}, to_irrigate_count: {type: integer, description: "calculé sur la portée de l'appelant"}, generated_at: {type: string, format: date-time}}}
     IrrigationEventInput:
       type: object
       additionalProperties: false
@@ -102,7 +122,7 @@ components:
         generated_at: {type: string, format: date-time}
     WaterAnalysisInput: {type: object, additionalProperties: false, required: [id, ec_ds_m, analysed_on], properties: {id: {type: string, format: uuid}, ec_ds_m: {type: number, exclusiveMinimum: 0, maximum: 100}, analysed_on: {type: string, format: date}, water_source: {type: string, maxLength: 80}}}
     WaterAnalysis: {allOf: [{$ref: "#/components/schemas/WaterAnalysisInput"}, {type: object, properties: {parcel_id: {type: string, format: uuid}, age_days: {type: integer}}}]}
-    BalanceDay: {type: object, required: [day, depletion_mm], properties: {day: {type: string, format: date}, et0_mm: {type: number}, et0_method: {type: string, enum: [gateway, hargreaves]}, kc: {type: number}, etc_mm: {type: number}, rain_mm: {type: number}, rain_source: {type: string, enum: [observed, forecast, ignored_greenhouse]}, rain_eff_mm: {type: number}, irrigation_net_mm: {type: number}, taw_mm: {type: number}, raw_mm: {type: number}, depletion_mm: {type: number}, moisture_source: {type: [string, "null"]}}}
+    BalanceDay: {type: object, description: "taw_mm, raw_mm et moisture_source ABSENTS pour l'ouvrier (données de sol)", required: [day, depletion_mm], properties: {day: {type: string, format: date}, et0_mm: {type: number}, et0_method: {type: string, enum: [gateway, hargreaves]}, kc: {type: number}, etc_mm: {type: number}, rain_mm: {type: number}, rain_source: {type: string, enum: [observed, forecast, ignored_greenhouse]}, rain_eff_mm: {type: number}, irrigation_net_mm: {type: number}, taw_mm: {type: number}, raw_mm: {type: number}, depletion_mm: {type: number}, moisture_source: {type: [string, "null"]}}}
 paths:
   /farms/{farm_id}/parcels/{parcel_id}/irrigation-system:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
@@ -116,7 +136,7 @@ paths:
     get: {operationId: listAdvice, description: "lecture seule du cache ; portée de l'appelant ; ETag borné à la portée", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/AdviceList"}}}}, "404": {$ref: "#/components/responses/NotFound"}, "429": {$ref: "#/components/responses/TooMany"}}}
   /farms/{farm_id}/parcels/{parcel_id}/irrigation/advice:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
-    get: {operationId: getAdvice, description: "conseil du jour + hypothèses ; pluvial => kind=rainfed_stress", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Advice"}}}}, "404": {$ref: "#/components/responses/NotFound"}}}
+    get: {operationId: getAdvice, description: "conseil du jour + hypothèses ; pluvial => kind=rainfed_stress", responses: {"200": {description: ok, content: {application/json: {schema: {oneOf: [{$ref: "#/components/schemas/Advice"}, {$ref: "#/components/schemas/AdviceWorker"}]}}}}, "404": {$ref: "#/components/responses/NotFound"}}}
   /farms/{farm_id}/parcels/{parcel_id}/irrigation/balance:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}]
     get: {operationId: getBalance, description: "fenêtre <= 400 jours (422 au-delà, avant lecture)", responses: {"200": {description: ok, content: {application/json: {schema: {type: object, properties: {days: {type: array, maxItems: 400, items: {$ref: "#/components/schemas/BalanceDay"}}}}}}}, "404": {$ref: "#/components/responses/NotFound"}, "422": {$ref: "#/components/responses/Invalid"}}}

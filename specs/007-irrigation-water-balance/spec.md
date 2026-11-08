@@ -170,12 +170,13 @@ Un capteur d'humidité du sol ou un compteur connecté corrige le conseil automa
 - **FR-013** : le système DOIT afficher le volume d'eau consommé par parcelle et sur la campagne, en m³ et en m³/ha.
 - **FR-014** : le système DOIT permettre d'enregistrer une analyse d'eau (salinité, date) et ajouter une fraction de lessivage au conseil lorsque la salinité dépasse la tolérance de la culture.
 - **FR-015** : le système DOIT prévoir l'intégration d'une mesure externe d'humidité du sol ou de volume (capteur, compteur connecté, F9) comme correction du bilan, sans la rendre obligatoire.
-- **FR-016** : toutes les fonctions de saisie et de consultation DOIVENT fonctionner hors réseau, avec synchronisation invisible et sans perte ; le bilan est recalculable avec les données locales.
+- **FR-016** (pour l'ouvrier, le bilan local s'appuie sur le dernier conseil synchronisé, FR-022) : toutes les fonctions de saisie et de consultation DOIVENT fonctionner hors réseau, avec synchronisation invisible et sans perte ; le bilan est recalculable avec les données locales.
 - **FR-017** : le conseil DOIT indiquer sa source, son niveau de confiance et ses limites ; aucune valeur inventée n'est affichée lorsqu'une donnée essentielle manque.
 - **FR-018** : le résumé du conseil (besoin d'irrigation, stress hydrique) DOIT être disponible pour l'état de la parcelle du tableau de bord (F3).
 - **FR-019** : toute règle de calcul (besoin, bilan, durée, lessivage, report pour pluie) DOIT être partagée entre tous les fronts et testable sans interface.
 - **FR-020** : le conseil DOIT être lisible à voix haute pour chaque écran concerné.
 - **FR-021** : les données restent propres à la ferme de l'agriculteur ; rien n'est partagé sans accord explicite, et l'export et la suppression complets incluent installations, irrigations et analyses d'eau.
+- **FR-022** : le système DOIT servir à l'ouvrier une vue du conseil expurgée côté serveur (liste blanche) : jamais l'analyse d'eau (salinité, source, âge), le sol, la fraction de lessivage ni leurs dérivés, quel que soit le chemin (synchronisation, API, export, rappels) ; propriétaire et gestionnaire reçoivent le conseil complet.
 
 ### Entités principales
 
