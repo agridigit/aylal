@@ -16,3 +16,5 @@
 - DÉCISION HUMAINE requise (mesures dans specs/003-fields-crops/decisions.md) : relever le budget à ~52 Mo avec amendement du CPS (recommandé), ou retirer/alléger la carte.
 - Aussi ouverts : porte design T004 et tâches d'écran ; photos de cultures (assets/crops/*.webp) ; morocco.pmtiles (source et hébergement marocains) ; T071 (retrait de parcels.vigor) ; T072 (mesures de recette) ; passage Maestro sur le build R8 ; docs (T074) non faites.
 - Non fusionnée : la branche 003-fields-crops reste telle quelle (aucune balise).
+
+- F5 (008-crop-health) : en pause (commit 46c5511, feuille de route v2) ; branche laissée telle quelle, GREEN R1–R5 fait, finition/docs/release non faites. Reprise : /aylal.loop F5. F7 (009-voice-assistant, worktree préparé) et F9 reportés en v2 de la même façon.
