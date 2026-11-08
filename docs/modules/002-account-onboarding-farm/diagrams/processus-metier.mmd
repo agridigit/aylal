@@ -1,0 +1,20 @@
+flowchart TD
+    A[Première ouverture] --> B[Choix de la langue]
+    B --> C[Saisie du numéro marocain]
+    C --> D[Code reçu par SMS ou WhatsApp]
+    D --> E{Code correct ?}
+    E -- Non, 3 fois --> F[Attente de 5 minutes]
+    F --> D
+    E -- Oui --> G{Numéro déjà inscrit ?}
+    G -- Oui --> M[Retrouver compte, fermes et rôles]
+    G -- Non --> H[Lecture de la politique de données]
+    H --> I{Consentement donné ?}
+    I -- Non --> J[Compte non finalisé, effacé après 24 h]
+    I -- Oui --> K[Nom ou surnom]
+    K --> L[Création de la ferme : nom, emplacement, surface facultative]
+    L --> N[Ferme prête, propriétaire unique]
+    M --> N
+    N --> O[Ajouter une autre ferme]
+    N --> P[Inviter un gérant ou un ouvrier]
+    N --> Q[Demander la suppression du compte]
+    Q --> R[Données effacées sous 30 jours]

@@ -1,0 +1,20 @@
+flowchart TD
+    A[Ferme située, parcelles et cultures connues] --> B[Collecte : météo, images satellite, observations]
+    B --> C{Seuil de la culture au stade courant atteint ?}
+    C -- Oui --> D[Création d'une alerte : parcelle, type, gravité, source]
+    C -- Non --> E[Aucune alerte]
+    B --> F{Au moins 80 % de la parcelle sans nuage ?}
+    F -- Oui --> G[Image de vigueur affichée]
+    F -- Non --> H[Dernière image valide gardée avec sa date]
+    G --> I{Vigueur en baisse anormale ?}
+    I -- Oui --> J[Zone à vérifier délimitée]
+    J --> K[Agriculteur guidé sur place et note une observation]
+    D --> L[Calcul de l'état de la parcelle]
+    E --> L
+    H --> L
+    J --> L
+    M[Signaux irrigation F4, maladies F5, travaux en retard F6 si disponibles] --> L
+    L --> N{État}
+    N -- Rouge --> O[Action conseillée, classée en premier]
+    N -- Orange --> P[À surveiller]
+    N -- Vert --> Q[Rien à faire]

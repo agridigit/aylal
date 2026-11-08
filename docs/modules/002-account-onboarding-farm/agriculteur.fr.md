@@ -1,8 +1,10 @@
 # AYLAL : créer mon compte et ma ferme
 
 > **À venir : pas encore utilisable.**
-> Les écrans de l'application ne sont pas encore prêts.
+> Les écrans de l'application (langue, numéro, code, politique, ferme, équipe, suppression) ne sont pas encore livrés.
 > Les maquettes attendent encore leur validation.
+> **Disponible aujourd'hui** : le fonctionnement derrière l'écran. Le code par SMS ou WhatsApp, la session, la ferme, les rôles et la suppression du compte sont prêts côté serveur.
+> **Pas encore disponible** : tous les boutons et écrans décrits ci-dessous. L'export de vos données n'est pas encore fourni.
 > Ce guide dit ce qui est **prévu**. Ne cherchez pas ces boutons : ils n'existent pas encore.
 > Les noms exacts des boutons seront ajoutés quand les écrans seront validés.
 
@@ -26,7 +28,7 @@ Puis vous créez votre ferme, en moins de 2 minutes.
 4. Choisissez de recevoir le code par SMS ou par WhatsApp.
 5. Écrivez le code reçu.
 6. Lisez la politique de données. Vous pouvez l'écouter.
-7. Acceptez, ou refusez. Si vous refusez, le compte n'est pas créé.
+7. Acceptez, ou refusez. Si vous refusez, le compte n'est pas terminé. Seul votre numéro est gardé, puis effacé au bout de 24 heures.
 8. Écrivez votre nom ou votre surnom.
 9. Écrivez le nom de votre ferme.
 10. Choisissez l'emplacement : par votre position, ou sur la carte.
@@ -97,7 +99,7 @@ Non. C'est gratuit.
 ## 6. Si ça ne marche pas
 
 - **Pas de réseau au début** : il faut du réseau pour recevoir le code. Réessayez plus tard. Votre saisie reste.
-- **Code jamais reçu** : demandez un nouveau code, par l'autre moyen (SMS ou WhatsApp).
+- **Code jamais reçu** : attendez une minute, puis demandez un nouveau code, par l'autre moyen (SMS ou WhatsApp).
 - **Numéro refusé** : vérifiez-le. Seuls les numéros marocains marchent.
 - **Position introuvable** : choisissez sur la carte, ou dans la liste région, province, commune.
 - **Pas de réseau pour la ferme** : la ferme est gardée sur le téléphone. Elle est marquée « en attente d'envoi ».

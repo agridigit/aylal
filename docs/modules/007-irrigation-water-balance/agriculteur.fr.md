@@ -1,10 +1,10 @@
 # AYLAL : mon irrigation et mon conseil d'eau
 
-> **À venir : pas encore utilisable.**
-> Les écrans de l'irrigation ne sont pas encore prêts.
-> Ce guide dit ce qui est **prévu**. Ne cherchez pas ces boutons : ils n'existent pas encore.
-> Le conseil d'irrigation reste **« indisponible »** tant que les données agronomiques ne sont pas chargées.
-> Les noms exacts des boutons seront ajoutés quand les écrans seront validés.
+> **Où en est-on aujourd'hui ?**
+> **Disponible** : le calcul du conseil et l'enregistrement des données sont prêts côté serveur. Vous ne pouvez pas encore les utiliser depuis l'application.
+> **Pas encore disponible** : tous les écrans de ce guide (installation, conseil du jour, « fait », suivi de l'eau, analyse d'eau). Ne cherchez pas ces boutons dans l'application.
+> **Conseil « indisponible »** : les données des cultures et des sols ne sont pas encore chargées. Le conseil ne donnera rien tant qu'elles manquent.
+> **À venir** : les écrans, après validation de leur dessin. Les noms exacts des boutons seront alors ajoutés.
 
 ## 1. À quoi ça sert
 
@@ -135,5 +135,5 @@ Pas encore. Ce n'est pas dans cette version. Ce sera prévu plus tard.
 - **Conseil « indisponible »** : lisez la raison. Décrivez l'installation, ou attendez les données de la culture.
 - **Météo du jour absente** : le dernier conseil reste, avec sa date. La confiance est basse.
 - **Champ refusé** : corrigez le champ indiqué. Par exemple, un débit à zéro.
-- **Irrigation notée deux fois** : une seule est gardée.
+- **Irrigation notée deux fois** : si c'est le même envoi répété, une seule est gardée. Si ce sont deux saisies proches, les deux sont gardées et l'application vous le signale. Rien n'est perdu.
 - **Message d'erreur** : touchez le bouton pour réessayer.

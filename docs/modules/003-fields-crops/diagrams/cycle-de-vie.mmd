@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> Active: création
+    Active --> Archivee: suppression par le propriétaire ou un gérant
+    Archivee --> Active: reprise avant 90 jours
+    Active --> Fusionnee: fusion avec une autre parcelle
+    Archivee --> Effacee: 90 jours écoulés
+    Fusionnee --> Effacee: 90 jours écoulés
+    Effacee --> [*]

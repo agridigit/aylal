@@ -1,0 +1,6 @@
+stateDiagram-v2
+    [*] --> NonEnvoye: saisie sur le téléphone
+    NonEnvoye --> Envoye: le serveur confirme la réception
+    NonEnvoye --> Conflit: même essai modifié sur un autre appareil
+    Conflit --> Envoye: conflit pris en compte
+    Envoye --> [*]

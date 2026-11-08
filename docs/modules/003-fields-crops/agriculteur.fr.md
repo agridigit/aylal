@@ -1,10 +1,9 @@
 # AYLAL : mes parcelles et mes cultures
 
-> **À venir : pas encore utilisable.**
-> Les écrans de l'application ne sont pas encore prêts.
-> Les maquettes attendent encore leur validation.
-> Ce guide dit ce qui est **prévu**. Ne cherchez pas ces boutons : ils n'existent pas encore.
-> Les noms exacts des boutons seront ajoutés quand les écrans seront validés.
+> **Ce qui marche aujourd'hui, et ce qui arrive.**
+> **Déjà là** : l'écran « Mes parcelles » existe, avec le message « Aucune parcelle enregistrée » quand la liste est vide. Derrière l'écran, l'application sait déjà calculer la surface, refuser un dessin qui se croise, garder 90 jours une parcelle supprimée, gérer les campagnes, les blocs et la fusion, et limiter ce que voit un ouvrier.
+> **À venir** : la vraie carte, le dessin sur l'image ou à pied, la fiche et le formulaire, la liste des cultures avec photos, le découpage, la fusion et les campagnes. Ces écrans attendent encore la validation des maquettes. Les photos des cultures et l'image satellite ne sont pas encore prêtes. L'import d'un fichier de technicien n'est pas prévu pour l'instant.
+> Les étapes ci-dessous disent ce qui est **prévu**. Ne cherchez pas ces boutons : ils n'existent pas encore. Leurs noms exacts viendront avec les écrans.
 
 ## 1. À quoi ça sert
 

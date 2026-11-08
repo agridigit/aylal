@@ -28,10 +28,10 @@ C'. Préparation anticipée (en parallèle de D) : si la fonctionnalité SUIVANT
    Ne l'attends pas : continue D. Une seule préparation anticipée à la fois.
 D. Implémentation test first : exécute toi-même /aylal.tdd-implement <branche>. Cette commande délègue à test-writer, implementer et reviewer, en parallèle pour les tâches [P]. Répète jusqu'à ce que `.status` vaille DONE, 4 tours au maximum.
 E. Contrôle + documentation EN PARALLÈLE, dans un seul message :
-   - lance en arrière-plan `doc-engineer` et `doc-farmer` pour <branche> (ils écrivent seulement dans `docs/modules/<branche>/`, sans commit, sans `make`) ;
+   - lance en arrière-plan `doc-engineer`, `doc-business` et `doc-farmer` pour <branche> (ils écrivent seulement dans `docs/modules/<branche>/`, sans commit, sans `make`) ;
    - lance toi-même `make check-cached` (saute la vérification si le même commit est déjà vert, par exemple après le `reviewer`).
    Rouge : attends la fin des agents de documentation avant tout commit ; si l'échec ne porte que sur `diagrams` pendant que la doc s'écrivait, relance simplement `make check-cached`. Sinon un tour supplémentaire de /aylal.tdd-implement avec la sortie d'erreur ; toujours rouge, écris la raison dans `.aylal/blocked.md`, laisse la branche telle quelle et passe à la fonctionnalité suivante.
-F. Fin de la documentation : quand les deux agents ont répondu, exécute les étapes 3 à 5 de /aylal.docs <branche> (`make diagrams`, vérification des images, commit `docs(<branche>): …`, `DOCS_DONE` dans `.status`), puis `make check-cached` (seules les docs ont changé : ne rend que les diagrammes).
+F. Fin de la documentation : quand les trois agents ont répondu, exécute les étapes 3 à 5 de /aylal.docs <branche> (`make diagrams`, vérification des images, commit `docs(<branche>): …`, `DOCS_DONE` dans `.status`), puis `make check-cached` (seules les docs ont changé : ne rend que les diagrammes).
 G. Fusion : exécute /aylal.release <branche> <ID> (sous-agent git-keeper : SemVer, CHANGELOG, fusion locale, balises). Si la réponse commence par ÉCHEC, note-la dans `.aylal/blocked.md` et passe à la suivante.
 H. Affiche une ligne : `<ID> fusionné — tâches x/y — docs OK`.
 
