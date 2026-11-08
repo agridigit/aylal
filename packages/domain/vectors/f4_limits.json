@@ -1,0 +1,182 @@
+[
+ {
+  "rule": "sectors",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "sectors",
+  "value": 50,
+  "valid": true
+ },
+ {
+  "rule": "sectors",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "sectors",
+  "value": 51,
+  "valid": false
+ },
+ {
+  "rule": "system_versions",
+  "value": 50,
+  "valid": true
+ },
+ {
+  "rule": "system_versions",
+  "value": 51,
+  "valid": false
+ },
+ {
+  "rule": "events_per_day_sector",
+  "value": 24,
+  "valid": true
+ },
+ {
+  "rule": "events_per_day_sector",
+  "value": 25,
+  "valid": false
+ },
+ {
+  "rule": "duration_min",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "duration_min",
+  "value": 1440,
+  "valid": true
+ },
+ {
+  "rule": "duration_min",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "duration_min",
+  "value": 1441,
+  "valid": false
+ },
+ {
+  "rule": "volume_m3_per_ha",
+  "value": 1000,
+  "valid": true
+ },
+ {
+  "rule": "volume_m3_per_ha",
+  "value": 1000.01,
+  "valid": false
+ },
+ {
+  "rule": "backdate_days",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "backdate_days",
+  "value": 400,
+  "valid": true
+ },
+ {
+  "rule": "backdate_days",
+  "value": 401,
+  "valid": false
+ },
+ {
+  "rule": "water_analyses",
+  "value": 50,
+  "valid": true
+ },
+ {
+  "rule": "water_analyses",
+  "value": 51,
+  "valid": false
+ },
+ {
+  "rule": "ec_ds_m",
+  "value": 0.1,
+  "valid": true
+ },
+ {
+  "rule": "ec_ds_m",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "ec_ds_m",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "ec_ds_m",
+  "value": 100.1,
+  "valid": false
+ },
+ {
+  "rule": "sync_batch",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "sync_batch",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "limit",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "limit",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "limit",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "limit",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "window_months",
+  "value": 24,
+  "valid": true
+ },
+ {
+  "rule": "window_months",
+  "value": 25,
+  "valid": false
+ },
+ {
+  "rule": "points",
+  "value": 400,
+  "valid": true
+ },
+ {
+  "rule": "points",
+  "value": 401,
+  "valid": false
+ },
+ {
+  "rule": "jobs_per_farm",
+  "value": 5,
+  "valid": true
+ },
+ {
+  "rule": "jobs_per_farm",
+  "value": 6,
+  "valid": false
+ },
+ {
+  "rule": "nope",
+  "value": 1,
+  "valid": false
+ }
+]

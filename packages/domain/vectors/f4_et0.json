@@ -1,0 +1,142 @@
+[
+ {
+  "name": "Ra lat 33.6 day 180 (FAO-56 eq. 21)",
+  "fn": "extraterrestrial_radiation",
+  "input": {
+   "lat": 33.6,
+   "doy": 180
+  },
+  "expected": {
+   "ra_mj_m2_day": 41.413
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "Ra lat 33.6 day 15 (FAO-56 eq. 21)",
+  "fn": "extraterrestrial_radiation",
+  "input": {
+   "lat": 33.6,
+   "doy": 15
+  },
+  "expected": {
+   "ra_mj_m2_day": 18.925
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "Ra lat 0.0 day 80 (FAO-56 eq. 21)",
+  "fn": "extraterrestrial_radiation",
+  "input": {
+   "lat": 0.0,
+   "doy": 80
+  },
+  "expected": {
+   "ra_mj_m2_day": 37.824
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "Hargreaves-Samani tmin 15 tmax 30 lat 33.6 day 180 (eq. 52)",
+  "fn": "hargreaves_et0",
+  "input": {
+   "tmin": 15,
+   "tmax": 30,
+   "lat": 33.6,
+   "doy": 180
+  },
+  "expected": {
+   "et0_mm": 6.066
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "Hargreaves-Samani tmin 5 tmax 16 lat 33.6 day 15 (eq. 52)",
+  "fn": "hargreaves_et0",
+  "input": {
+   "tmin": 5,
+   "tmax": 16,
+   "lat": 33.6,
+   "doy": 15
+  },
+  "expected": {
+   "et0_mm": 1.667
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "Hargreaves-Samani tmin 12 tmax 28 lat 31.6 day 120 (eq. 52)",
+  "fn": "hargreaves_et0",
+  "input": {
+   "tmin": 12,
+   "tmax": 28,
+   "lat": 31.6,
+   "doy": 120
+  },
+  "expected": {
+   "et0_mm": 5.475
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "gateway et0 wins and is labelled gateway",
+  "fn": "resolve_et0",
+  "input": {
+   "gateway_et0_mm": 4.2,
+   "tmin": 15,
+   "tmax": 30,
+   "lat": 33.6,
+   "doy": 180
+  },
+  "expected": {
+   "et0_mm": 4.2,
+   "method": "gateway"
+  }
+ },
+ {
+  "name": "no gateway et0: Hargreaves",
+  "fn": "resolve_et0",
+  "input": {
+   "gateway_et0_mm": null,
+   "tmin": 15,
+   "tmax": 30,
+   "lat": 33.6,
+   "doy": 180
+  },
+  "expected": {
+   "et0_mm": 6.066,
+   "method": "hargreaves"
+  },
+  "tol": 0.01
+ },
+ {
+  "name": "no et0 and no temperatures: nothing is invented",
+  "fn": "resolve_et0",
+  "input": {
+   "gateway_et0_mm": null,
+   "tmin": null,
+   "tmax": null,
+   "lat": 33.6,
+   "doy": 180
+  },
+  "expected": {
+   "et0_mm": null,
+   "method": null,
+   "unavailable_reason": "no_weather"
+  }
+ },
+ {
+  "name": "gateway et0 of zero is a value, not an absence",
+  "fn": "resolve_et0",
+  "input": {
+   "gateway_et0_mm": 0,
+   "tmin": 15,
+   "tmax": 30,
+   "lat": 33.6,
+   "doy": 180
+  },
+  "expected": {
+   "et0_mm": 0,
+   "method": "gateway"
+  }
+ }
+]

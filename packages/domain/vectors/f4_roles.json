@@ -1,0 +1,152 @@
+[
+ {
+  "role": "owner",
+  "action": "irrigation_system.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "irrigation_system.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "irrigation_system.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "irrigation_system.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "irrigation_system.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "irrigation_system.write",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "advice.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "advice.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "advice.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "irrigation.record",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "irrigation.record",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "irrigation.record",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "irrigation.correct",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "irrigation.correct",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "irrigation.correct",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "consumption.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "consumption.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "consumption.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "water_analysis.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "water_analysis.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "water_analysis.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "water_analysis.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "water_analysis.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "water_analysis.write",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "moisture.ingest",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "moisture.ingest",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "moisture.ingest",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "irrigation.delete",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "irrigation.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "irrigation.delete",
+  "allowed": false
+ }
+]

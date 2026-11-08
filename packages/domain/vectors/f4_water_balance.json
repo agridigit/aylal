@@ -1,0 +1,255 @@
+[
+ {
+  "name": "replay: depletion grows, rain and irrigation refill, floor at field capacity",
+  "fn": "replay_balance",
+  "input": {
+   "taw_mm": 60,
+   "initial_depletion_mm": 0,
+   "days": [
+    {
+     "day": "2026-06-01",
+     "et0_mm": 5,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-02",
+     "et0_mm": 6,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-03",
+     "et0_mm": 4,
+     "kc": 0.5,
+     "rain_eff_mm": 10,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-04",
+     "et0_mm": 3,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 20
+    }
+   ]
+  },
+  "expected": {
+   "days": [
+    {
+     "day": "2026-06-01",
+     "etc_mm": 5.0,
+     "depletion_mm": 5.0
+    },
+    {
+     "day": "2026-06-02",
+     "etc_mm": 6.0,
+     "depletion_mm": 11.0
+    },
+    {
+     "day": "2026-06-03",
+     "etc_mm": 2.0,
+     "depletion_mm": 3.0
+    },
+    {
+     "day": "2026-06-04",
+     "etc_mm": 3.0,
+     "depletion_mm": 0
+    }
+   ]
+  }
+ },
+ {
+  "name": "depletion is capped at TAW",
+  "fn": "replay_balance",
+  "input": {
+   "taw_mm": 30,
+   "initial_depletion_mm": 0,
+   "days": [
+    {
+     "day": "2026-07-01",
+     "et0_mm": 9,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-07-02",
+     "et0_mm": 9,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-07-03",
+     "et0_mm": 9,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-07-04",
+     "et0_mm": 9,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-07-05",
+     "et0_mm": 9,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    }
+   ]
+  },
+  "expected": {
+   "days": [
+    {
+     "day": "2026-07-01",
+     "etc_mm": 9.0,
+     "depletion_mm": 9.0
+    },
+    {
+     "day": "2026-07-02",
+     "etc_mm": 9.0,
+     "depletion_mm": 18.0
+    },
+    {
+     "day": "2026-07-03",
+     "etc_mm": 9.0,
+     "depletion_mm": 27.0
+    },
+    {
+     "day": "2026-07-04",
+     "etc_mm": 9.0,
+     "depletion_mm": 30
+    },
+    {
+     "day": "2026-07-05",
+     "etc_mm": 9.0,
+     "depletion_mm": 30
+    }
+   ]
+  }
+ },
+ {
+  "name": "a sensor measurement replaces the depletion of the measured day (FR-015)",
+  "fn": "replay_balance",
+  "input": {
+   "taw_mm": 60,
+   "initial_depletion_mm": 0,
+   "days": [
+    {
+     "day": "2026-06-01",
+     "et0_mm": 5,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-02",
+     "et0_mm": 6,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0,
+     "moisture_depletion_mm": 20
+    },
+    {
+     "day": "2026-06-03",
+     "et0_mm": 4,
+     "kc": 0.5,
+     "rain_eff_mm": 10,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-04",
+     "et0_mm": 3,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 20
+    }
+   ]
+  },
+  "expected": {
+   "days": [
+    {
+     "day": "2026-06-01",
+     "etc_mm": 5.0,
+     "depletion_mm": 5.0
+    },
+    {
+     "day": "2026-06-02",
+     "etc_mm": 6.0,
+     "depletion_mm": 20
+    },
+    {
+     "day": "2026-06-03",
+     "etc_mm": 2.0,
+     "depletion_mm": 12.0
+    },
+    {
+     "day": "2026-06-04",
+     "etc_mm": 3.0,
+     "depletion_mm": 0
+    }
+   ]
+  }
+ },
+ {
+  "name": "initial state at field capacity is the stated assumption",
+  "fn": "replay_balance",
+  "input": {
+   "taw_mm": 60,
+   "initial_depletion_mm": 0,
+   "days": []
+  },
+  "expected": {
+   "days": []
+  }
+ },
+ {
+  "name": "no taw: unavailable, never a default reserve",
+  "fn": "replay_balance",
+  "input": {
+   "taw_mm": null,
+   "initial_depletion_mm": 0,
+   "days": [
+    {
+     "day": "2026-06-01",
+     "et0_mm": 5,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-02",
+     "et0_mm": 6,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-03",
+     "et0_mm": 4,
+     "kc": 0.5,
+     "rain_eff_mm": 10,
+     "irrigation_net_mm": 0
+    },
+    {
+     "day": "2026-06-04",
+     "et0_mm": 3,
+     "kc": 1.0,
+     "rain_eff_mm": 0,
+     "irrigation_net_mm": 20
+    }
+   ]
+  },
+  "expected": {
+   "days": null,
+   "unavailable_reason": "no_soil_reserve"
+  }
+ }
+]

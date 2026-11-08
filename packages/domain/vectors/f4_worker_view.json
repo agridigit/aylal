@@ -1,0 +1,817 @@
+{
+ "whitelist": [
+  "et0",
+  "kc",
+  "effective_rain",
+  "efficiency",
+  "application_rate",
+  "rain_source"
+ ],
+ "cases": [
+  {
+   "name": "worker assumptions keep only the whitelist, in order",
+   "fn": "worker_assumptions",
+   "input": {
+    "assumptions": [
+     {
+      "key": "et0",
+      "value": 5.1,
+      "source": "gateway"
+     },
+     {
+      "key": "kc",
+      "value": 0.7,
+      "source": "referential"
+     },
+     {
+      "key": "effective_rain",
+      "value": 0,
+      "source": "computed"
+     },
+     {
+      "key": "efficiency",
+      "value": 0.9,
+      "source": "default"
+     },
+     {
+      "key": "application_rate",
+      "value": 4,
+      "source": "computed"
+     },
+     {
+      "key": "rain_source",
+      "value": "forecast",
+      "source": "gateway"
+     },
+     {
+      "key": "ece_ds_m",
+      "value": 3.2,
+      "source": "user"
+     },
+     {
+      "key": "water_source",
+      "value": "well",
+      "source": "user"
+     },
+     {
+      "key": "analysis_age_days",
+      "value": 400,
+      "source": "computed"
+     },
+     {
+      "key": "soil_texture",
+      "value": "a",
+      "source": "referential"
+     },
+     {
+      "key": "taw_mm",
+      "value": 60,
+      "source": "computed"
+     },
+     {
+      "key": "leaching_fraction",
+      "value": 0.08,
+      "source": "computed"
+     },
+     {
+      "key": "x_future",
+      "value": 1,
+      "source": "computed"
+     }
+    ]
+   },
+   "expected": {
+    "assumptions": [
+     {
+      "key": "et0",
+      "value": 5.1,
+      "source": "gateway"
+     },
+     {
+      "key": "kc",
+      "value": 0.7,
+      "source": "referential"
+     },
+     {
+      "key": "effective_rain",
+      "value": 0,
+      "source": "computed"
+     },
+     {
+      "key": "efficiency",
+      "value": 0.9,
+      "source": "default"
+     },
+     {
+      "key": "application_rate",
+      "value": 4,
+      "source": "computed"
+     },
+     {
+      "key": "rain_source",
+      "value": "forecast",
+      "source": "gateway"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a future key is dropped (deny by default)",
+   "fn": "worker_assumptions",
+   "input": {
+    "assumptions": [
+     {
+      "key": "x_future",
+      "value": 1,
+      "source": "computed"
+     }
+    ]
+   },
+   "expected": {
+    "assumptions": []
+   }
+  },
+  {
+   "name": "worker advice view: no leaching_fraction, whitelisted assumptions, unknown top-level key dropped",
+   "fn": "advice_view",
+   "input": {
+    "role": "worker",
+    "advice": {
+     "parcel_id": "11111111-1111-4111-8111-111111111111",
+     "for_date": "2026-06-04",
+     "kind": "irrigate",
+     "total_minutes": 400,
+     "sectors": [
+      {
+       "sector_no": 1,
+       "minutes": 200,
+       "volume_m3": 1
+      }
+     ],
+     "net_need_mm": 18,
+     "leaching_fraction": 0.08,
+     "stress_level": null,
+     "confidence": "medium",
+     "assumptions": [
+      {
+       "key": "et0",
+       "value": 5.1,
+       "source": "gateway"
+      },
+      {
+       "key": "kc",
+       "value": 0.7,
+       "source": "referential"
+      },
+      {
+       "key": "effective_rain",
+       "value": 0,
+       "source": "computed"
+      },
+      {
+       "key": "efficiency",
+       "value": 0.9,
+       "source": "default"
+      },
+      {
+       "key": "application_rate",
+       "value": 4,
+       "source": "computed"
+      },
+      {
+       "key": "rain_source",
+       "value": "forecast",
+       "source": "gateway"
+      },
+      {
+       "key": "ece_ds_m",
+       "value": 3.2,
+       "source": "user"
+      },
+      {
+       "key": "water_source",
+       "value": "well",
+       "source": "user"
+      },
+      {
+       "key": "analysis_age_days",
+       "value": 400,
+       "source": "computed"
+      },
+      {
+       "key": "soil_texture",
+       "value": "a",
+       "source": "referential"
+      },
+      {
+       "key": "taw_mm",
+       "value": 60,
+       "source": "computed"
+      },
+      {
+       "key": "leaching_fraction",
+       "value": 0.08,
+       "source": "computed"
+      },
+      {
+       "key": "x_future",
+       "value": 1,
+       "source": "computed"
+      }
+     ],
+     "unavailable_reason": null,
+     "computed_at": "2026-06-04T02:00:00Z",
+     "is_last_known": false,
+     "ready_before_7": true,
+     "x_future_top": {
+      "ece": 3
+     }
+    }
+   },
+   "expected": {
+    "parcel_id": "11111111-1111-4111-8111-111111111111",
+    "for_date": "2026-06-04",
+    "kind": "irrigate",
+    "total_minutes": 400,
+    "sectors": [
+     {
+      "sector_no": 1,
+      "minutes": 200,
+      "volume_m3": 1
+     }
+    ],
+    "net_need_mm": 18,
+    "stress_level": null,
+    "confidence": "medium",
+    "assumptions": [
+     {
+      "key": "et0",
+      "value": 5.1,
+      "source": "gateway"
+     },
+     {
+      "key": "kc",
+      "value": 0.7,
+      "source": "referential"
+     },
+     {
+      "key": "effective_rain",
+      "value": 0,
+      "source": "computed"
+     },
+     {
+      "key": "efficiency",
+      "value": 0.9,
+      "source": "default"
+     },
+     {
+      "key": "application_rate",
+      "value": 4,
+      "source": "computed"
+     },
+     {
+      "key": "rain_source",
+      "value": "forecast",
+      "source": "gateway"
+     }
+    ],
+    "unavailable_reason": null,
+    "computed_at": "2026-06-04T02:00:00Z",
+    "is_last_known": false,
+    "ready_before_7": true
+   },
+   "exact": true
+  },
+  {
+   "name": "manager sees the complete advice unchanged",
+   "fn": "advice_view",
+   "input": {
+    "role": "manager",
+    "advice": {
+     "parcel_id": "11111111-1111-4111-8111-111111111111",
+     "for_date": "2026-06-04",
+     "kind": "irrigate",
+     "total_minutes": 400,
+     "sectors": [
+      {
+       "sector_no": 1,
+       "minutes": 200,
+       "volume_m3": 1
+      }
+     ],
+     "net_need_mm": 18,
+     "leaching_fraction": 0.08,
+     "stress_level": null,
+     "confidence": "medium",
+     "assumptions": [
+      {
+       "key": "et0",
+       "value": 5.1,
+       "source": "gateway"
+      },
+      {
+       "key": "kc",
+       "value": 0.7,
+       "source": "referential"
+      },
+      {
+       "key": "effective_rain",
+       "value": 0,
+       "source": "computed"
+      },
+      {
+       "key": "efficiency",
+       "value": 0.9,
+       "source": "default"
+      },
+      {
+       "key": "application_rate",
+       "value": 4,
+       "source": "computed"
+      },
+      {
+       "key": "rain_source",
+       "value": "forecast",
+       "source": "gateway"
+      },
+      {
+       "key": "ece_ds_m",
+       "value": 3.2,
+       "source": "user"
+      },
+      {
+       "key": "water_source",
+       "value": "well",
+       "source": "user"
+      },
+      {
+       "key": "analysis_age_days",
+       "value": 400,
+       "source": "computed"
+      },
+      {
+       "key": "soil_texture",
+       "value": "a",
+       "source": "referential"
+      },
+      {
+       "key": "taw_mm",
+       "value": 60,
+       "source": "computed"
+      },
+      {
+       "key": "leaching_fraction",
+       "value": 0.08,
+       "source": "computed"
+      },
+      {
+       "key": "x_future",
+       "value": 1,
+       "source": "computed"
+      }
+     ],
+     "unavailable_reason": null,
+     "computed_at": "2026-06-04T02:00:00Z",
+     "is_last_known": false,
+     "ready_before_7": true,
+     "x_future_top": {
+      "ece": 3
+     }
+    }
+   },
+   "expected": {
+    "parcel_id": "11111111-1111-4111-8111-111111111111",
+    "for_date": "2026-06-04",
+    "kind": "irrigate",
+    "total_minutes": 400,
+    "sectors": [
+     {
+      "sector_no": 1,
+      "minutes": 200,
+      "volume_m3": 1
+     }
+    ],
+    "net_need_mm": 18,
+    "leaching_fraction": 0.08,
+    "stress_level": null,
+    "confidence": "medium",
+    "assumptions": [
+     {
+      "key": "et0",
+      "value": 5.1,
+      "source": "gateway"
+     },
+     {
+      "key": "kc",
+      "value": 0.7,
+      "source": "referential"
+     },
+     {
+      "key": "effective_rain",
+      "value": 0,
+      "source": "computed"
+     },
+     {
+      "key": "efficiency",
+      "value": 0.9,
+      "source": "default"
+     },
+     {
+      "key": "application_rate",
+      "value": 4,
+      "source": "computed"
+     },
+     {
+      "key": "rain_source",
+      "value": "forecast",
+      "source": "gateway"
+     },
+     {
+      "key": "ece_ds_m",
+      "value": 3.2,
+      "source": "user"
+     },
+     {
+      "key": "water_source",
+      "value": "well",
+      "source": "user"
+     },
+     {
+      "key": "analysis_age_days",
+      "value": 400,
+      "source": "computed"
+     },
+     {
+      "key": "soil_texture",
+      "value": "a",
+      "source": "referential"
+     },
+     {
+      "key": "taw_mm",
+      "value": 60,
+      "source": "computed"
+     },
+     {
+      "key": "leaching_fraction",
+      "value": 0.08,
+      "source": "computed"
+     },
+     {
+      "key": "x_future",
+      "value": 1,
+      "source": "computed"
+     }
+    ],
+    "unavailable_reason": null,
+    "computed_at": "2026-06-04T02:00:00Z",
+    "is_last_known": false,
+    "ready_before_7": true,
+    "x_future_top": {
+     "ece": 3
+    }
+   },
+   "exact": true
+  },
+  {
+   "name": "owner sees the complete advice unchanged",
+   "fn": "advice_view",
+   "input": {
+    "role": "owner",
+    "advice": {
+     "parcel_id": "11111111-1111-4111-8111-111111111111",
+     "for_date": "2026-06-04",
+     "kind": "irrigate",
+     "total_minutes": 400,
+     "sectors": [
+      {
+       "sector_no": 1,
+       "minutes": 200,
+       "volume_m3": 1
+      }
+     ],
+     "net_need_mm": 18,
+     "leaching_fraction": 0.08,
+     "stress_level": null,
+     "confidence": "medium",
+     "assumptions": [
+      {
+       "key": "et0",
+       "value": 5.1,
+       "source": "gateway"
+      },
+      {
+       "key": "kc",
+       "value": 0.7,
+       "source": "referential"
+      },
+      {
+       "key": "effective_rain",
+       "value": 0,
+       "source": "computed"
+      },
+      {
+       "key": "efficiency",
+       "value": 0.9,
+       "source": "default"
+      },
+      {
+       "key": "application_rate",
+       "value": 4,
+       "source": "computed"
+      },
+      {
+       "key": "rain_source",
+       "value": "forecast",
+       "source": "gateway"
+      },
+      {
+       "key": "ece_ds_m",
+       "value": 3.2,
+       "source": "user"
+      },
+      {
+       "key": "water_source",
+       "value": "well",
+       "source": "user"
+      },
+      {
+       "key": "analysis_age_days",
+       "value": 400,
+       "source": "computed"
+      },
+      {
+       "key": "soil_texture",
+       "value": "a",
+       "source": "referential"
+      },
+      {
+       "key": "taw_mm",
+       "value": 60,
+       "source": "computed"
+      },
+      {
+       "key": "leaching_fraction",
+       "value": 0.08,
+       "source": "computed"
+      },
+      {
+       "key": "x_future",
+       "value": 1,
+       "source": "computed"
+      }
+     ],
+     "unavailable_reason": null,
+     "computed_at": "2026-06-04T02:00:00Z",
+     "is_last_known": false,
+     "ready_before_7": true,
+     "x_future_top": {
+      "ece": 3
+     }
+    }
+   },
+   "expected": {
+    "parcel_id": "11111111-1111-4111-8111-111111111111",
+    "for_date": "2026-06-04",
+    "kind": "irrigate",
+    "total_minutes": 400,
+    "sectors": [
+     {
+      "sector_no": 1,
+      "minutes": 200,
+      "volume_m3": 1
+     }
+    ],
+    "net_need_mm": 18,
+    "leaching_fraction": 0.08,
+    "stress_level": null,
+    "confidence": "medium",
+    "assumptions": [
+     {
+      "key": "et0",
+      "value": 5.1,
+      "source": "gateway"
+     },
+     {
+      "key": "kc",
+      "value": 0.7,
+      "source": "referential"
+     },
+     {
+      "key": "effective_rain",
+      "value": 0,
+      "source": "computed"
+     },
+     {
+      "key": "efficiency",
+      "value": 0.9,
+      "source": "default"
+     },
+     {
+      "key": "application_rate",
+      "value": 4,
+      "source": "computed"
+     },
+     {
+      "key": "rain_source",
+      "value": "forecast",
+      "source": "gateway"
+     },
+     {
+      "key": "ece_ds_m",
+      "value": 3.2,
+      "source": "user"
+     },
+     {
+      "key": "water_source",
+      "value": "well",
+      "source": "user"
+     },
+     {
+      "key": "analysis_age_days",
+      "value": 400,
+      "source": "computed"
+     },
+     {
+      "key": "soil_texture",
+      "value": "a",
+      "source": "referential"
+     },
+     {
+      "key": "taw_mm",
+      "value": 60,
+      "source": "computed"
+     },
+     {
+      "key": "leaching_fraction",
+      "value": 0.08,
+      "source": "computed"
+     },
+     {
+      "key": "x_future",
+      "value": 1,
+      "source": "computed"
+     }
+    ],
+    "unavailable_reason": null,
+    "computed_at": "2026-06-04T02:00:00Z",
+    "is_last_known": false,
+    "ready_before_7": true,
+    "x_future_top": {
+     "ece": 3
+    }
+   },
+   "exact": true
+  },
+  {
+   "name": "an unknown role gets the worker view (deny by default)",
+   "fn": "advice_view",
+   "input": {
+    "role": "intruder",
+    "advice": {
+     "parcel_id": "11111111-1111-4111-8111-111111111111",
+     "for_date": "2026-06-04",
+     "kind": "irrigate",
+     "total_minutes": 400,
+     "sectors": [
+      {
+       "sector_no": 1,
+       "minutes": 200,
+       "volume_m3": 1
+      }
+     ],
+     "net_need_mm": 18,
+     "leaching_fraction": 0.08,
+     "stress_level": null,
+     "confidence": "medium",
+     "assumptions": [
+      {
+       "key": "et0",
+       "value": 5.1,
+       "source": "gateway"
+      },
+      {
+       "key": "kc",
+       "value": 0.7,
+       "source": "referential"
+      },
+      {
+       "key": "effective_rain",
+       "value": 0,
+       "source": "computed"
+      },
+      {
+       "key": "efficiency",
+       "value": 0.9,
+       "source": "default"
+      },
+      {
+       "key": "application_rate",
+       "value": 4,
+       "source": "computed"
+      },
+      {
+       "key": "rain_source",
+       "value": "forecast",
+       "source": "gateway"
+      },
+      {
+       "key": "ece_ds_m",
+       "value": 3.2,
+       "source": "user"
+      },
+      {
+       "key": "water_source",
+       "value": "well",
+       "source": "user"
+      },
+      {
+       "key": "analysis_age_days",
+       "value": 400,
+       "source": "computed"
+      },
+      {
+       "key": "soil_texture",
+       "value": "a",
+       "source": "referential"
+      },
+      {
+       "key": "taw_mm",
+       "value": 60,
+       "source": "computed"
+      },
+      {
+       "key": "leaching_fraction",
+       "value": 0.08,
+       "source": "computed"
+      },
+      {
+       "key": "x_future",
+       "value": 1,
+       "source": "computed"
+      }
+     ],
+     "unavailable_reason": null,
+     "computed_at": "2026-06-04T02:00:00Z",
+     "is_last_known": false,
+     "ready_before_7": true,
+     "x_future_top": {
+      "ece": 3
+     }
+    }
+   },
+   "expected": {
+    "parcel_id": "11111111-1111-4111-8111-111111111111",
+    "for_date": "2026-06-04",
+    "kind": "irrigate",
+    "total_minutes": 400,
+    "sectors": [
+     {
+      "sector_no": 1,
+      "minutes": 200,
+      "volume_m3": 1
+     }
+    ],
+    "net_need_mm": 18,
+    "stress_level": null,
+    "confidence": "medium",
+    "assumptions": [
+     {
+      "key": "et0",
+      "value": 5.1,
+      "source": "gateway"
+     },
+     {
+      "key": "kc",
+      "value": 0.7,
+      "source": "referential"
+     },
+     {
+      "key": "effective_rain",
+      "value": 0,
+      "source": "computed"
+     },
+     {
+      "key": "efficiency",
+      "value": 0.9,
+      "source": "default"
+     },
+     {
+      "key": "application_rate",
+      "value": 4,
+      "source": "computed"
+     },
+     {
+      "key": "rain_source",
+      "value": "forecast",
+      "source": "gateway"
+     }
+    ],
+    "unavailable_reason": null,
+    "computed_at": "2026-06-04T02:00:00Z",
+    "is_last_known": false,
+    "ready_before_7": true
+   },
+   "exact": true
+  }
+ ]
+}

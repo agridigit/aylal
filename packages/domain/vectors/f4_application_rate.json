@@ -1,0 +1,133 @@
+[
+ {
+  "name": "drip with emitters: 4 L/h over 0.5 m x 2 m is 4 mm/h",
+  "fn": "application_rate",
+  "input": {
+   "kind": "drip",
+   "emitter_flow_lph": 4,
+   "emitter_spacing_m": 0.5,
+   "row_spacing_m": 2,
+   "pump_flow_m3h": null,
+   "sectors_count": 1,
+   "area_m2": 10000
+  },
+  "expected": {
+   "rate_mm_h": 4
+  }
+ },
+ {
+  "name": "pump flow: 20 m3/h over 4 equal sectors of a 10 ha parcel is 0.8 mm/h",
+  "fn": "application_rate",
+  "input": {
+   "kind": "sprinkler",
+   "emitter_flow_lph": null,
+   "emitter_spacing_m": null,
+   "row_spacing_m": null,
+   "pump_flow_m3h": 20,
+   "sectors_count": 4,
+   "area_m2": 100000
+  },
+  "expected": {
+   "rate_mm_h": 0.8
+  }
+ },
+ {
+  "name": "drip described by pump only is accepted",
+  "fn": "application_rate",
+  "input": {
+   "kind": "drip",
+   "emitter_flow_lph": null,
+   "emitter_spacing_m": null,
+   "row_spacing_m": null,
+   "pump_flow_m3h": 10,
+   "sectors_count": 2,
+   "area_m2": 50000
+  },
+  "expected": {
+   "rate_mm_h": 0.4
+  }
+ },
+ {
+  "name": "zero emitter spacing gives no rate, never infinity",
+  "fn": "application_rate",
+  "input": {
+   "kind": "drip",
+   "emitter_flow_lph": 4,
+   "emitter_spacing_m": 0,
+   "row_spacing_m": 2,
+   "pump_flow_m3h": null,
+   "sectors_count": 1,
+   "area_m2": 10000
+  },
+  "expected": {
+   "rate_mm_h": null
+  }
+ },
+ {
+  "name": "pump flow without surface gives no rate",
+  "fn": "application_rate",
+  "input": {
+   "kind": "pivot",
+   "emitter_flow_lph": null,
+   "emitter_spacing_m": null,
+   "row_spacing_m": null,
+   "pump_flow_m3h": 20,
+   "sectors_count": 1,
+   "area_m2": null
+  },
+  "expected": {
+   "rate_mm_h": null
+  }
+ },
+ {
+  "name": "duration = net need / (efficiency x rate): drip",
+  "fn": "irrigation_minutes",
+  "input": {
+   "net_need_mm": 4,
+   "efficiency": 0.9,
+   "rate_mm_h": 4
+  },
+  "expected": {
+   "minutes": 67
+  },
+  "tol": 0
+ },
+ {
+  "name": "duration: sprinkler 75 %",
+  "fn": "irrigation_minutes",
+  "input": {
+   "net_need_mm": 5,
+   "efficiency": 0.75,
+   "rate_mm_h": 5
+  },
+  "expected": {
+   "minutes": 80
+  },
+  "tol": 0
+ },
+ {
+  "name": "duration: gravity 60 %",
+  "fn": "irrigation_minutes",
+  "input": {
+   "net_need_mm": 6,
+   "efficiency": 0.6,
+   "rate_mm_h": 3
+  },
+  "expected": {
+   "minutes": 200
+  },
+  "tol": 0
+ },
+ {
+  "name": "duration without a rate is null, never a default",
+  "fn": "irrigation_minutes",
+  "input": {
+   "net_need_mm": 6,
+   "efficiency": 0.6,
+   "rate_mm_h": null
+  },
+  "expected": {
+   "minutes": null
+  }
+ }
+]
