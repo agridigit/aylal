@@ -84,33 +84,33 @@
 ## Phase 3 : Récit 1 — Décrire mon installation d'irrigation (P1) [US1]
 
 ### RED
-- [ ] T047 [P] [US1] Unitaire `packages/domain/tests/irrigation-efficiency.test.ts` (étendu), `services/api/tests/unit/test_f4_irrigation_system_validation.py` : R1-A2 (débit de pompe sans goutteurs ni écartements accepté), R1-A3 (efficience par défaut par type, pivot = aspersion, visible), R1-A5 (débit <= 0, écartement nul -> champ nommé, clé i18n), débit par m² (goutteurs/écartements ; pompe / surface de secteur égale).
-- [ ] T048 [P] [US1] Intégration `services/api/tests/integration/test_f4_irrigation_system.py` : R1-A1 (enregistrement rattaché à la parcelle), modification -> version conservée (<= 50), 1 installation active par parcelle, parcelle non irriguée/pluviale, verrou de ferme.
-- [ ] T049 [P] [US1] Intégration synchro `services/api/tests/integration/test_f4_system_sync.py` : R1-A4 (écriture hors ligne rejouée sans perte, idempotente) ; `apps/mobile/src/irrigation/__tests__/system.local.test.ts` (SQLite).
-- [ ] T050 [US1] E2E API `services/api/tests/e2e/test_f4_us1_system_e2e.py` : R1-A1..A5 de bout en bout (REST + sync, ouvrier 403 en écriture).
+- [x] T047 [P] [US1] Unitaire `packages/domain/tests/irrigation-efficiency.test.ts` (étendu), `services/api/tests/unit/test_f4_irrigation_system_validation.py` : R1-A2 (débit de pompe sans goutteurs ni écartements accepté), R1-A3 (efficience par défaut par type, pivot = aspersion, visible), R1-A5 (débit <= 0, écartement nul -> champ nommé, clé i18n), débit par m² (goutteurs/écartements ; pompe / surface de secteur égale).
+- [x] T048 [P] [US1] Intégration `services/api/tests/integration/test_f4_irrigation_system.py` : R1-A1 (enregistrement rattaché à la parcelle), modification -> version conservée (<= 50), 1 installation active par parcelle, parcelle non irriguée/pluviale, verrou de ferme.
+- [x] T049 [P] [US1] Intégration synchro `services/api/tests/integration/test_f4_system_sync.py` : R1-A4 (écriture hors ligne rejouée sans perte, idempotente) ; `apps/mobile/src/irrigation/__tests__/system.local.test.ts` (SQLite).
+- [x] T050 [US1] E2E API `services/api/tests/e2e/test_f4_us1_system_e2e.py` : R1-A1..A5 de bout en bout (REST + sync, ouvrier 403 en écriture).
 ### GREEN
-- [ ] T051 [US1] `services/api/app/irrigation/service.py` (installations, versions), `services/api/app/routers/irrigation_systems.py`, `services/api/app/sync/irrigation.py` (volet installation), `apps/mobile/src/irrigation/viewModels/system.ts` ; fait passer T047-T050. REFACTOR.
+- [x] T051 [US1] `services/api/app/irrigation/service.py` (installations, versions), `services/api/app/routers/irrigation_systems.py`, `services/api/app/sync/irrigation.py` (volet installation), `apps/mobile/src/irrigation/viewModels/system.ts` ; fait passer T047-T050. REFACTOR.
 
 ## Phase 4 : Récit 2 — Conseil quotidien d'irrigation (P1) [US2]
 
 ### RED
-- [ ] T052 [P] [US2] Unitaire domaine (vecteurs `f4_advice`, `f4_water_balance`, `f4_effective_rain`, `f4_et0`, `f4_confidence`, `f4_stress`) : R2-A2 (> 10 mm strict -> `postpone_rain`), R2-A3 (hypothèses : ET0, Kc, pluie efficace, sol, efficience), R2-A4 (durée = besoin net / (efficience × débit par m²)), R2-A5 (sol inconnu -> réserve la plus faible du référentiel, signalée), R2-A6 (confiance abaissée, dernier conseil daté), R2-A7 (pluvial : `rainfed_stress`, aucun conseil d'irrigation), CL (serre : pluie ignorée ; état initial à la capacité au champ).
-- [ ] T053 [P] [US2] Intégration `services/api/tests/integration/test_f4_advice.py` : R2-A1 (conseil lu avant 7 h locale, horloge injectée), R2-A2, R2-A3 (`/irrigation/advice` ferme et parcelle, `/balance`), R2-A5, R2-A6, R2-A7 ; ouvrier : parcelles attribuées non archivées ; lecture = cache seul.
-- [ ] T054 [P] [US2] Worker `services/workers/tests/test_f4_compute_plans.py` : planification 03:00 locale puis à chaque météo reçue, prêt avant 7 h, parcelle archivée exclue, 1 job actif/parcelle, <= 5/ferme, verrou `irrigation:{farm}`, mise en file `recompute_status` si le conseil change ; `services/workers/tests/test_f4_reminders.py` : rappel du matin par utilisateur actif, parcelles visibles seulement, journal `irrigation_notification_log`, jamais de rappel pour archivée/membre retiré.
-- [ ] T055 [P] [US2] Mobile `apps/mobile/src/irrigation/__tests__/{localBalance,adviceVoice}.test.ts` : R2-A6 hors ligne, SC-005 (30 jours simulés, bilan local = serveur sur vecteurs partagés ; pour l'ouvrier, pas de réserve utile locale : lecture du dernier conseil `worker_assumptions` synchronisé, décisions point 19), lecture vocale du conseil.
-- [ ] T056 [US2] E2E API `services/api/tests/e2e/test_f4_us2_advice_e2e.py` : R2-A1..A7 (météo simulée via passerelle factice, horloge injectée, référentiel de test).
+- [x] T052 [P] [US2] Unitaire domaine (vecteurs `f4_advice`, `f4_water_balance`, `f4_effective_rain`, `f4_et0`, `f4_confidence`, `f4_stress`) : R2-A2 (> 10 mm strict -> `postpone_rain`), R2-A3 (hypothèses : ET0, Kc, pluie efficace, sol, efficience), R2-A4 (durée = besoin net / (efficience × débit par m²)), R2-A5 (sol inconnu -> réserve la plus faible du référentiel, signalée), R2-A6 (confiance abaissée, dernier conseil daté), R2-A7 (pluvial : `rainfed_stress`, aucun conseil d'irrigation), CL (serre : pluie ignorée ; état initial à la capacité au champ).
+- [x] T053 [P] [US2] Intégration `services/api/tests/integration/test_f4_advice.py` : R2-A1 (conseil lu avant 7 h locale, horloge injectée), R2-A2, R2-A3 (`/irrigation/advice` ferme et parcelle, `/balance`), R2-A5, R2-A6, R2-A7 ; ouvrier : parcelles attribuées non archivées ; lecture = cache seul.
+- [x] T054 [P] [US2] Worker `services/workers/tests/test_f4_compute_plans.py` : planification 03:00 locale puis à chaque météo reçue, prêt avant 7 h, parcelle archivée exclue, 1 job actif/parcelle, <= 5/ferme, verrou `irrigation:{farm}`, mise en file `recompute_status` si le conseil change ; `services/workers/tests/test_f4_reminders.py` : rappel du matin par utilisateur actif, parcelles visibles seulement, journal `irrigation_notification_log`, jamais de rappel pour archivée/membre retiré.
+- [x] T055 [P] [US2] Mobile `apps/mobile/src/irrigation/__tests__/{localBalance,adviceVoice}.test.ts` : R2-A6 hors ligne, SC-005 (30 jours simulés, bilan local = serveur sur vecteurs partagés ; pour l'ouvrier, pas de réserve utile locale : lecture du dernier conseil `worker_assumptions` synchronisé, décisions point 19), lecture vocale du conseil.
+- [x] T056 [US2] E2E API `services/api/tests/e2e/test_f4_us2_advice_e2e.py` : R2-A1..A7 (météo simulée via passerelle factice, horloge injectée, référentiel de test).
 ### GREEN
-- [ ] T057 [US2] `services/api/app/irrigation/{plans.py,weather_input.py}`, `services/api/app/routers/irrigation_advice.py`, `services/workers/tasks/{compute_irrigation_plans.py,send_irrigation_reminders.py}`, `apps/mobile/src/irrigation/{localBalance.ts,adviceVoice.ts,viewModels/advice.ts}` ; fait passer T052-T056. REFACTOR.
+- [x] T057 [US2] `services/api/app/irrigation/{plans.py,weather_input.py}`, `services/api/app/routers/irrigation_advice.py`, `services/workers/tasks/{compute_irrigation_plans.py,send_irrigation_reminders.py}`, `apps/mobile/src/irrigation/{localBalance.ts,adviceVoice.ts,viewModels/advice.ts}` ; fait passer T052-T056. REFACTOR.
 
 ## Phase 5 : Récit 3 — Enregistrer une irrigation en un geste (P1) [US3]
 
 ### RED
-- [ ] T058 [P] [US3] Unitaire `packages/domain/tests/irrigation-units.test.ts` (étendu) et miroir : R3-A2 (durée -> volume et volume -> durée à partir de l'installation), plafonds (24 h, 24/jour/secteur), `possible_duplicate` non bloquant (décisions point 12).
-- [ ] T059 [P] [US3] Intégration `services/api/tests/integration/test_f4_irrigation_events.py` : R3-A1 (« fait » avec la durée conseillée), R3-A3 (recalcul du bilan et du conseil du lendemain, antidatage coalescé), R3-A5 (opération F6 créée, pas de double saisie, `operation_id` serveur), idempotence par `id` client, annulation/correction (ouvrier : les siennes), `irrigation_applied` sans auteur ni note.
-- [ ] T060 [P] [US3] Intégration synchro + mobile `services/api/tests/integration/test_f4_event_sync.py`, `apps/mobile/src/irrigation/__tests__/pendingBadge.test.ts` : R3-A4 (enregistrement local « à envoyer », bilan local immédiat, rejeu sans doublon, SC-002 < 15 s au view model).
-- [ ] T061 [US3] E2E API `services/api/tests/e2e/test_f4_us3_record_e2e.py` : R3-A1..A5 de bout en bout (REST + sync, journal F6, bilan lendemain).
+- [x] T058 [P] [US3] Unitaire `packages/domain/tests/irrigation-units.test.ts` (étendu) et miroir : R3-A2 (durée -> volume et volume -> durée à partir de l'installation), plafonds (24 h, 24/jour/secteur), `possible_duplicate` non bloquant (décisions point 12).
+- [x] T059 [P] [US3] Intégration `services/api/tests/integration/test_f4_irrigation_events.py` : R3-A1 (« fait » avec la durée conseillée), R3-A3 (recalcul du bilan et du conseil du lendemain, antidatage coalescé), R3-A5 (opération F6 créée, pas de double saisie, `operation_id` serveur), idempotence par `id` client, annulation/correction (ouvrier : les siennes), `irrigation_applied` sans auteur ni note.
+- [x] T060 [P] [US3] Intégration synchro + mobile `services/api/tests/integration/test_f4_event_sync.py`, `apps/mobile/src/irrigation/__tests__/pendingBadge.test.ts` : R3-A4 (enregistrement local « à envoyer », bilan local immédiat, rejeu sans doublon, SC-002 < 15 s au view model).
+- [x] T061 [US3] E2E API `services/api/tests/e2e/test_f4_us3_record_e2e.py` : R3-A1..A5 de bout en bout (REST + sync, journal F6, bilan lendemain).
 ### GREEN
-- [ ] T062 [US3] `services/api/app/irrigation/{service.py,corrections.py}`, `services/api/app/routers/irrigation_events.py`, `services/api/app/sync/irrigation.py` (volet événements, opération F6 liée), `apps/mobile/src/irrigation/{pendingBadge.ts,viewModels/record.ts}` ; fait passer T058-T061. REFACTOR.
+- [x] T062 [US3] `services/api/app/irrigation/{service.py,corrections.py}`, `services/api/app/routers/irrigation_events.py`, `services/api/app/sync/irrigation.py` (volet événements, opération F6 liée), `apps/mobile/src/irrigation/{pendingBadge.ts,viewModels/record.ts}` ; fait passer T058-T061. REFACTOR.
 
 ## Phase 6 : Écrans P1 `[écran]` (bloqués par T004 ET fusion de 004-design-system)
 
@@ -126,21 +126,21 @@
 ## Phase 7 : Récit 4 — Suivre l'eau consommée (P2) [US4]
 
 ### RED
-- [ ] T069 [P] [US4] Unitaire `services/api/tests/unit/test_f4_consumption.py` + domaine : R4-A1 (m³ et m³/ha sur la campagne), R4-A2 (ratio par parcelle de surfaces différentes), R4-A3 (campagne vide -> état vide).
-- [ ] T070 [P] [US4] Intégration `services/api/tests/integration/test_f4_consumption.py` : R4-A1..A3, fenêtre <= 24 mois, <= 400 points, curseur, portée ouvrier (G2), toutes sources d'apport.
-- [ ] T071 [US4] E2E API `services/api/tests/e2e/test_f4_us4_consumption_e2e.py` : R4-A1..A3.
+- [x] T069 [P] [US4] Unitaire `services/api/tests/unit/test_f4_consumption.py` + domaine : R4-A1 (m³ et m³/ha sur la campagne), R4-A2 (ratio par parcelle de surfaces différentes), R4-A3 (campagne vide -> état vide).
+- [x] T070 [P] [US4] Intégration `services/api/tests/integration/test_f4_consumption.py` : R4-A1..A3, fenêtre <= 24 mois, <= 400 points, curseur, portée ouvrier (G2), toutes sources d'apport.
+- [x] T071 [US4] E2E API `services/api/tests/e2e/test_f4_us4_consumption_e2e.py` : R4-A1..A3.
 ### GREEN
-- [ ] T072 [US4] `services/api/app/irrigation/consumption.py`, `services/api/app/routers/consumption.py`, `apps/mobile/src/irrigation/viewModels/consumption.ts` ; fait passer T069-T071.
+- [x] T072 [US4] `services/api/app/irrigation/consumption.py`, `services/api/app/routers/consumption.py`, `apps/mobile/src/irrigation/viewModels/consumption.ts` ; fait passer T069-T071.
 - [ ] T073 [écran] [US4] RED puis GREEN `apps/mobile/src/screens/WaterConsumption/` (F4-E4) + `apps/mobile/maestro/consumption.yaml` : R4-A1..A3, 4 états, RTL.
 
 ## Phase 8 : Récit 5 — Analyse d'eau et lessivage (P2) [US5]
 
 ### RED
-- [ ] T074 [P] [US5] Unitaire `packages/domain/tests/leaching.test.ts` (étendu) et miroir : R5-A2 (> seuil -> fraction de lessivage FAO-29 plafonnée `leaching_max`), R5-A3 (<= seuil -> aucune), R5-A4 (âge de l'analyse dans les hypothèses), seuil absent du référentiel -> pas de lessivage + raison.
-- [ ] T075 [P] [US5] Intégration `services/api/tests/integration/test_f4_water_analyses.py` : R5-A1 (rattachée à la parcelle ou à la source), plafonds (<= 50, EC <= 100, date <= aujourd'hui via `Clock`), ouvrier 403/404, jamais supprimée, recalcul du conseil.
-- [ ] T076 [US5] E2E API `services/api/tests/e2e/test_f4_us5_water_analysis_e2e.py` : R5-A1..A4 (salinité faible puis élevée, durées comparées).
+- [x] T074 [P] [US5] Unitaire `packages/domain/tests/leaching.test.ts` (étendu) et miroir : R5-A2 (> seuil -> fraction de lessivage FAO-29 plafonnée `leaching_max`), R5-A3 (<= seuil -> aucune), R5-A4 (âge de l'analyse dans les hypothèses), seuil absent du référentiel -> pas de lessivage + raison.
+- [x] T075 [P] [US5] Intégration `services/api/tests/integration/test_f4_water_analyses.py` : R5-A1 (rattachée à la parcelle ou à la source), plafonds (<= 50, EC <= 100, date <= aujourd'hui via `Clock`), ouvrier 403/404, jamais supprimée, recalcul du conseil.
+- [x] T076 [US5] E2E API `services/api/tests/e2e/test_f4_us5_water_analysis_e2e.py` : R5-A1..A4 (salinité faible puis élevée, durées comparées).
 ### GREEN
-- [ ] T077 [US5] `services/api/app/routers/water_analyses.py`, extension `plans.py` (lessivage), `apps/mobile/src/irrigation/viewModels/waterAnalysis.ts` ; fait passer T074-T076.
+- [x] T077 [US5] `services/api/app/routers/water_analyses.py`, extension `plans.py` (lessivage), `apps/mobile/src/irrigation/viewModels/waterAnalysis.ts` ; fait passer T074-T076.
 - [ ] T078 [écran] [US5] RED puis GREEN `apps/mobile/src/screens/WaterAnalysis/` (F4-E5) + `apps/mobile/maestro/water_analysis.yaml` : R5-A1..A4, 4 états, RTL.
 
 ## Phase finale : Finition

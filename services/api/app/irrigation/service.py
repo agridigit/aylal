@@ -52,6 +52,10 @@ async def lock_farm(session: AsyncSession, farm_id: uuid.UUID) -> None:
 
 
 async def schedule_recompute(session: AsyncSession, farm_id: uuid.UUID, parcel_id: uuid.UUID, from_date: dt.date) -> None:
+    await queue_recompute(session, farm_id, parcel_id, from_date)
+
+
+async def queue_recompute(session: AsyncSession, farm_id: uuid.UUID, parcel_id: uuid.UUID, from_date: dt.date) -> None:
     """One active job per parcel, keeping the OLDEST date; at most 5 active jobs per farm (QuotaExceeded beyond)."""
     await lock_farm(session, farm_id)
     key = {"f": farm_id, "p": parcel_id}
@@ -313,6 +317,10 @@ async def add_analysis(session: AsyncSession, farm_id: uuid.UUID, user_id: uuid.
         {"i": body.id, "f": farm_id, "p": parcel_id, "w": body.water_source or None, "ec": Decimal(repr(body.ec_ds_m)), "d": body.analysed_on, "u": user_id, "at": now},
     )
     row = (await session.execute(text(f"SELECT {cols} FROM water_analyses WHERE farm_id = :f AND id = :i"), {"f": farm_id, "i": body.id})).one()
+    try:
+        await queue_recompute(session, farm_id, parcel_id, today)  # the new salinity changes today's advice; a full queue never fails the write
+    except QuotaExceeded:
+        pass
     return analysis_json(row, today), True
 
 

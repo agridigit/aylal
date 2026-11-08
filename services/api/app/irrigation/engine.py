@@ -280,11 +280,13 @@ async def compute_parcel_plan(db: Db, farm_id: uuid.UUID, parcel_id: uuid.UUID, 
         system = {"efficiency": efficiency["efficiency"], "rate_mm_h": rate, "sectors_count": system_row["sectors_count"]}
     analysis = await _one(db, _ANALYSIS, key)
     leaching = None
+    leaching_reason = None
     if analysis is not None:
-        leaching = leaching_fraction({
+        lr = leaching_fraction({
             "ecw_ds_m": float(analysis["ec_ds_m"]), "ece_threshold_ds_m": _f(crop["ece_threshold_ds_m"]), "ece_max_ds_m": _f(crop["ece_max_ds_m"]),
             "leaching_max": params.get("leaching_max"),
-        })["leaching_fraction"]
+        })
+        leaching, leaching_reason = lr["leaching_fraction"], lr.get("unavailable_reason")
     watch = params.get("stress_watch_ratio")
     advice = compute_advice({
         "irrigated": irrigated, "greenhouse": greenhouse, "has_system": system is not None, "system": system, "depletion_mm": depletion,
@@ -331,6 +333,8 @@ async def compute_parcel_plan(db: Db, farm_id: uuid.UUID, parcel_id: uuid.UUID, 
         ]
         if leaching is not None:
             assumptions.append({"key": "leaching_fraction", "value": round(leaching, 4), "source": "computed"})
+        elif leaching_reason is not None:
+            assumptions.append({"key": "leaching_unavailable_reason", "value": leaching_reason, "source": "computed"})
     if assumed:
         assumptions.append({"key": "initial_state", "value": "field_capacity", "source": "default"})
     out = {
