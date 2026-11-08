@@ -13,7 +13,7 @@ L'agriculteur sait chaque jour si une parcelle irriguée a besoin d'eau, combien
 
 ### Récit 1 — Décrire mon installation d'irrigation (Priorité : P1)
 
-L'agriculteur décrit une fois l'installation d'une parcelle : type (goutte-à-goutte, aspersion, gravitaire), débit des goutteurs et écartements (ou débit de la pompe), nombre de secteurs.
+L'agriculteur décrit une fois l'installation d'une parcelle : type (goutte-à-goutte, aspersion, pivot, gravitaire), débit des goutteurs et écartements (ou débit de la pompe), nombre de secteurs.
 
 **Pourquoi** : sans description de l'installation, aucune durée d'irrigation ne peut être calculée.
 **Test indépendant** : décrire une installation par type, la modifier, puis vérifier que les valeurs servent au calcul de durée.
@@ -22,7 +22,7 @@ L'agriculteur décrit une fois l'installation d'une parcelle : type (goutte-à-g
 
 1. **Étant donné** une parcelle irriguée, **Quand** l'agriculteur saisit le type, le débit des goutteurs, les écartements et le nombre de secteurs, **Alors** l'installation est enregistrée et rattachée à la parcelle.
 2. **Étant donné** une installation décrite par le débit de la pompe, **Quand** l'agriculteur l'enregistre, **Alors** elle est acceptée sans débit de goutteurs ni écartements.
-3. **Étant donné** un type d'installation choisi, **Quand** l'agriculteur ne précise pas l'efficience, **Alors** l'efficience par défaut du type s'applique (goutte-à-goutte 90 %, aspersion 75 %, gravitaire 60 %) et reste visible.
+3. **Étant donné** un type d'installation choisi, **Quand** l'agriculteur ne précise pas l'efficience, **Alors** l'efficience par défaut du type s'applique (goutte-à-goutte 90 %, aspersion 75 %, gravitaire 60 %, pivot traité comme l'aspersion) et reste visible.
 4. **Étant donné** un agriculteur hors réseau, **Quand** il décrit son installation, **Alors** elle est conservée localement puis synchronisée sans perte.
 5. **Étant donné** une valeur incohérente (débit nul ou négatif, écartement nul), **Quand** l'agriculteur valide, **Alors** un message clair indique le champ à corriger.
 
@@ -124,7 +124,12 @@ Un capteur d'humidité du sol ou un compteur connecté corrige le conseil automa
 
 ### Session 2026-11-08
 
-- Aucune clarification ouverte à ce stade ; les points sont tranchés par le CPS section 9 et les décisions de la section 19.
+- Q : Que faire du mode « pivot » (CPS section 7) qui n'a pas d'efficience par défaut en section 9 ? → R : le pivot est traité comme l'aspersion (efficience 75 %), modifiable ; l'hypothèse est visible dans le conseil.
+- Q : « Avant 7 h » selon quelle heure ? → R : heure locale de la ferme (Maroc) ; le conseil est calculé pendant la nuit à partir de la météo disponible (principes hors ligne et sobriété, CPS section 4).
+- Q : Pluie prévue sous serre ? → R : la pluie est ignorée pour une parcelle sous serre (le CPS section 9 est muet ; choix prudent, évite de reporter une irrigation à tort).
+- Q : Les valeurs de lessivage et de confiance ? → R : fixées par validation agronomique (CPS sections 9 et 19), consignées dans le plan ; aucun chiffre inventé dans la spec.
+- Q : Une irrigation enregistrée est-elle un second registre ? → R : non, c'est une opération du journal F6 (CPS sections 11 et 17), sans double saisie.
+- Q : Le report pour pluie est-il définitif ? → R : non, c'est un conseil ; la pluie observée du lendemain corrige le bilan (principe du conseil prudent et traçable, CPS section 4).
 
 ## États et RTL des écrans *(obligatoire)*
 
