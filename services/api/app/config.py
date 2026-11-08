@@ -41,6 +41,9 @@ class Settings:
     imagery_key: str = ""
     push_key: str = ""
     external_allowed_hosts: tuple[str, ...] = ()
+    # F8: optional receipt OCR and market-price gateways (empty = unavailable, no call, no invented value)
+    ocr_url: str = ""
+    market_prices_url: str = ""
 
 
 def get_settings() -> Settings:
@@ -93,6 +96,8 @@ def get_settings() -> Settings:
         external_allowed_hosts=tuple(
             h.strip().lower() for h in os.environ.get("AYLAL_EXTERNAL_ALLOWED_HOSTS", "").split(",") if h.strip()
         ),
+        ocr_url=os.environ.get("AYLAL_OCR_URL", "").strip(),
+        market_prices_url=os.environ.get("AYLAL_MARKET_PRICES_URL", "").strip(),
         trusted_proxies=tuple(
             p.strip() for p in os.environ.get("AYLAL_TRUSTED_PROXIES", "").split(",") if p.strip()
         ),
@@ -120,6 +125,7 @@ def validate_external_gateways(settings: Settings) -> None:
     for name, url in (
         ("WEATHER", settings.weather_url), ("WEATHER_OBSERVED", settings.weather_observed_url),
         ("IMAGERY", settings.imagery_url), ("PUSH", settings.push_url),
+        ("OCR", settings.ocr_url), ("MARKET_PRICES", settings.market_prices_url),
     ):
         if not url:
             continue

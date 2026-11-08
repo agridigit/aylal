@@ -9,11 +9,11 @@
 
 ## Phase 1 : Mise en place
 
-- [ ] T001 Vérifier qu'aucune dépendance nouvelle n'est requise (HTTP via client des passerelles, caméra F6) ; ajouter aux fichiers de configuration `services/api/app/config.py`, `docker-compose.yml`, `.env.example` les variables `AYLAL_OCR_URL` et `AYLAL_MARKET_PRICES_URL` **vides par défaut** (`${VAR:-}`) et l'hôte à la liste `AYLAL_EXTERNAL_ALLOWED_HOSTS`.
-- [ ] T002 [P] Créer les clés i18n vides `packages/i18n/locales/{ary,ar,fr}/{expenses,harvests,economics,stock,marketprices}.json` et étendre `packages/i18n/tests/parity.test.ts`.
+- [x] T001 Vérifier qu'aucune dépendance nouvelle n'est requise (HTTP via client des passerelles, caméra F6) ; ajouter aux fichiers de configuration `services/api/app/config.py`, `docker-compose.yml`, `.env.example` les variables `AYLAL_OCR_URL` et `AYLAL_MARKET_PRICES_URL` **vides par défaut** (`${VAR:-}`) et l'hôte à la liste `AYLAL_EXTERNAL_ALLOWED_HOSTS`.
+- [x] T002 [P] Créer les clés i18n vides `packages/i18n/locales/{ary,ar,fr}/{expenses,harvests,economics,stock,marketprices}.json` et étendre `packages/i18n/tests/parity.test.ts`.
 - [ ] T003 [P] Créer les squelettes vides sans logique : `services/api/app/economics/`, `services/api/app/routers/{expenses,harvests,sales,economics,stock,receipts,market_prices}.py`, `services/api/app/sync/economics.py`, `services/workers/tasks/{read_receipt,refresh_market_prices,evaluate_stock_alerts,send_stock_alerts}.py`, `packages/domain/src/{money,expense-allocation,farm-economics,stock-ledger,weighted-average-cost,price-trend,receipt-proposal,economics-limits}.ts`.
 - [ ] T004 **T-DESIGN-GATE (humain, bloquante pour tout `[écran]`, G8)** : validation humaine des maquettes haute fidélité arabe + français de F8-E1 à F8-E5 ; se matérialise par `docs/design/010-farm-economics/VALIDATION.md`, **écrit uniquement par l'utilisateur, jamais par un agent** ; la boucle ne fait que constater son absence et laisse les tâches `[écran]` bloquées.
-- [ ] T005 [P] Ajouter en fin de `specs/010-farm-economics/decisions.md` (sans écraser les points 1 à 13 ni la section « Poids de l'APK ») une section « Journal d'exécution » : tâches `[écran]` bloquées, écarts de test, dérogation éventuelle.
+- [x] T005 [P] Ajouter en fin de `specs/010-farm-economics/decisions.md` (sans écraser les points 1 à 13 ni la section « Poids de l'APK ») une section « Journal d'exécution » : tâches `[écran]` bloquées, écarts de test, dérogation éventuelle.
 
 ## Phase 2 : Fondations non-écran G1 à G10 (bloquent tous les récits)
 

@@ -21,3 +21,10 @@ Règles sur lesquelles le CPS est muet ; le plan applique la règle ci-dessous j
 ## Poids de l'APK
 
 Aucune dérogation à ce stade. Une section « Dérogation » (titre de niveau 2) n'est à créer que si `make apk-size` dépasse la limite ; alors créer `specs/010-farm-economics/apk-budget.env` (`APK_LIMIT_MB` <= 52, `APK_BUDGET_REASON`, `DECISION_REF=specs/010-farm-economics/decisions.md`).
+
+## Journal d'exécution
+
+- Phase 1 faite (T001, T002, T003, T005) : variables `AYLAL_OCR_URL` et `AYLAL_MARKET_PRICES_URL` vides par défaut ; `AYLAL_EXTERNAL_ALLOWED_HOSTS` existe déjà (liste d'hôtes), validée en HTTPS hors dev/test.
+- Tâches `[écran]` bloquées : T004 (VALIDATION.md absent, écrit par l'utilisateur seul) bloque T051, T054, T059, T062, T067, T070, T076, T079, T083, T086.
+- Écarts de test : aucun. Dérogation : aucune.
+- T003 partielle : les 4 squelettes `services/workers/tasks/*.py` ne sont PAS créés. Les inventaires existants `test_f3_path_parity.py` et `test_f4_path_parity.py` échouent dès qu'un nouveau fichier apparaît dans ce dossier (listes `PRE_F3_TASKS`/`PRE_F4_TASKS` figées). À créer avec la phase GREEN des workers, en même temps que l'extension de ces inventaires par la phase RED (hors périmètre « ne pas modifier un test existant »). Le reste de T003 est fait ; T003 reste ouverte pour ce point.
