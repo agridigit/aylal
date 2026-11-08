@@ -1,8 +1,11 @@
 """HTTP mapping of the F4 refusals (shared by the five routers)."""
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
 from typing import Any
 
+from fastapi import Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.routing import APIRoute
 
 from app.auth.farm_context import FarmContext
 from app.domain.irrigation_limits import LIMITS, within_limit
@@ -37,3 +40,21 @@ async def write(ctx: FarmContext, work: Callable[[], Awaitable[Any]]) -> Any:
 
 
 DEFAULT_PAGE = LIMITS["page_default"]
+
+
+class NamedFieldRoute(APIRoute):
+    """Body validation failures answer the contract `Invalid` shape: `{detail: "validation", field, code}` (the first offending field)."""
+
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        original = super().get_route_handler()
+
+        async def handler(request: Request) -> Response:
+            try:
+                return await original(request)
+            except RequestValidationError as e:
+                first = e.errors()[0]
+                loc = [p for p in first["loc"] if p != "body"]
+                code = str(first["msg"]).removeprefix("Value error, ") if first["type"] == "value_error" else first["type"]
+                return JSONResponse({"detail": "validation", "field": str(loc[0]) if loc else None, "code": code}, status_code=422)
+
+        return handler

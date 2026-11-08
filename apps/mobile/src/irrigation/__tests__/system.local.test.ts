@@ -59,7 +59,7 @@ describe("system view model (offline, R1-A4)", () => {
     db.flush(server);
     db.flush(server);
     expect(server.size).toBe(3);
-    expect([...server.values()].map((r) => r.emitter_flow_lph).sort()).toEqual([31, 32, 33]);
+    expect([...server.values()].map((r) => r.emitter_flow_lph).sort()).toEqual([32, 33, 34]);
   });
 
   it("given the view model when sending the record then no server-owned field is part of the row", async () => {

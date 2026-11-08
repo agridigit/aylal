@@ -12,7 +12,7 @@ from app.irrigation import http, service
 from app.irrigation.access import parcel_access
 from app.irrigation.schemas import IrrigationSystemInput
 
-router = APIRouter(prefix="/farms/{farm_id}/parcels/{parcel_id}")
+router = APIRouter(prefix="/farms/{farm_id}/parcels/{parcel_id}", route_class=http.NamedFieldRoute)
 _READ = parcel_access("irrigation_system.read")
 _WRITE = parcel_access("irrigation_system.write")
 __all__ = ["client_ip", "router"]
