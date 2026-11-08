@@ -35,6 +35,15 @@ class FarmRegistration(BaseModel):
     area_ha: confloat(ge=0.0) | None = None
 
 
+class ObservationInput(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id: UUID
+    note: constr(max_length=500)
+    photo_id: UUID | None = None
+
+
 class Type(Enum):
     phyto = 'phyto'
     fertilization = 'fertilization'

@@ -4,6 +4,7 @@
 bucket_definitions:
   # ajouts au seau farm_data (owner/manager) : tout sauf les parcelles archivées (historique de vigueur conservé)
   farm_data_f3_additions:
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role != 'worker' AND removed_at IS NULL
     data:
       - SELECT farm_id AS id, farm_id, cell_id, fetched_at, availability, reason, days FROM farm_weather WHERE farm_id = bucket.farm_id
       - SELECT id, farm_id, parcel_id, season_id, crop_slug, type, severity, source, status, forecast_day, reason_key, reason_params, advice_key, notify_at, revision, parcel_archived_at, updated_at FROM alerts WHERE farm_id = bucket.farm_id AND parcel_archived_at IS NULL
@@ -21,7 +22,7 @@ bucket_definitions:
   # ouvrier : uniquement ses parcelles attribuées et non archivées (une colonne de paramètre, pas de sous-requête).
   # worker_parcels est purgé à la sortie du membre, au changement de rôle et à la suppression de ferme (F2, routers/farms.py) : seules les lignes d'ouvriers ACTIFS existent ; le test RED T027a le vérifie.
   farm_worker_monitoring:
-    parameters: SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels WHERE user_id = request.user_id()
+    parameters: SELECT parcel_id FROM worker_parcels WHERE user_id = request.user_id()
     data:
       - SELECT id, farm_id, parcel_id, crop_slug, type, severity, status, forecast_day, reason_key, reason_params, advice_key, notify_at, revision, parcel_archived_at, updated_at FROM alerts WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
       - SELECT parcel_id AS id, farm_id, parcel_id, color, reason_key, reason_params, rank, computed_at, data_age_at, imagery_reliability, parcel_archived_at FROM parcel_status WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
@@ -29,6 +30,11 @@ bucket_definitions:
       - SELECT id, farm_id, parcel_id, scene_id, acquired_on, vigor_mean, plant_moisture_mean, clear_pct, reliability, parcel_archived_at FROM parcel_vigor_points WHERE parcel_id = bucket.parcel_id AND valid = true AND parcel_archived_at IS NULL
       - SELECT id, farm_id, parcel_id, scene_id, acquired_on, bounds, parcel_archived_at FROM vigor_maps WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
       - SELECT id, farm_id, parcel_id, geometry, centroid, detected_on, area_ha, status, reason_key, parcel_archived_at FROM attention_zones WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+  # moindre privilège (CPS §8 muet, patron F6) : l'ouvrier ne reçoit que SES observations ; deux paramètres => seau distinct,
+  # car le service refuse une requête qui ne couvre pas tous les paramètres de son seau.
+  farm_worker_observations:
+    parameters: SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
       - SELECT id, farm_id, zone_id, parcel_id, author_id, note, created_at, parcel_archived_at FROM zone_observations WHERE parcel_id = bucket.parcel_id AND author_id = bucket.user_id AND parcel_archived_at IS NULL
   # résumés vocaux : une ligne par destinataire, limitée à sa portée côté serveur.
   # SÉCURITÉ : le paramètre est soumis à l'appartenance ACTIVE (removed_at IS NULL) ; un membre retiré ou une ferme supprimée n'ouvre plus aucun seau.

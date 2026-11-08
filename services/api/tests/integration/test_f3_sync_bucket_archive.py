@@ -14,6 +14,9 @@ SYNCED = ("alerts", "parcel_status", "parcel_status_items", "attention_zones", "
 HISTORY = ("parcel_vigor_points", "vigor_maps")
 
 
+WORKER = None  # set by each test from the world fixture
+
+
 def _queries(bucket):
     return yaml.safe_load(INFRA.read_text(encoding="utf-8"))["bucket_definitions"][bucket]["data"]
 
@@ -31,6 +34,8 @@ def _table(query):
 
 def _parcel_rows(bucket, table, **bind):
     out = []
+    if bucket == "farm_worker_monitoring" and table == "zone_observations":  # decisions.md: own observations live in their own bucket
+        bucket, bind = "farm_worker_observations", {**bind, "user_id": WORKER}
     for q in _queries(bucket):
         if _table(q) == table:
             out += _rows(q, **bind)
@@ -39,6 +44,8 @@ def _parcel_rows(bucket, table, **bind):
 
 def test_given_a_parcel_with_data_when_archived_then_the_worker_bucket_drops_it(world3):
     w = world3
+    global WORKER
+    WORKER = w["worker"]
     seed_worker_rows(w["farm_a"], w["a1"], w["worker"])
     for t in SYNCED + HISTORY:
         assert any(r["parcel_id"] == w["a1"] for r in _parcel_rows("farm_worker_monitoring", t, parcel_id=w["a1"])), f"{t} not served before archiving"

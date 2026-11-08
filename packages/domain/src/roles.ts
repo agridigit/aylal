@@ -44,6 +44,19 @@ export const MATRIX: Record<string, readonly Role[]> = {
   "registry.read": OWNER_MANAGER,
   "registry.export": OWNER_MANAGER,
   "phyto_product.create_free": ALL,
+  // F3 (vectors/f3_roles.json): everyone reads what they see; dismissing and reprocessing are staff only. No financial action.
+  "dashboard.read": ALL,
+  "weather.read": ALL,
+  "status.read": ALL,
+  "alert.read": ALL,
+  "vigor.read": ALL,
+  "zone.read": ALL,
+  "zone.observe": ALL,
+  "zone.dismiss": OWNER_MANAGER,
+  "alert.dismiss": OWNER_MANAGER,
+  "imagery.reprocess": OWNER_MANAGER,
+  "summary.read": ALL,
+  "summary.settings": ALL,
 };
 
 export function can(role: string, action: string): boolean {

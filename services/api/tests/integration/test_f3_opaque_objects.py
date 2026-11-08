@@ -83,6 +83,7 @@ def test_given_a_foreign_other_user_unknown_consumed_or_expired_photo_id_then_th
     ok = _obs(client, token_for, w, "worker", w["farm_a"], z, channel, photo_id=_photo(client, token_for, w, "worker", w["farm_a"], z))
     assert _ok(ok, channel), ok.text
     foreign_farm = _photo(client, token_for, w, "owner_b", w["farm_b"], zb)
+    sql("INSERT INTO worker_parcels (farm_id, user_id, parcel_id) VALUES ($1,$2,$3)", w["farm_a"], w["worker2"], w["a1"])  # decisions.md: worker2 must see the zone to deposit
     other_user = _photo(client, token_for, w, "worker2", w["farm_a"], z)
     expired = _photo(client, token_for, w, "worker", w["farm_a"], z)
     sql("UPDATE observation_uploads SET expires_at = now() - interval '1 minute' WHERE id=$1", uuid.UUID(expired))

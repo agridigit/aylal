@@ -127,6 +127,15 @@ services:
       AYLAL_VISION_URL: ${AYLAL_VISION_URL:-}
       AYLAL_NLU_URL: ${AYLAL_NLU_URL:-}
       AYLAL_REGISTRY_RETENTION_YEARS: ${AYLAL_REGISTRY_RETENTION_YEARS:-5}
+      # F3: gateways hosted in Morocco (weather, imagery, optional push); EMPTY by default = "unavailable". Only hosts listed in
+      # AYLAL_EXTERNAL_ALLOWED_HOSTS are ever called; no key is committed.
+      AYLAL_WEATHER_URL: ${AYLAL_WEATHER_URL:-}
+      AYLAL_WEATHER_KEY: ${AYLAL_WEATHER_KEY:-}
+      AYLAL_IMAGERY_URL: ${AYLAL_IMAGERY_URL:-}
+      AYLAL_IMAGERY_KEY: ${AYLAL_IMAGERY_KEY:-}
+      AYLAL_PUSH_URL: ${AYLAL_PUSH_URL:-}
+      AYLAL_PUSH_KEY: ${AYLAL_PUSH_KEY:-}
+      AYLAL_EXTERNAL_ALLOWED_HOSTS: ${AYLAL_EXTERNAL_ALLOWED_HOSTS:-}
       # exact address of Caddy on the dedicated edge network; empty = forwarded headers ignored (fail closed)
       AYLAL_TRUSTED_PROXIES: ${AYLAL_TRUSTED_PROXIES:-172.29.77.2/32}
     networks:
@@ -150,6 +159,14 @@ services:
       AYLAL_REDIS_URL: redis://redis:6379/0
       # F6: catalogue hosted in Morocco (file:// or s3://), empty = no import; never an external URL by default
       AYLAL_PHYTO_CATALOG_SOURCE: ${AYLAL_PHYTO_CATALOG_SOURCE:-}
+      # F3: same empty-by-default gateways as the API (the worker is the only caller)
+      AYLAL_WEATHER_URL: ${AYLAL_WEATHER_URL:-}
+      AYLAL_WEATHER_KEY: ${AYLAL_WEATHER_KEY:-}
+      AYLAL_IMAGERY_URL: ${AYLAL_IMAGERY_URL:-}
+      AYLAL_IMAGERY_KEY: ${AYLAL_IMAGERY_KEY:-}
+      AYLAL_PUSH_URL: ${AYLAL_PUSH_URL:-}
+      AYLAL_PUSH_KEY: ${AYLAL_PUSH_KEY:-}
+      AYLAL_EXTERNAL_ALLOWED_HOSTS: ${AYLAL_EXTERNAL_ALLOWED_HOSTS:-}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }

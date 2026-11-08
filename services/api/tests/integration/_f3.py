@@ -5,9 +5,7 @@ migration the failure is UndefinedTable, which is the right reason.
 """
 import datetime as dt
 import json
-import socket
 import uuid
-from urllib.parse import urlparse
 
 import pytest
 
@@ -151,13 +149,19 @@ def sync_post(client, token, ops):
 
 
 def flush_redis():
-    """FLUSHDB over a raw RESP socket (no redis client library needed in the test)."""
+    """Delete the F3 keys only (limiter, gateway slots/budgets, dashboard cache and versions). A FLUSHDB would reset the
+    counters of tests that run in parallel (F6 dictation limit): see decisions.md."""
+    import redis
+
     from app.config import get_settings
 
-    u = urlparse(get_settings().redis_url)
-    with socket.create_connection((u.hostname or "redis", u.port or 6379), timeout=3) as s:
-        s.sendall(b"*1\r\n$7\r\nFLUSHDB\r\n")
-        assert s.recv(16).startswith(b"+OK")
+    client = redis.from_url(get_settings().redis_url)
+    try:
+        for pattern in ("f3:*", "gw:*", "dash:*", "dashver:*"):
+            for key in client.scan_iter(pattern):
+                client.delete(key)
+    finally:
+        client.close()
 
 
 def keys_of(obj):

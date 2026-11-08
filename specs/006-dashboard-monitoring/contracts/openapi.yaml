@@ -37,7 +37,7 @@ paths:
       x-action: dashboard.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Dashboard"}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/weather:
     get:
       summary: Meteo 7 jours (lecture de cache, aucun appel sortant). x-action weather.read
@@ -45,7 +45,7 @@ paths:
       x-action: weather.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Weather"}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/alerts:
     get:
       summary: Alertes (parcelles visibles). x-action alert.read
@@ -53,7 +53,7 @@ paths:
       x-action: alert.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Alert"}}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/alerts/{alert_id}/dismiss:
     post:
       summary: Ecarter une alerte (staff). x-action alert.dismiss
@@ -61,8 +61,8 @@ paths:
       x-action: alert.dismiss
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Alert"}}}}
-      "403": {$ref: "#/components/responses/Forbidden"}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/parcels/{parcel_id}/status:
     get:
       summary: Etat et elements contributeurs avec leur source. x-action status.read
@@ -70,7 +70,7 @@ paths:
       x-action: status.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/ParcelStatus"}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/parcels/{parcel_id}/vigor:
     get:
       summary: Serie de vigueur (fenetre<=24 mois, <=400 points). x-action vigor.read
@@ -79,9 +79,9 @@ paths:
       # query: from, to (<=24 mois), compare=previous_year
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/VigorSeries"}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
-      "413": {$ref: "#/components/responses/TooLarge"}
-      "429": {$ref: "#/components/responses/TooMany"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "413": {$ref: "#/components/responses/TooLarge"}
+        "429": {$ref: "#/components/responses/TooMany"}
   /farms/{farm_id}/parcels/{parcel_id}/vigor/compare:
     get:
       summary: Comparaison N-1 alignee par jour de campagne ; 200 avec reference_available=false si absente. x-action vigor.read
@@ -89,7 +89,7 @@ paths:
       x-action: vigor.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {type: object, properties: {reference_available: {type: boolean}, current: {type: array, maxItems: 200}, previous: {type: array, maxItems: 200}}}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/parcels/{parcel_id}/vigor/scenes/{scene_id}/map:
     get:
       summary: URL signee 15 min (scene_id opaque serveur). x-action vigor.read
@@ -97,7 +97,7 @@ paths:
       x-action: vigor.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {type: object, properties: {url: {type: string}, expires_at: {type: string, format: date-time}, acquired_on: {type: string, format: date}}}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/parcels/{parcel_id}/vigor/reprocess:
     post:
       summary: Retraitement (staff, <=3/jour/parcelle, quota sous verrou). x-action imagery.reprocess
@@ -105,9 +105,9 @@ paths:
       x-action: imagery.reprocess
       responses:
         "202": {description: accepted}
-      "403": {$ref: "#/components/responses/Forbidden"}
-      "404": {$ref: "#/components/responses/NotFound"}
-      "429": {$ref: "#/components/responses/TooMany"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "429": {$ref: "#/components/responses/TooMany"}
   /farms/{farm_id}/zones:
     get:
       summary: Zones a verifier (parcelles visibles). x-action zone.read
@@ -115,7 +115,7 @@ paths:
       x-action: zone.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Zone"}}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/zones/{zone_id}/dismiss:
     post:
       summary: Ecarter une zone (staff). x-action zone.dismiss
@@ -123,8 +123,8 @@ paths:
       x-action: zone.dismiss
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Zone"}}}}
-      "403": {$ref: "#/components/responses/Forbidden"}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/zones/{zone_id}/observations/photo:
     post:
       summary: Depot de photo (<=3 Mo, signature verifiee) -> photo_id opaque lie (farm,user), 24 h. x-action zone.observe
@@ -132,9 +132,9 @@ paths:
       x-action: zone.observe
       responses:
         "201": {description: created, content: {application/json: {schema: {type: object, properties: {photo_id: {type: string, format: uuid}}}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
-      "413": {$ref: "#/components/responses/TooLarge"}
-      "429": {$ref: "#/components/responses/TooMany"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "413": {$ref: "#/components/responses/TooLarge"}
+        "429": {$ref: "#/components/responses/TooMany"}
   /farms/{farm_id}/zones/{zone_id}/observations:
     post:
       summary: Observation rattachee a la zone (aussi via /sync/upload). x-action zone.observe ; photo_id inconnu => 422 invalid_object_ref identique
@@ -144,9 +144,9 @@ paths:
         content: {application/json: {schema: {$ref: "#/components/schemas/ObservationInput"}}}
       responses:
         "201": {description: created}
-      "404": {$ref: "#/components/responses/NotFound"}
-      "422": {description: invalid_object_ref}
-      "429": {$ref: "#/components/responses/TooMany"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "422": {description: invalid_object_ref}
+        "429": {$ref: "#/components/responses/TooMany"}
   /farms/{farm_id}/summary/today:
     get:
       summary: Resume vocal du jour, calcule sur la portee de l'appelant. x-action summary.read
@@ -154,7 +154,7 @@ paths:
       x-action: summary.read
       responses:
         "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Summary"}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}
   /farms/{farm_id}/summary/settings:
     put:
       summary: Heure du resume (0-23) et alertes ; propres a l'appelant. x-action summary.settings
@@ -162,4 +162,4 @@ paths:
       x-action: summary.settings
       responses:
         "200": {description: ok, content: {application/json: {schema: {type: object, properties: {summary_hour: {type: integer, minimum: 0, maximum: 23}, alerts_enabled: {type: boolean}}}}}}
-      "404": {$ref: "#/components/responses/NotFound"}
+        "404": {$ref: "#/components/responses/NotFound"}

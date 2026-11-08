@@ -49,6 +49,8 @@ def test_given_the_worker_bucket_then_no_financial_table_or_column_nor_wildcard_
 
 # Global reference buckets (readable by every member, workers included), named explicitly: T015 / F6 spec.
 GLOBAL_CATALOG_BUCKETS = {"phyto_catalog"}
+# Per-user buckets (F3 daily summaries): every ACTIVE member, workers included, reads only their own (farm_id, user_id) rows; see decisions F3.
+PER_USER_BUCKETS = {"user_summaries"}
 
 
 def test_given_the_general_buckets_then_no_one_gets_a_row_of_a_removed_member_and_workers_are_not_in_a_staff_bucket():
@@ -61,6 +63,9 @@ def test_given_the_general_buckets_then_no_one_gets_a_row_of_a_removed_member_an
             continue
         assert "farm_members" in b["parameters"]
         assert "removed_at IS NULL" in b["parameters"], name
+        if name in PER_USER_BUCKETS:
+            assert "request.user_id() AS user_id" in b["parameters"], name
+            continue
         assert "role != 'worker'" in b["parameters"], name  # workers excluded (the service rejects IN lists)
 
 

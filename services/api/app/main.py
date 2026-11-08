@@ -3,13 +3,15 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.config import get_settings
+from app.config import get_settings, validate_external_gateways
 from app.operations.body_limit import BodyLimitMiddleware
 from app.routers import (
     account,
+    alerts,
     auth,
     blocks,
     crops,
+    dashboard,
     farms,
     fields,
     geo,
@@ -19,13 +21,16 @@ from app.routers import (
     phyto_products,
     registry,
     seasons,
+    summary,
     sync,
+    vigor,
+    zones,
 )
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    get_settings()  # refuse to start on a weak or forbidden configuration (FR-027)
+    validate_external_gateways(get_settings())  # refuse to start on a weak or forbidden configuration (FR-027)
     yield
 
 
@@ -46,3 +51,8 @@ app.include_router(operations.router, prefix="/v1")
 app.include_router(phyto_products.router, prefix="/v1")
 app.include_router(phyto_products.farm_router, prefix="/v1")
 app.include_router(registry.router, prefix="/v1")
+app.include_router(dashboard.router, prefix="/v1")
+app.include_router(alerts.router, prefix="/v1")
+app.include_router(vigor.router, prefix="/v1")
+app.include_router(zones.router, prefix="/v1")
+app.include_router(summary.router, prefix="/v1")

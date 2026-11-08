@@ -41,6 +41,19 @@ MATRIX: dict[str, frozenset[str]] = {
     "registry.read": OWNER_MANAGER,
     "registry.export": OWNER_MANAGER,
     "phyto_product.create_free": frozenset(ROLES),
+    # F3 (vectors f3_roles.json): everyone reads what they see; dismissing and reprocessing are staff only
+    "dashboard.read": frozenset(ROLES),
+    "weather.read": frozenset(ROLES),
+    "status.read": frozenset(ROLES),
+    "alert.read": frozenset(ROLES),
+    "vigor.read": frozenset(ROLES),
+    "zone.read": frozenset(ROLES),
+    "zone.observe": frozenset(ROLES),
+    "zone.dismiss": OWNER_MANAGER,
+    "alert.dismiss": OWNER_MANAGER,
+    "imagery.reprocess": OWNER_MANAGER,
+    "summary.read": frozenset(ROLES),
+    "summary.settings": frozenset(ROLES),
 }
 
 

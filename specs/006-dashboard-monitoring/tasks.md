@@ -58,16 +58,16 @@
 
 ### GREEN (après lancement des RED ci-dessus, qui doivent échouer)
 
-- [ ] T030 **G1-GREEN** : `packages/domain/src/{roles,monitoring-limits}.ts`, `services/api/app/domain/{roles.py,monitoring_limits.py}`, vecteurs T006/T007 ; `services/api/app/monitoring/access.py` (`visible_parcels(ctx)`, `farm_context`/`require`) ; fait passer T006, T007, T015, T016, T019.
-- [ ] T031 **Migration** `services/api/alembic/versions/0010_dashboard_monitoring.py` (numéro recalé au prochain libre), `services/api/app/db/models.py` (+ 10 modèles), triggers de recopie `parcel_archived_at`, GRANT, CHECK ; fait passer T027.
-- [ ] T032 **G1-GREEN sync/export/purge/parité** : `services/api/app/sync/monitoring.py` (authorize + apply, même `access.py`), `services/api/app/accounts/{export.py,purge.py}` étendus ; fait passer T017, T018, T027, T027a (purge des résumés/préférences au retrait, changement de rôle et suppression de ferme).
-- [ ] T033 **G2-GREEN** : `services/api/app/monitoring/{service.py,cache.py}` (agrégats calculés sur `parcel_status WHERE <visible_parcels>`, clé de cache portée) ; fait passer T008, T020.
-- [ ] T034 **G3-GREEN** : `infra/powersync/sync-rules.yaml` étendu (colonnes explicites, seaux, dénormalisation), `scripts/validate-sync-rules.{sh,mjs}` ; fait passer T021, T027a, T027b, T028 (volet synchro).
-- [ ] T035 **G4-GREEN** : contrôles de plafonds avant parsing/I/O (`body_limit.py`), verrous par ferme et `monitoring:{farm}` dans `service.py`/`sync/monitoring.py`/workers ; fait passer T006, T022, T023.
-- [ ] T036 **G5-GREEN** : `services/api/app/monitoring/gateways.py` (liste blanche, `unavailable`, minimisation, `docker-compose.yml` avec `${VAR:-}`), validation de configuration au démarrage ; fait passer T009, T010, T011, T024.
-- [ ] T037 **G6-GREEN** : `services/api/app/monitoring/uploads.py` (`observation_uploads`, identifiants opaques, URL signées 15 min), `app/auth/client_ip.py` réutilisé, limiteur Redis sur routes F3 ; fait passer T012, T013, T025, T026.
-- [ ] T038 Domaine partagé GREEN : `packages/domain/src/{weather-thresholds,alert-rules,vigor,anomaly,parcel-status,status-sources,imagery-reliability,notification-schedule,voice-summary,guidance}.ts`, miroirs `services/api/app/domain/{weather_thresholds,alert_rules,vigor,anomaly,parcel_status,imagery_reliability,notification_schedule}.py` ; fait passer T014.
-- [ ] T039 GREEN contrat/e2e fondations : routeurs `services/api/app/routers/{dashboard,alerts,vigor,zones,summary}.py` (squelettes branchés sur `access.py`) ; fait passer T028, T029. REFACTOR sans changer le comportement.
+- [x] T030 **G1-GREEN** : `packages/domain/src/{roles,monitoring-limits}.ts`, `services/api/app/domain/{roles.py,monitoring_limits.py}`, vecteurs T006/T007 ; `services/api/app/monitoring/access.py` (`visible_parcels(ctx)`, `farm_context`/`require`) ; fait passer T006, T007, T015, T016, T019.
+- [x] T031 **Migration** `services/api/alembic/versions/0010_dashboard_monitoring.py` (numéro recalé au prochain libre), `services/api/app/db/models.py` (+ 10 modèles), triggers de recopie `parcel_archived_at`, GRANT, CHECK ; fait passer T027.
+- [x] T032 **G1-GREEN sync/export/purge/parité** : `services/api/app/sync/monitoring.py` (authorize + apply, même `access.py`), `services/api/app/accounts/{export.py,purge.py}` étendus ; fait passer T017, T018, T027, T027a (purge des résumés/préférences au retrait, changement de rôle et suppression de ferme).
+- [x] T033 **G2-GREEN** : `services/api/app/monitoring/{service.py,cache.py}` (agrégats calculés sur `parcel_status WHERE <visible_parcels>`, clé de cache portée) ; fait passer T008, T020.
+- [x] T034 **G3-GREEN** : `infra/powersync/sync-rules.yaml` étendu (colonnes explicites, seaux, dénormalisation), `scripts/validate-sync-rules.{sh,mjs}` ; fait passer T021, T027a, T027b, T028 (volet synchro).
+- [x] T035 **G4-GREEN** : contrôles de plafonds avant parsing/I/O (`body_limit.py`), verrous par ferme et `monitoring:{farm}` dans `service.py`/`sync/monitoring.py`/workers ; fait passer T006, T022, T023.
+- [x] T036 **G5-GREEN** : `services/api/app/monitoring/gateways.py` (liste blanche, `unavailable`, minimisation, `docker-compose.yml` avec `${VAR:-}`), validation de configuration au démarrage ; fait passer T009, T010, T011, T024.
+- [x] T037 **G6-GREEN** : `services/api/app/monitoring/uploads.py` (`observation_uploads`, identifiants opaques, URL signées 15 min), `app/auth/client_ip.py` réutilisé, limiteur Redis sur routes F3 ; fait passer T012, T013, T025, T026.
+- [x] T038 Domaine partagé GREEN : `packages/domain/src/{weather-thresholds,alert-rules,vigor,anomaly,parcel-status,status-sources,imagery-reliability,notification-schedule,voice-summary,guidance}.ts`, miroirs `services/api/app/domain/{weather_thresholds,alert_rules,vigor,anomaly,parcel_status,imagery_reliability,notification_schedule}.py` ; fait passer T014.
+- [x] T039 GREEN contrat/e2e fondations : routeurs `services/api/app/routers/{dashboard,alerts,vigor,zones,summary}.py` (squelettes branchés sur `access.py`) ; fait passer T028, T029. REFACTOR sans changer le comportement.
 
 ## Phase 3 : Récit 1 — Météo de la ferme (P1) [US1]
 
