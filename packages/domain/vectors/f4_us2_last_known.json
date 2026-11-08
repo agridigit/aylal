@@ -1,0 +1,168 @@
+{
+ "cases": [
+  {
+   "name": "today's valid plan is served as is",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [
+     {
+      "for_date": "2026-06-04",
+      "kind": "irrigate",
+      "confidence": "medium"
+     },
+     {
+      "for_date": "2026-06-03",
+      "kind": "irrigate",
+      "confidence": "high"
+     }
+    ],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": {
+     "for_date": "2026-06-04",
+     "kind": "irrigate"
+    },
+    "is_last_known": false,
+    "confidence": "medium"
+   },
+   "exact": false
+  },
+  {
+   "name": "no plan today: the latest older valid plan is served, dated, confidence lowered to low (R2-A6)",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [
+     {
+      "for_date": "2026-06-02",
+      "kind": "no_need",
+      "confidence": "high"
+     },
+     {
+      "for_date": "2026-06-03",
+      "kind": "irrigate",
+      "confidence": "high"
+     }
+    ],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": {
+     "for_date": "2026-06-03",
+     "kind": "irrigate"
+    },
+    "is_last_known": true,
+    "confidence": "low"
+   },
+   "exact": false
+  },
+  {
+   "name": "today unavailable with an older valid plan: the older plan is served as last known",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [
+     {
+      "for_date": "2026-06-04",
+      "kind": "unavailable",
+      "confidence": "low"
+     },
+     {
+      "for_date": "2026-06-03",
+      "kind": "postpone_rain",
+      "confidence": "high"
+     }
+    ],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": {
+     "for_date": "2026-06-03",
+     "kind": "postpone_rain"
+    },
+    "is_last_known": true,
+    "confidence": "low"
+   },
+   "exact": false
+  },
+  {
+   "name": "only unavailable plans: the unavailable answer is served, not flagged last known",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [
+     {
+      "for_date": "2026-06-03",
+      "kind": "unavailable",
+      "confidence": "low"
+     }
+    ],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": {
+     "for_date": "2026-06-03",
+     "kind": "unavailable"
+    },
+    "is_last_known": false,
+    "confidence": "low"
+   },
+   "exact": false
+  },
+  {
+   "name": "a plan dated in the future is ignored",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [
+     {
+      "for_date": "2026-06-05",
+      "kind": "irrigate",
+      "confidence": "high"
+     }
+    ],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": null,
+    "is_last_known": false,
+    "confidence": "low"
+   },
+   "exact": false
+  },
+  {
+   "name": "no plan at all: nothing is invented",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": null,
+    "is_last_known": false,
+    "confidence": "low"
+   },
+   "exact": false
+  },
+  {
+   "name": "last known rainfed stress plan keeps its kind",
+   "fn": "select_served_plan",
+   "input": {
+    "plans": [
+     {
+      "for_date": "2026-06-03",
+      "kind": "rainfed_stress",
+      "confidence": "high"
+     }
+    ],
+    "today": "2026-06-04"
+   },
+   "expected": {
+    "served": {
+     "for_date": "2026-06-03",
+     "kind": "rainfed_stress"
+    },
+    "is_last_known": true,
+    "confidence": "low"
+   },
+   "exact": false
+  }
+ ]
+}
