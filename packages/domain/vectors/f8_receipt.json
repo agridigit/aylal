@@ -1,0 +1,167 @@
+[
+ {
+  "name": "valid proposal",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 12500,
+    "date": "2026-06-01",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": true
+  }
+ },
+ {
+  "name": "partial proposal is valid: nothing invented",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "confidence": 0.2
+   }
+  },
+  "expected": {
+   "valid": true
+  }
+ },
+ {
+  "name": "negative amount rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": -1,
+    "date": "2026-06-01",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "amount_out_of_bounds"
+  }
+ },
+ {
+  "name": "zero amount rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 0,
+    "date": "2026-06-01",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "amount_out_of_bounds"
+  }
+ },
+ {
+  "name": "amount above the cap rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 10000000001,
+    "date": "2026-06-01",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "amount_out_of_bounds"
+  }
+ },
+ {
+  "name": "future date rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 12500,
+    "date": "2026-06-06",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "date_out_of_bounds"
+  }
+ },
+ {
+  "name": "date older than 800 days rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 12500,
+    "date": "2024-03-01",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "date_out_of_bounds"
+  }
+ },
+ {
+  "name": "unknown category rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 12500,
+    "date": "2026-06-01",
+    "category": "crypto",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "unknown_category"
+  }
+ },
+ {
+  "name": "confidence above 1 rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": 12500,
+    "date": "2026-06-01",
+    "category": "fuel",
+    "confidence": 1.5
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "confidence_out_of_bounds"
+  }
+ },
+ {
+  "name": "malformed amount type rejected",
+  "fn": "validate_proposal",
+  "input": {
+   "today": "2026-06-04",
+   "proposal": {
+    "amount_cents": "12.5",
+    "date": "2026-06-01",
+    "category": "fuel",
+    "confidence": 0.8
+   }
+  },
+  "expected": {
+   "valid": false,
+   "reason": "amount_out_of_bounds"
+  }
+ }
+]

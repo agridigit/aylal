@@ -1,0 +1,101 @@
+[
+ {
+  "name": "round_div half up 5/2",
+  "fn": "round_div",
+  "input": {
+   "num": 5,
+   "den": 2
+  },
+  "expected": {
+   "value": 3
+  }
+ },
+ {
+  "name": "round_div 7/3",
+  "fn": "round_div",
+  "input": {
+   "num": 7,
+   "den": 3
+  },
+  "expected": {
+   "value": 2
+  }
+ },
+ {
+  "name": "round_div 1/3",
+  "fn": "round_div",
+  "input": {
+   "num": 1,
+   "den": 3
+  },
+  "expected": {
+   "value": 0
+  }
+ },
+ {
+  "name": "round_div 10/4 half up",
+  "fn": "round_div",
+  "input": {
+   "num": 10,
+   "den": 4
+  },
+  "expected": {
+   "value": 3
+  }
+ },
+ {
+  "name": "round_div zero",
+  "fn": "round_div",
+  "input": {
+   "num": 0,
+   "den": 5
+  },
+  "expected": {
+   "value": 0
+  }
+ },
+ {
+  "name": "line_total 2.5 kg x 12.50",
+  "fn": "line_total",
+  "input": {
+   "quantity_milli": 2500,
+   "unit_price_cents": 1250
+  },
+  "expected": {
+   "total_cents": 3125
+  }
+ },
+ {
+  "name": "line_total rounds down 33.3",
+  "fn": "line_total",
+  "input": {
+   "quantity_milli": 333,
+   "unit_price_cents": 100
+  },
+  "expected": {
+   "total_cents": 33
+  }
+ },
+ {
+  "name": "line_total rounds half up 33.5",
+  "fn": "line_total",
+  "input": {
+   "quantity_milli": 335,
+   "unit_price_cents": 100
+  },
+  "expected": {
+   "total_cents": 34
+  }
+ },
+ {
+  "name": "line_total 1 kg x 1 cent",
+  "fn": "line_total",
+  "input": {
+   "quantity_milli": 1000,
+   "unit_price_cents": 1
+  },
+  "expected": {
+   "total_cents": 1
+  }
+ }
+]

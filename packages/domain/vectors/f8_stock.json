@@ -1,0 +1,192 @@
+[
+ {
+  "name": "purchase then consumption",
+  "fn": "ledger_balance",
+  "input": {
+   "movements": [
+    {
+     "kind": "purchase",
+     "qty_milli": 10000,
+     "unit_cost_cents": 200
+    },
+    {
+     "kind": "consumption",
+     "qty_milli": -2000
+    }
+   ]
+  },
+  "expected": {
+   "qty_milli": 8000,
+   "avg_unit_cost_cents": 200,
+   "shortfall_milli": 0
+  },
+  "exact": true
+ },
+ {
+  "name": "consumption beyond stock: never negative, shortfall flagged",
+  "fn": "ledger_balance",
+  "input": {
+   "movements": [
+    {
+     "kind": "purchase",
+     "qty_milli": 1000,
+     "unit_cost_cents": 200
+    },
+    {
+     "kind": "consumption",
+     "qty_milli": -3000
+    }
+   ]
+  },
+  "expected": {
+   "qty_milli": 0,
+   "avg_unit_cost_cents": 200,
+   "shortfall_milli": 2000
+  },
+  "exact": true
+ },
+ {
+  "name": "consumption of a product never bought",
+  "fn": "ledger_balance",
+  "input": {
+   "movements": [
+    {
+     "kind": "consumption",
+     "qty_milli": -500
+    }
+   ]
+  },
+  "expected": {
+   "qty_milli": 0,
+   "avg_unit_cost_cents": null,
+   "shortfall_milli": 500
+  },
+  "exact": true
+ },
+ {
+  "name": "reversal restores the stock",
+  "fn": "ledger_balance",
+  "input": {
+   "movements": [
+    {
+     "kind": "purchase",
+     "qty_milli": 10000,
+     "unit_cost_cents": 200
+    },
+    {
+     "kind": "consumption",
+     "qty_milli": -2000
+    },
+    {
+     "kind": "reversal",
+     "qty_milli": 2000
+    }
+   ]
+  },
+  "expected": {
+   "qty_milli": 10000,
+   "avg_unit_cost_cents": 200,
+   "shortfall_milli": 0
+  },
+  "exact": true
+ },
+ {
+  "name": "two purchases weighted",
+  "fn": "ledger_balance",
+  "input": {
+   "movements": [
+    {
+     "kind": "purchase",
+     "qty_milli": 5000,
+     "unit_cost_cents": 100
+    },
+    {
+     "kind": "purchase",
+     "qty_milli": 5000,
+     "unit_cost_cents": 300
+    }
+   ]
+  },
+  "expected": {
+   "qty_milli": 10000,
+   "avg_unit_cost_cents": 200,
+   "shortfall_milli": 0
+  },
+  "exact": true
+ },
+ {
+  "name": "inventory adjustment is signed",
+  "fn": "ledger_balance",
+  "input": {
+   "movements": [
+    {
+     "kind": "purchase",
+     "qty_milli": 1000,
+     "unit_cost_cents": 200
+    },
+    {
+     "kind": "adjustment",
+     "qty_milli": -400
+    }
+   ]
+  },
+  "expected": {
+   "qty_milli": 600,
+   "avg_unit_cost_cents": 200,
+   "shortfall_milli": 0
+  },
+  "exact": true
+ },
+ {
+  "name": "falls under the threshold",
+  "fn": "crosses_threshold",
+  "input": {
+   "before_milli": 5000,
+   "after_milli": 3999,
+   "threshold_milli": 4000
+  },
+  "expected": {
+   "crossed": true
+  },
+  "exact": true
+ },
+ {
+  "name": "exactly at the threshold is not under",
+  "fn": "crosses_threshold",
+  "input": {
+   "before_milli": 5000,
+   "after_milli": 4000,
+   "threshold_milli": 4000
+  },
+  "expected": {
+   "crossed": false
+  },
+  "exact": true
+ },
+ {
+  "name": "already under: no new episode",
+  "fn": "crosses_threshold",
+  "input": {
+   "before_milli": 3000,
+   "after_milli": 2000,
+   "threshold_milli": 4000
+  },
+  "expected": {
+   "crossed": false
+  },
+  "exact": true
+ },
+ {
+  "name": "no threshold: no alert",
+  "fn": "crosses_threshold",
+  "input": {
+   "before_milli": 5000,
+   "after_milli": 0,
+   "threshold_milli": null
+  },
+  "expected": {
+   "crossed": false
+  },
+  "exact": true
+ }
+]

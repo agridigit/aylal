@@ -1,0 +1,110 @@
+[
+ {
+  "name": "parcel with harvest",
+  "fn": "parcel_economics",
+  "input": {
+   "expense_lines_cents": [
+    20000,
+    5000
+   ],
+   "sale_lines_cents": [
+    40000
+   ],
+   "harvested_milli": 1000000,
+   "area_m2": 5000
+  },
+  "expected": {
+   "expenses_cents": 25000,
+   "revenue_cents": 40000,
+   "margin_cents": 15000,
+   "margin_per_ha_cents": 30000,
+   "cost_per_ha_cents": 50000,
+   "cost_per_kg_cents": 25
+  },
+  "exact": true
+ },
+ {
+  "name": "no harvest: cost per kg is not available, never invented",
+  "fn": "parcel_economics",
+  "input": {
+   "expense_lines_cents": [
+    1000
+   ],
+   "sale_lines_cents": [],
+   "harvested_milli": 0,
+   "area_m2": 10000
+  },
+  "expected": {
+   "expenses_cents": 1000,
+   "revenue_cents": 0,
+   "margin_cents": -1000,
+   "margin_per_ha_cents": -1000,
+   "cost_per_ha_cents": 1000,
+   "cost_per_kg_cents": null
+  },
+  "exact": true
+ },
+ {
+  "name": "ratios are rounded at the end only",
+  "fn": "parcel_economics",
+  "input": {
+   "expense_lines_cents": [
+    1000
+   ],
+   "sale_lines_cents": [
+    2000
+   ],
+   "harvested_milli": 3000,
+   "area_m2": 30000
+  },
+  "expected": {
+   "expenses_cents": 1000,
+   "revenue_cents": 2000,
+   "margin_cents": 1000,
+   "margin_per_ha_cents": 333,
+   "cost_per_ha_cents": 333,
+   "cost_per_kg_cents": 333
+  }
+ },
+ {
+  "name": "reversal lines are summed with their sign",
+  "fn": "parcel_economics",
+  "input": {
+   "expense_lines_cents": [
+    10000,
+    -10000,
+    7000
+   ],
+   "sale_lines_cents": [],
+   "harvested_milli": 0,
+   "area_m2": 10000
+  },
+  "expected": {
+   "expenses_cents": 7000,
+   "margin_cents": -7000
+  }
+ },
+ {
+  "name": "farm margin includes general charges, parcels margin does not",
+  "fn": "farm_economics",
+  "input": {
+   "parcels": [
+    {
+     "expenses_cents": 1000,
+     "revenue_cents": 5000
+    },
+    {
+     "expenses_cents": 2000,
+     "revenue_cents": 1000
+    }
+   ],
+   "general_cents": 500
+  },
+  "expected": {
+   "general_cents": 500,
+   "parcels_margin_cents": 3000,
+   "farm_margin_cents": 2500
+  },
+  "exact": true
+ }
+]

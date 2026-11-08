@@ -1,0 +1,221 @@
+[
+ {
+  "name": "100.00 MAD over three equal parcels: remainder goes to the first id",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 10000,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 1
+    },
+    {
+     "id": "b",
+     "area_m2": 1
+    },
+    {
+     "id": "c",
+     "area_m2": 1
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 3334
+    },
+    {
+     "id": "b",
+     "share_cents": 3333
+    },
+    {
+     "id": "c",
+     "share_cents": 3333
+    }
+   ]
+  }
+ },
+ {
+  "name": "exact division",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 9000,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 1
+    },
+    {
+     "id": "b",
+     "area_m2": 1
+    },
+    {
+     "id": "c",
+     "area_m2": 1
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 3000
+    },
+    {
+     "id": "b",
+     "share_cents": 3000
+    },
+    {
+     "id": "c",
+     "share_cents": 3000
+    }
+   ]
+  }
+ },
+ {
+  "name": "1.00 MAD over 1:2 areas",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 100,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 1
+    },
+    {
+     "id": "b",
+     "area_m2": 2
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 33
+    },
+    {
+     "id": "b",
+     "share_cents": 67
+    }
+   ]
+  }
+ },
+ {
+  "name": "1.00 MAD over 2:1 areas",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 100,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 2
+    },
+    {
+     "id": "b",
+     "area_m2": 1
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 67
+    },
+    {
+     "id": "b",
+     "share_cents": 33
+    }
+   ]
+  }
+ },
+ {
+  "name": "one cent over two equal parcels",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 1,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 1
+    },
+    {
+     "id": "b",
+     "area_m2": 1
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 1
+    },
+    {
+     "id": "b",
+     "share_cents": 0
+    }
+   ]
+  }
+ },
+ {
+  "name": "proportional to surfaces",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 50000,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 5000
+    },
+    {
+     "id": "b",
+     "area_m2": 3000
+    },
+    {
+     "id": "c",
+     "area_m2": 2000
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 25000
+    },
+    {
+     "id": "b",
+     "share_cents": 15000
+    },
+    {
+     "id": "c",
+     "share_cents": 10000
+    }
+   ]
+  }
+ },
+ {
+  "name": "single parcel takes everything",
+  "fn": "allocate",
+  "input": {
+   "amount_cents": 12345,
+   "parcels": [
+    {
+     "id": "a",
+     "area_m2": 777
+    }
+   ]
+  },
+  "expected": {
+   "shares": [
+    {
+     "id": "a",
+     "share_cents": 12345
+    }
+   ]
+  }
+ }
+]

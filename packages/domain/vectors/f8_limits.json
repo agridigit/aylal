@@ -1,0 +1,292 @@
+[
+ {
+  "rule": "photo_bytes",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "photo_bytes",
+  "value": 6291456,
+  "valid": true
+ },
+ {
+  "rule": "photo_bytes",
+  "value": 6291457,
+  "valid": false
+ },
+ {
+  "rule": "photo_bytes",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "receipts_per_expense",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "receipts_per_expense",
+  "value": 3,
+  "valid": true
+ },
+ {
+  "rule": "receipts_per_expense",
+  "value": 4,
+  "valid": false
+ },
+ {
+  "rule": "receipts_per_farm",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "receipts_per_farm",
+  "value": 2000,
+  "valid": true
+ },
+ {
+  "rule": "receipts_per_farm",
+  "value": 2001,
+  "valid": false
+ },
+ {
+  "rule": "rows_per_register",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "rows_per_register",
+  "value": 20000,
+  "valid": true
+ },
+ {
+  "rule": "rows_per_register",
+  "value": 20001,
+  "valid": false
+ },
+ {
+  "rule": "amount_cents",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "amount_cents",
+  "value": 10000000000,
+  "valid": true
+ },
+ {
+  "rule": "amount_cents",
+  "value": 10000000001,
+  "valid": false
+ },
+ {
+  "rule": "amount_cents",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "quantity_milli",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "quantity_milli",
+  "value": 1000000000,
+  "valid": true
+ },
+ {
+  "rule": "quantity_milli",
+  "value": 1000000001,
+  "valid": false
+ },
+ {
+  "rule": "quantity_milli",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "backdate_days",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "backdate_days",
+  "value": 800,
+  "valid": true
+ },
+ {
+  "rule": "backdate_days",
+  "value": 801,
+  "valid": false
+ },
+ {
+  "rule": "future_days",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "future_days",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "future_days",
+  "value": 2,
+  "valid": false
+ },
+ {
+  "rule": "allocation_parcels",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "allocation_parcels",
+  "value": 200,
+  "valid": true
+ },
+ {
+  "rule": "allocation_parcels",
+  "value": 201,
+  "valid": false
+ },
+ {
+  "rule": "allocation_parcels",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "sync_batch",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "sync_batch",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "sync_batch",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "sync_batch",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "page_limit",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "page_limit",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "page_limit",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "page_limit",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "ocr_per_day",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "ocr_per_day",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "ocr_per_day",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "chart_points",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "chart_points",
+  "value": 400,
+  "valid": true
+ },
+ {
+  "rule": "chart_points",
+  "value": 401,
+  "valid": false
+ },
+ {
+  "rule": "history_months",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "history_months",
+  "value": 36,
+  "valid": true
+ },
+ {
+  "rule": "history_months",
+  "value": 37,
+  "valid": false
+ },
+ {
+  "rule": "history_months",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "market_rows",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "market_rows",
+  "value": 500,
+  "valid": true
+ },
+ {
+  "rule": "market_rows",
+  "value": 501,
+  "valid": false
+ },
+ {
+  "rule": "ocr_in_flight",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "ocr_in_flight",
+  "value": 1,
+  "valid": true
+ },
+ {
+  "rule": "ocr_in_flight",
+  "value": 2,
+  "valid": false
+ },
+ {
+  "rule": "receipt_burst",
+  "value": 0,
+  "valid": true
+ },
+ {
+  "rule": "receipt_burst",
+  "value": 20,
+  "valid": true
+ },
+ {
+  "rule": "receipt_burst",
+  "value": 21,
+  "valid": false
+ }
+]

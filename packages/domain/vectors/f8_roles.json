@@ -1,0 +1,302 @@
+[
+ {
+  "role": "owner",
+  "action": "expense.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "expense.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "expense.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "expense.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "expense.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "expense.write",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "expense.correct",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "expense.correct",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "expense.correct",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "sale.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "sale.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "sale.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "sale.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "sale.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "sale.write",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "sale.correct",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "sale.correct",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "sale.correct",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "harvest.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "harvest.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "harvest.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "harvest.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "harvest.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "harvest.write",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "harvest.correct",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "harvest.correct",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "harvest.correct",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "economics.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "economics.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "economics.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "stock.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "stock.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "stock.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "stock.write",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "stock.write",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "stock.write",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "stock.adjust",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "stock.adjust",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "stock.adjust",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "market_price.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "market_price.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "market_price.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "receipt.upload",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "receipt.upload",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "receipt.upload",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "receipt.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "receipt.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "receipt.read",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "expense.delete",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "expense.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "expense.delete",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "sale.delete",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "sale.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "sale.delete",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "harvest.delete",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "harvest.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "harvest.delete",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "stock_movement.delete",
+  "allowed": false
+ },
+ {
+  "role": "manager",
+  "action": "stock_movement.delete",
+  "allowed": false
+ },
+ {
+  "role": "worker",
+  "action": "stock_movement.delete",
+  "allowed": false
+ }
+]
