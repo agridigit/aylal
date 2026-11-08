@@ -26,9 +26,10 @@ def test_given_a_batch_with_a_role_violation_then_403_for_the_whole_batch_and_no
                "base_version": 0, "fields": {"status": "dismissed"}}
     assert sync_post(client, token_for(w["worker"]), [sync_obs(w["farm_a"], z)]).status_code == 200
     before = _count()
+    status_before = sql("SELECT status FROM attention_zones WHERE id=$1", z)[0][0]  # the first observation made the zone visited (data-model)
     r = sync_post(client, token_for(w["worker"]), [ok, dismiss])
     assert r.status_code == 403, r.text
-    assert _count() == before and sql("SELECT status FROM attention_zones WHERE id=$1", z)[0][0] == "open"
+    assert _count() == before and sql("SELECT status FROM attention_zones WHERE id=$1", z)[0][0] == status_before != "dismissed"
 
 
 def test_given_a_non_member_then_404_and_nothing_is_written(client, token_for, world3):
@@ -59,9 +60,11 @@ def test_given_server_owned_fields_when_uploading_then_they_are_ignored_or_rejec
     if r.json()["results"][0]["status"] == "applied":
         row = sql("SELECT author_id, photo_key, parcel_id, parcel_archived_at FROM zone_observations WHERE id=$1", rid)[0]
         assert (row["author_id"], row["photo_key"], row["parcel_id"], row["parcel_archived_at"]) == (w["worker"], None, w["a1"], None)
+        expected = "visited"  # the server moves open -> visited itself; the client-sent status "resolved" is never taken
     else:
         assert sql("SELECT count(*) FROM zone_observations WHERE id=$1", rid)[0][0] == 0
-    assert sql("SELECT status FROM attention_zones WHERE id=$1", z)[0][0] == "open"
+        expected = "open"
+    assert sql("SELECT status FROM attention_zones WHERE id=$1", z)[0][0] == expected
 
 
 def test_given_the_same_op_sent_twice_then_it_is_applied_once(client, token_for, world3):
