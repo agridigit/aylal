@@ -1,0 +1,54 @@
+[
+ {
+  "name": "red first then orange, green omitted",
+  "parcels": [
+   {
+    "parcel_id": "g",
+    "color": "green",
+    "reason_key": "ok"
+   },
+   {
+    "parcel_id": "o1",
+    "color": "orange",
+    "reason_key": "a"
+   },
+   {
+    "parcel_id": "r1",
+    "color": "red",
+    "reason_key": "b"
+   },
+   {
+    "parcel_id": "o2",
+    "color": "orange",
+    "reason_key": "c"
+   },
+   {
+    "parcel_id": "r2",
+    "color": "red",
+    "reason_key": "d"
+   }
+  ],
+  "expected": [
+   "r1",
+   "r2",
+   "o1",
+   "o2"
+  ]
+ },
+ {
+  "name": "all green gives nothing to read",
+  "parcels": [
+   {
+    "parcel_id": "g",
+    "color": "green",
+    "reason_key": "ok"
+   }
+  ],
+  "expected": []
+ },
+ {
+  "name": "no parcel",
+  "parcels": [],
+  "expected": []
+ }
+]

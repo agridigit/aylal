@@ -15,3 +15,20 @@
 - Phase 1 : T001 (numpy, rasterio, Pillow, shapely épinglés dans les pyproject des images workers/api ; expo-speech et expo-location déjà présents), T002, T003, T005 faits.
 - T004 (porte design humaine + fusion 004) : laissée ouverte ; bloque T046, T053, T060, T067, T074, T078, T083.
 - Migration : `0010` provisoire, à recaler à la fusion.
+
+## Tests RED « fondations » (G1 à G6) : choix et limites
+- Niveaux : unitaire (vecteurs partagés TS/Python, config, passerelles espionnes, clé de cache), intégration (PostgreSQL, Redis, requêtes de seaux PowerSync exécutées telles quelles), contrat (OpenAPI et règles de synchro), e2e API (pile Docker, numéros uniques, aucun DELETE). Maestro/Playwright : impossibles à ce stade (travail hors écran, T004 ouverte) ; ils relèvent des tâches écran.
+- **Défaut du contrat `powersync-sync-rules.yaml`** : le service PowerSync le rejette (`Query must cover all bucket parameters`) : `farm_data_f3_additions` sans `parameters`, `farm_worker_monitoring` avec deux paramètres mais requêtes liées à `bucket.parcel_id` seul. Les tests exigent un seau ouvrier à UNE colonne de paramètre (`parcel_id`, T021) ; le GREEN T034 corrige le contrat. Conséquence : l'ouvrier reçoit les observations de toutes les mains sur ses parcelles (pas de filtre `author_id` côté synchro).
+- **Défaut d'indentation de `openapi.yaml`** : les codes `404/403/413/429` sont frères de `responses` au lieu d'en être des enfants ; le test de contrat accepte les deux emplacements ; à corriger au GREEN T039.
+- Sévérité des alertes : seuls les cas sans ambiguïté sont figés (gel très en dessous du seuil = `critical`) ; la marge exacte info/warning/critical reste à préciser (research 11).
+- Ambiguïtés tranchées par les tests (à confirmer au GREEN) : l'état d'une parcelle archivée n'est jamais servi (`status` -> 404, y compris pour owner/manager) ; seule la fiche de vigueur reste lisible en lecture seule pour le personnel ; `weather?days=` autre que 8 -> 422 ; l'export F3 vit sous la clé `monitoring` ; `visible_parcels(ctx)` s'appuie sur la constante SQL partagée `VISIBLE_PARCELS_SQL` (`app/monitoring/access_sql.py`, copiée dans l'image worker comme `export_job.py`) ; résumé vocal et guidage : miroir Python non demandé par T038, tests TS seulement.
+- Hors portée de ce lot (reportés aux récits) : quotas zones/alertes (créés par les workers, T048/T060), `farm_not_located` (T041), moyennes de vigueur et surface (non présentes dans le contrat du tableau de bord).
+
+### Surface imposée par les tests RED « fondations » (à respecter au GREEN)
+- `app.monitoring.lifecycle.purge_member_monitoring` est appelée via l'attribut du module (le test de transaction la remplace) ; `purge_farm_monitoring(session, farm_id)` ; `app.accounts.purge.purge_farm_monitoring_data` (renvoie les clés d'objets) et `purge_user_monitoring_data`.
+- `notification_recipients(session, farm_id)` renvoie TOUS les membres actifs en clés, y compris un ouvrier sans parcelle (ensemble vide).
+- Un 429 de quota porte aussi `Retry-After`. L'ETag du tableau de bord dérive du contenu borné à la portée (pas de `generated_at`, pas de `data_version`).
+- `assert_outbound` ne contrôle que les clés. L'export F3 vit sous la clé `monitoring`. `VISIBLE_PARCELS_SQL` : `app/monitoring/access_sql.py`, copiée par le Dockerfile worker.
+- Le GREEN T034 corrige `contracts/powersync-sync-rules.yaml` ; T028 exige `user_summaries.parameters` identique entre contrat et infra.
+- **À confirmer** : seau ouvrier à une colonne `parcel_id` => l'ouvrier synchronise les observations de toutes les mains sur ses parcelles (le filtre `author_id = bucket.user_id` du contrat tombe).
+- Passent volontairement dès le RED (gardes, pas des tests vides) : codes d'état documentés au contrat, `client_ip` inchangé, aucune clé commitée, lignes « ouvrier refusé » de la matrice.

@@ -1,0 +1,207 @@
+[
+ {
+  "rule": "limit",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "limit",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "series_months",
+  "value": 24,
+  "valid": true
+ },
+ {
+  "rule": "series_months",
+  "value": 25,
+  "valid": false
+ },
+ {
+  "rule": "series_points",
+  "value": 400,
+  "valid": true
+ },
+ {
+  "rule": "series_points",
+  "value": 401,
+  "valid": false
+ },
+ {
+  "rule": "compare_points",
+  "value": 200,
+  "valid": true
+ },
+ {
+  "rule": "compare_points",
+  "value": 201,
+  "valid": false
+ },
+ {
+  "rule": "weather_horizon_days",
+  "value": 8,
+  "valid": true
+ },
+ {
+  "rule": "alerts_per_farm",
+  "value": 1000,
+  "valid": true
+ },
+ {
+  "rule": "alerts_per_farm",
+  "value": 1001,
+  "valid": false
+ },
+ {
+  "rule": "alerts_per_parcel",
+  "value": 20,
+  "valid": true
+ },
+ {
+  "rule": "alerts_per_parcel",
+  "value": 21,
+  "valid": false
+ },
+ {
+  "rule": "zones_per_parcel",
+  "value": 5,
+  "valid": true
+ },
+ {
+  "rule": "zones_per_parcel",
+  "value": 6,
+  "valid": false
+ },
+ {
+  "rule": "zones_per_farm",
+  "value": 200,
+  "valid": true
+ },
+ {
+  "rule": "zones_per_farm",
+  "value": 201,
+  "valid": false
+ },
+ {
+  "rule": "polygon_vertices",
+  "value": 200,
+  "valid": true
+ },
+ {
+  "rule": "polygon_vertices",
+  "value": 201,
+  "valid": false
+ },
+ {
+  "rule": "note_chars",
+  "value": 500,
+  "valid": true
+ },
+ {
+  "rule": "note_chars",
+  "value": 501,
+  "valid": false
+ },
+ {
+  "rule": "photo_bytes",
+  "value": 3145728,
+  "valid": true
+ },
+ {
+  "rule": "photo_bytes",
+  "value": 3145729,
+  "valid": false
+ },
+ {
+  "rule": "observations_per_zone",
+  "value": 20,
+  "valid": true
+ },
+ {
+  "rule": "observations_per_zone",
+  "value": 21,
+  "valid": false
+ },
+ {
+  "rule": "observations_per_farm_year",
+  "value": 2000,
+  "valid": true
+ },
+ {
+  "rule": "observations_per_farm_year",
+  "value": 2001,
+  "valid": false
+ },
+ {
+  "rule": "sync_batch",
+  "value": 100,
+  "valid": true
+ },
+ {
+  "rule": "sync_batch",
+  "value": 101,
+  "valid": false
+ },
+ {
+  "rule": "reprocess_per_parcel_day",
+  "value": 3,
+  "valid": true
+ },
+ {
+  "rule": "reprocess_per_parcel_day",
+  "value": 4,
+  "valid": false
+ },
+ {
+  "rule": "imagery_jobs_per_farm",
+  "value": 5,
+  "valid": true
+ },
+ {
+  "rule": "imagery_jobs_per_farm",
+  "value": 6,
+  "valid": false
+ },
+ {
+  "rule": "raster_bytes",
+  "value": 524288000,
+  "valid": true
+ },
+ {
+  "rule": "raster_bytes",
+  "value": 524288001,
+  "valid": false
+ },
+ {
+  "rule": "init_window_months",
+  "value": 12,
+  "valid": true
+ },
+ {
+  "rule": "init_window_months",
+  "value": 13,
+  "valid": false
+ },
+ {
+  "rule": "weather_horizon_days",
+  "value": 7,
+  "valid": false
+ },
+ {
+  "rule": "weather_horizon_days",
+  "value": 9,
+  "valid": false
+ },
+ {
+  "rule": "limit",
+  "value": 0,
+  "valid": false
+ },
+ {
+  "rule": "limit",
+  "value": 1,
+  "valid": true
+ }
+]

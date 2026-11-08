@@ -1,0 +1,27 @@
+[
+ {
+  "area_ha": 0.29,
+  "greenhouse": false,
+  "reliability": "low"
+ },
+ {
+  "area_ha": 0.3,
+  "greenhouse": false,
+  "reliability": "ok"
+ },
+ {
+  "area_ha": 5,
+  "greenhouse": false,
+  "reliability": "ok"
+ },
+ {
+  "area_ha": 5,
+  "greenhouse": true,
+  "reliability": "low"
+ },
+ {
+  "area_ha": 0.1,
+  "greenhouse": true,
+  "reliability": "low"
+ }
+]
