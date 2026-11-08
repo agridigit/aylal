@@ -116,4 +116,4 @@ def test_given_archive_restore_and_merge_then_parcel_archived_at_is_copied_to_op
 
 
 def test_given_head_then_f0_to_f2_data_is_untouched(migrated):
-    assert sql("SELECT count(*) FROM crops WHERE farm_id IS NULL")[0][0] == 16
+    assert sql("SELECT count(*) FROM crops WHERE farm_id IS NULL AND slug NOT LIKE 'fx\\_%'")[0][0] == 16

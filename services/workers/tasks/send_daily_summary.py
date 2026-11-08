@@ -14,7 +14,7 @@ from monitoring_db import dsn, param
 MOROCCO = dt.timezone(dt.timedelta(hours=1))
 
 
-async def send_daily_summary(ctx: dict[str, Any], now: dt.datetime | None = None) -> int:
+async def send_daily_summary(ctx: dict[str, Any], now: dt.datetime | None = None, *, farm_id: uuid.UUID | None = None) -> int:
     import asyncpg
 
     now = now or dt.datetime.now(dt.UTC)
@@ -23,7 +23,9 @@ async def send_daily_summary(ctx: dict[str, Any], now: dt.datetime | None = None
     created = 0
     conn = await asyncpg.connect(dsn())
     try:
-        for farm in [r["id"] for r in await conn.fetch("SELECT id FROM farms WHERE deleted_at IS NULL")]:
+        farms = await conn.fetch("SELECT id FROM farms WHERE deleted_at IS NULL AND ($1::uuid IS NULL OR id = $1)", farm_id)
+        for farm in [r["id"] for r in farms]:
+            weather_code = await _weather_code(conn, farm, now.astimezone(MOROCCO).date())
             for m in await conn.fetch(
                 "SELECT m.user_id, m.role, COALESCE(n.summary_hour, $2) AS hour, COALESCE(u.language, 'fr') AS lang FROM farm_members m"
                 " LEFT JOIN notification_prefs n ON n.farm_id = m.farm_id AND n.user_id = m.user_id"
@@ -41,7 +43,7 @@ async def send_daily_summary(ctx: dict[str, Any], now: dt.datetime | None = None
                     "INSERT INTO daily_summaries (id, farm_id, user_id, summary_date, locale, payload) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
                     " ON CONFLICT (user_id, farm_id, summary_date) DO NOTHING",
                     uuid.uuid4(), farm, m["user_id"], now.astimezone(MOROCCO).date(), m["lang"] if m["lang"] in ("ary", "ar", "fr") else "fr",
-                    json.dumps({"items": items}),
+                    json.dumps({"items": items, "weather_code": weather_code}),
                 )
                 created += int(done.split()[-1])
     finally:
@@ -57,3 +59,16 @@ async def _default_hour(url: str) -> int:
         return int(await param(conn, "summary_hour", 7))
     finally:
         await conn.close()
+
+
+async def _weather_code(conn: Any, farm: uuid.UUID, today: dt.date) -> str | None:
+    """Code of today's stored forecast; None when there is none (nothing invented)."""
+    row = await conn.fetchrow("SELECT days FROM farm_weather WHERE farm_id = $1 AND availability = 'ok'", farm)
+    if row is None:
+        return None
+    days = json.loads(row["days"]) if isinstance(row["days"], str) else row["days"]
+    for d in days or []:
+        if str(d.get("date", ""))[:10] == today.isoformat():
+            code = d.get("icon") or d.get("code")
+            return str(code) if code else None
+    return None

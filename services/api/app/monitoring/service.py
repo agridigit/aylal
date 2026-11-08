@@ -242,6 +242,10 @@ async def _reliability(ctx: FarmContext, parcel_id: uuid.UUID) -> str:
     return imagery_reliability(float(row[0]), bool(row[1]), float(min_area if min_area is not None else 0.3))
 
 
+def _leap(year: int) -> bool:
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+
 def campaign_start(today: dt.date) -> dt.date:
     """Default campaign start: 1 September."""
     year = today.year if today >= dt.date(today.year, 9, 1) else today.year - 1
@@ -251,8 +255,14 @@ def campaign_start(today: dt.date) -> dt.date:
 async def vigor_compare(ctx: FarmContext, parcel_id: uuid.UUID, today: dt.date | None = None) -> dict[str, Any]:
     """Current campaign against the previous one, aligned by day of campaign; no extrapolation."""
     today = today or dt.datetime.now(dt.UTC).date()
-    start = campaign_start(today)
-    prev_start = start.replace(year=start.year - 1)
+    season_start = (
+        await ctx.session.execute(
+            text("SELECT started_at FROM seasons WHERE farm_id = :f AND field_id = :p AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1"),
+            {"f": ctx.farm_id, "p": parcel_id},
+        )
+    ).scalar()
+    start = season_start if season_start is not None and season_start <= today else campaign_start(today)
+    prev_start = start - dt.timedelta(days=366 if start > dt.date(start.year, 2, 28) and _leap(start.year) or start <= dt.date(start.year, 2, 28) and _leap(start.year - 1) else 365)
     elapsed = (today - start).days
 
     async def points(s: dt.date, e: dt.date) -> list[dict[str, Any]]:
@@ -298,7 +308,7 @@ async def request_reprocess(ctx: FarmContext, parcel_id: uuid.UUID) -> uuid.UUID
     ).scalar_one()
     active = (
         await ctx.session.execute(
-            text("SELECT count(*) FROM monitoring_jobs WHERE farm_id = :f AND state IN ('queued', 'running')"), {"f": ctx.farm_id}
+            text("SELECT count(*) FROM monitoring_jobs WHERE farm_id = :f AND kind = 'reprocess' AND state IN ('queued', 'running')"), {"f": ctx.farm_id}
         )
     ).scalar_one()
     if per_day >= LIMITS["reprocess_per_parcel_day"] or active >= LIMITS["imagery_jobs_per_farm"]:
@@ -348,6 +358,11 @@ async def create_observation(
 
 
 # ---------------------------------------------------------------- summary
+def _weather_code(day: dict[str, Any] | None) -> str | None:
+    code = None if day is None else day.get("icon") or day.get("code")
+    return str(code) if code and code != "unknown" else None  # "unknown" is the weather view's placeholder, not a code
+
+
 async def summary_today(ctx: FarmContext, today: dt.date | None = None) -> dict[str, Any]:
     """Red parcels first, then orange, on the caller's scope; green ones have nothing to read."""
     rows = (
@@ -366,7 +381,7 @@ async def summary_today(ctx: FarmContext, today: dt.date | None = None) -> dict[
         "summary_date": (today or dt.datetime.now(dt.UTC).date()).isoformat(),
         "locale": lang if lang in ("ary", "ar", "fr") else "fr",
         "items": [{"parcel_id": str(r[0]), "color": r[1], "reason_key": r[2]} for r in rows],
-        "weather_code": None if first is None else str(first.get("icon", first.get("code"))),
+        "weather_code": _weather_code(first),
     }
 
 

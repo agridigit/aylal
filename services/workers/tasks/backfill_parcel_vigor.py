@@ -7,6 +7,7 @@ import datetime as dt
 import uuid
 from typing import Any
 
+from access_sql import VISIBLE_PARCELS_SQL, asyncpg_query, scope_params
 from imagery import backfill_window
 from monitoring_db import bump_data_version, dsn
 from tasks.ingest_imagery import publish_scene_stats
@@ -31,7 +32,11 @@ async def backfill_parcel_vigor(ctx: dict[str, Any], *, farm_id: uuid.UUID, parc
     now = now or dt.datetime.now(dt.UTC)
     conn = await asyncpg.connect(dsn())
     try:
-        if not await conn.fetchval("SELECT 1 FROM parcels WHERE id = $1 AND farm_id = $2 AND archived_at IS NULL", parcel_id, farm_id):
+        if not await _visible(conn, farm_id, parcel_id):
+            # archived parcel or deleted farm: no raster is read and no job stays active
+            await conn.execute(
+                "UPDATE monitoring_jobs SET state = 'failed', finished_at = now() WHERE parcel_id = $1 AND kind = 'backfill' AND state IN ('queued','running')",
+                parcel_id)
             return "skipped"
         job = await enqueue_backfill(conn, farm_id=farm_id, parcel_id=parcel_id)
         started = dt.datetime.now(dt.UTC)
@@ -48,6 +53,14 @@ async def backfill_parcel_vigor(ctx: dict[str, Any], *, farm_id: uuid.UUID, parc
         return state
     finally:
         await conn.close()
+
+
+async def _visible(conn: Any, farm_id: uuid.UUID, parcel_id: uuid.UUID) -> bool:
+    """System scope (owner-like) through the shared visibility predicate, on a farm that is not deleted."""
+    query, args = asyncpg_query(
+        f"SELECT 1 FROM ({VISIBLE_PARCELS_SQL}) v JOIN farms f ON f.id = :farm WHERE v.id = :parcel AND f.deleted_at IS NULL",
+        {**scope_params(farm_id, None, "owner"), "parcel": parcel_id})
+    return bool(await conn.fetchval(query, *args))
 
 
 async def _publish(conn: Any, ctx: dict[str, Any], farm_id: uuid.UUID, parcel_id: uuid.UUID, now: dt.datetime) -> None:

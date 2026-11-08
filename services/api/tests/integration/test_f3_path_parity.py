@@ -19,7 +19,7 @@ COVERED_ROUTES = {
 }
 COVERED_TABLES = {"farm_weather", "alerts", "parcel_status", "parcel_status_items", "parcel_vigor_points", "vigor_maps", "attention_zones",
                   "zone_observations", "observation_uploads", "daily_summaries", "notification_prefs", "monitoring_jobs"}
-COVERED_TASKS = {"refresh_weather", "evaluate_alerts", "import_crop_thresholds", "recompute_status", "detect_zones", "send_daily_summary",
+COVERED_TASKS = {"drain_backfill_jobs", "refresh_weather", "evaluate_alerts", "import_crop_thresholds", "recompute_status", "detect_zones", "send_daily_summary",
                  "ingest_imagery", "backfill_parcel_vigor"}
 PRE_F3_TASKS = {"__init__", "build_registry_export", "build_tiles", "expire_invitations", "import_phyto_catalog", "mark_overdue_operations",
                 "object_storage", "purge_archived_fields", "purge_deleted_accounts", "purge_expired_registry", "send_otp"}

@@ -139,7 +139,7 @@ def test_given_a_season_ending_before_it_starts_then_the_check_refuses_it(make_f
 
 
 def test_given_head_then_the_16_reference_crops_are_seeded_with_stages_for_those_with_agronomy(migrated):
-    rows = sql("SELECT slug, cycle, has_agronomy, validated FROM crops WHERE farm_id IS NULL")
+    rows = sql("SELECT slug, cycle, has_agronomy, validated FROM crops WHERE farm_id IS NULL AND slug NOT LIKE 'fx\\_%'")
     assert {r[0] for r in rows} == SLUGS and len(rows) == 16
     assert {r[1] for r in rows} == {"perennial", "annual"}
     assert all(r[3] is False or r[3] is True for r in rows)

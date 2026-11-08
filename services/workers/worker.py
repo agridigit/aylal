@@ -9,6 +9,7 @@ from arq.connections import RedisSettings
 from tasks.backfill_parcel_vigor import backfill_parcel_vigor
 from tasks.build_registry_export import build_registry_export
 from tasks.build_tiles import build_tiles
+from tasks.drain_backfill_jobs import drain_backfill_jobs
 from tasks.detect_zones import detect_zones
 from tasks.evaluate_alerts import evaluate_alerts
 from tasks.expire_invitations import expire_invitations
@@ -37,7 +38,8 @@ def _redis_settings() -> RedisSettings:
 class WorkerSettings:
     functions = [health, send_otp, purge_pending, purge_deleted, expire_invitations, build_tiles, purge_archived_fields,
                  purge_expired_registry, mark_overdue_operations, build_registry_export, import_phyto_catalog,
-                 refresh_weather, evaluate_alerts, import_crop_thresholds, recompute_status, detect_zones, send_daily_summary, ingest_imagery, backfill_parcel_vigor]
+                 refresh_weather, evaluate_alerts, import_crop_thresholds, recompute_status, detect_zones, send_daily_summary, ingest_imagery, backfill_parcel_vigor,
+                 drain_backfill_jobs]
     cron_jobs = [
         cron(purge_pending, minute=0),
         cron(purge_deleted, hour=3, minute=0),
@@ -51,6 +53,7 @@ class WorkerSettings:
         cron(recompute_status, minute=40),
         cron(detect_zones, hour=6, minute=0),
         cron(send_daily_summary, minute=5),
+        cron(drain_backfill_jobs, minute={3, 13, 23, 33, 43, 53}),
     ]
     redis_settings = _redis_settings()
     health_check_interval = 5
