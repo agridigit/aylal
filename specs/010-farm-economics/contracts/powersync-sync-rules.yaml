@@ -1,0 +1,26 @@
+# Extrait à fusionner dans infra/powersync/sync-rules.yaml (aucune jointure, aucune sous-requête ; id requis ; tout paramètre couvert)
+bucket_definitions:
+  farm_finance:
+    parameters: >-
+      SELECT farm_id FROM farm_members
+      WHERE user_id = request.user_id() AND role IN ('owner','manager') AND removed_at IS NULL
+    data:
+      - SELECT id, farm_id, kind, category, amount_cents, spent_on, parcel_id, season_id, allocation_mode, receipt_id, reverses_id, replaces_id, parcel_archived_at FROM expenses WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, expense_id, parcel_id, share_cents, season_id, parcel_archived_at FROM expense_allocations WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, kind, parcel_id, season_id, quantity_milli, unit_price_cents, total_cents, buyer, sold_on, reverses_id, replaces_id, parcel_archived_at FROM sales WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, kind, parcel_id, season_id, quantity_milli, unit, harvested_on, author_id, reverses_id, parcel_archived_at FROM harvests WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, product_id, name, unit, threshold_milli, qty_milli, avg_unit_cost_cents, shortfall_milli, retired FROM stock_items WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, stock_item_id, kind, qty_milli, unit_cost_cents, total_cost_cents, parcel_id, season_id, operation_id, reverses_id, moved_on, parcel_archived_at FROM stock_movements WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, stock_item_id, status, qty_milli, threshold_milli, product_name FROM stock_alerts WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, expense_id, status, content_type, size_bytes FROM receipts WHERE farm_id = bucket.farm_id
+  farm_worker_harvests_own:
+    parameters: >-
+      SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels
+      WHERE user_id = request.user_id()
+    data:
+      # harvests ne contient aucune colonne monétaire ; archivées masquées ; seulement les siennes
+      - SELECT id, farm_id, kind, parcel_id, season_id, quantity_milli, unit, harvested_on, author_id, parcel_archived_at FROM harvests WHERE parcel_id = bucket.parcel_id AND author_id = bucket.user_id AND parcel_archived_at IS NULL
+  market_prices_recent:
+    data:
+      - SELECT id, crop_slug, market, unit, price_cents, observed_on, source_id FROM market_prices
+      - SELECT id, label, public_url FROM market_sources

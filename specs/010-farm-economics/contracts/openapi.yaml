@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info: {title: AYLAL F8 farm economics, version: 0.1.0}
+x-conventions:
+  base: /v1/farms/{farm_id}
+  errors: "404 {detail: not_found} identique (autre ferme, inconnue, membre retiré, id étranger) ; 403 {detail: forbidden} par rôle ; 413 batch_too_large/body_too_large ; 422 validation(field) ; 429 Retry-After ; 409 already_reversed|sale_exceeds_harvest"
+  money: "montants en centimes entiers (MAD), quantités en millièmes entiers"
+  roles: "toutes les routes sauf harvests : owner, manager ; harvests : worker limité à ses parcelles attribuées non archivées, sans champ monétaire"
+paths:
+  /expenses: {get: {operationId: listExpenses, summary: "owner/manager ; curseur, limit<=100"}, post: {operationId: createExpense, summary: "idempotent par id client ; allocation_mode parcel|prorata|general"}}
+  /expenses/{expense_id}: {get: {operationId: getExpense}}
+  /expenses/{expense_id}/reverse: {post: {operationId: reverseExpense}}
+  /expenses/{expense_id}/replace: {post: {operationId: replaceExpense}}
+  /receipts: {post: {operationId: uploadReceipt, summary: "multipart ; plafonds et signature avant lecture ; clé serveur"}}
+  /receipts/{receipt_id}: {get: {operationId: getReceipt, summary: "statut + proposition (jamais enregistrée) + URL pré-signée <=15 min"}}
+  /harvests: {get: {operationId: listHarvests, summary: "ouvrier : les siennes, sans champ monétaire"}, post: {operationId: createHarvest}}
+  /harvests/{harvest_id}/reverse: {post: {operationId: reverseHarvest, summary: "owner/manager"}}
+  /sales: {get: {operationId: listSales}, post: {operationId: createSale, summary: "409 sale_exceeds_harvest"}}
+  /sales/{sale_id}/reverse: {post: {operationId: reverseSale}}
+  /sales/{sale_id}/replace: {post: {operationId: replaceSale}}
+  /economics/parcels/{parcel_id}: {get: {operationId: getParcelEconomics, summary: "?season_id ; totaux, marge, coût/ha, coût/kg (null = non disponible)"}}
+  /economics/seasons/{season_id}: {get: {operationId: getSeasonEconomics}}
+  /economics/farm: {get: {operationId: getFarmEconomics, summary: "inclut charges générales séparées"}}
+  /stock/items: {get: {operationId: listStockItems}, post: {operationId: createStockItem}}
+  /stock/items/{item_id}: {patch: {operationId: updateStockThreshold}}
+  /stock/purchases: {post: {operationId: recordPurchase, summary: "produit expiré du catalogue refusé 422 product_retired"}}
+  /stock/adjustments: {post: {operationId: adjustStock, summary: "inventaire ; motif obligatoire"}}
+  /stock/items/{item_id}/movements: {get: {operationId: listStockMovements}}
+  /stock/alerts: {get: {operationId: listStockAlerts}}
+  /market-prices: {get: {operationId: listMarketPrices, summary: "?crop_slug ; source+date ; available=false si passerelle vide"}}
+  /market-prices/trend: {get: {operationId: getMarketTrend, summary: "13 semaines ; jamais de prévision"}}
