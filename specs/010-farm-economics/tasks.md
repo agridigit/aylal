@@ -3,7 +3,7 @@
 **Branche** : `010-farm-economics` | **Entrées** : spec.md, plan.md, data-model.md, research.md, contracts/, quickstart.md, decisions.md
 **Règle** : test first strict. Dans chaque bloc, les tests RED (unitaire `tests/unit/`, intégration `tests/integration/`, contrat `tests/contract/`, bout en bout `services/api/tests/e2e/` ou `apps/mobile/maestro/`) viennent AVANT l'implémentation, sont lancés et DOIVENT échouer (commit `test(010-farm-economics): red - <sujet>`), puis GREEN (`feat(...)`), puis REFACTOR (`refactor(...)`). Aucun test modifié pour passer sauf contradiction avec la spec (à noter dans `decisions.md`).
 **Notation** : `[P]` = fichiers différents, aucune dépendance en cours. `[USn]` = récit n. Critères cités `Rn-Am` = récit n, scénario d'acceptation m de spec.md ; `CL` = cas limite ; `FR-xxx`/`SC-xxx` ; `G1`..`G10` = garde-fous de plan.md (`G<n>-RED` / `G<n>-GREEN`).
-**Séparation** : les tâches **non-écran** (domaine, API, base, synchro, workers, view models) ne dépendent PAS de la porte design. Les tâches **`[écran]`** (écrans, parcours Maestro, captures de régression) sont `[BLOQUÉ-DESIGN]` : elles ne démarrent que si `docs/design/010-farm-economics/VALIDATION.md` existe et liste l'écran ; ce fichier n'est **jamais** écrit par un agent (CLAUDE.md, constitution X). Les maquettes et stories Storybook (T095-T097) sont autorisées sans validation.
+**Séparation** : les tâches **non-écran** (domaine, API, base, synchro, workers, view models) ne dépendent PAS de la porte design. Les tâches **`[écran]`** (écrans, parcours Maestro, captures de régression) sont `[BLOQUÉ-DESIGN]` : elles ne démarrent que si `docs/design/010-farm-economics/VALIDATION.md` existe et liste l'écran ; ce fichier n'est **jamais** écrit par un agent (CLAUDE.md, constitution X). Les maquettes et stories Storybook (T087-T089) sont autorisées sans validation.
 **Chemins** : API = `services/api/`, domaine = `packages/domain/`, mobile = `apps/mobile/`, workers = `services/workers/`. Tests : `services/api/tests/{unit,integration,contract,e2e}/`, `services/workers/tests/`, `packages/domain/tests/`, `apps/mobile/src/**/__tests__/`.
 **Interdits transverses** : aucun montant en flottant ; aucune valeur de prix, de montant OCR ou de source inventée ni semée par migration (fixtures de test seulement) ; aucun `now()` / `Date.now()` / `current_date` dans les règles (horloge injectée) ; aucun DELETE/UPDATE sur les registres ; aucun texte d'interface en dur.
 
@@ -155,7 +155,7 @@
 ### Tests RED
 
 - [ ] T080 [P] [US5] Unitaire `packages/domain/tests/unit/price-trend.test.ts` + miroir Python : médiane hebdomadaire 13 semaines, prix ancien > 14 jours, aucune extrapolation (R5-A1, A3).
-- [ ] T081 [P] [US5] Intégration `services/api/tests/integration/test_f8_market_prices_api.py` + `services/workers/tests/test_refresh_market_prices.py` : source configurée -> prix avec source et date ; URL vide -> `available=false` et dernier relevé daté ; hôte non listé refusé ; rétention 92 jours / 500 lignes ; ouvrier 403 (R5-A1..A4, SC-006).
+- [ ] T081 [P] [US5] Intégration `services/api/tests/integration/test_f8_market_prices_api.py` + `services/workers/tests/test_refresh_market_prices.py` : source configurée -> prix avec source et date ; URL vide -> `available=false` et dernier relevé daté ; hôte non listé refusé ; rétention 92 jours / 500 lignes ; comparaison prix du marché / prix de vente de l'agriculteur sur la même période ; ouvrier 403 (R5-A1..A5, SC-006).
 - [ ] T082 [US5] E2E service `services/api/tests/e2e/test_f8_us5_prices_e2e.py` : passerelle fictive -> écran de données -> passerelle coupée -> « non disponible ».
 - [ ] T083 [US5] [écran] [BLOQUÉ-DESIGN] E2E Maestro `apps/mobile/maestro/market_prices.yaml`.
 
@@ -177,7 +177,7 @@
 - [ ] T091 [P] Vérifier `make test-pyramid` : trois niveaux présents pour chaque module touché (`services/api`, `services/workers`, `packages/domain`, `apps/mobile` ; Maestro bloqué consigné dans `decisions.md`).
 - [ ] T092 [P] Couverture du code métier F8 >= 80 % (domaine TS, `app/economics`, `app/domain`).
 - [ ] T093 Revue de sécurité transverse : aucun montant côté ouvrier (tous chemins), aucun 404 différencié, aucune URL de stockage client, aucun envoi externe sans validation (G1, G5, G6).
-- [ ] T094 **make check vert** : `make check-fast-cached` en fin de groupe, puis `make check-cached` (avec e2e) avant `/aylal.release` ; écrans/Maestro bloqués consignés.
+- [ ] T094 **make check vert** : `make check-fast-cached` en fin de groupe, puis `make check-cached` (avec e2e) avant `/aylal.release` ; écrans/Maestro bloqués consignés ; SC-001 et SC-007 (chronométrage de saisie, quatre états, RTL) restent à mesurer en recette tant que les écrans sont bloqués.
 - [ ] T095 **Documentation de fin de module (/aylal.docs)** : `docs/modules/010-farm-economics/{ingenieur.md,agriculteur.fr.md,agriculteur.ar.md,diagrams/*.mmd,img/*}` via `make diagrams`.
 
 ## Récits reportés (P3)
