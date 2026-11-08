@@ -18,7 +18,7 @@ b) Synchronisation : si `git merge-base --is-ancestor main <branche>` échoue, `
 c) Version : dernière balise `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' main` (aucune → v0.0.0).
    - commits de la branche depuis main (`git log main..<branche> --format=%s`) uniquement `fix`/`test`/`docs`/`chore`/`refactor` (aucun `feat`) → PATCH+1 ;
    - sinon (fonctionnalité) → MINOR+1, PATCH=0 ;
-   - si, après cette fusion, toutes les balises `aylal-F0` … `aylal-F7` existent (en comptant Fx) et que la version actuelle est < 1.0.0 → v1.0.0.
+   - si, après cette fusion, toutes les balises de la v1 existent — `aylal-F0`, `aylal-F1`, `aylal-F2`, `aylal-F3`, `aylal-F4`, `aylal-F6`, `aylal-D1`, `aylal-M1`, `aylal-F8` (en comptant Fx) et que la version actuelle est < 1.0.0 → v1.0.0.
 d) Écris la version dans tous les `package.json` (racine, apps/*, packages/*, services/*, hors node_modules) via `jq '.version="X.Y.Z"'`
    et dans `services/*/pyproject.toml` (`version = "X.Y.Z"` de la section `[project]` ou `[tool.poetry]`).
 e) CHANGELOG.md : insère juste après l'en-tête, au-dessus de la dernière version :

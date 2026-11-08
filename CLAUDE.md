@@ -31,7 +31,9 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 - Toute règle métier vit dans `packages/domain` (TS) ou `services/api/app/domain` (Python), jamais dans un écran.
 - Hors ligne d'abord : SQLite local + PowerSync. Aucune donnée perdue.
 - Design : composants de `packages/ui` uniquement, jetons du design system AYLAL, RTL vérifié, 4 états par écran (chargement, vide, erreur, hors ligne).
-- Design de référence de l'app mobile : `docs/design/aylal-design-system.md` (Olivier, cartes élevées, icônes trait arrondi, jetons à deux niveaux, Unistyles). Tout écran ou composant s'y conforme.
+- Design de référence de l'app mobile : `docs/design/aylal-design-system.md` (direction de couleur en vigueur dans ce document — FarmQA v2 sur la branche `design/farmqa-v2`, en attente de fusion —, icônes trait arrondi, jetons à deux niveaux, Unistyles). Tout écran ou composant s'y conforme.
+- Porte design (constitution, article X) : un écran n'est codé que si `docs/design/<NNN-feature>/VALIDATION.md` existe et liste cet écran. Ce fichier n'est écrit que sur validation explicite de l'utilisateur, jamais par un agent de la boucle ; sans lui, les tâches d'écran restent bloquées et la boucle produit seulement les maquettes (stories Storybook + captures PNG FR/AR dans `docs/design/<NNN-feature>/`).
+- Feuille de route : v1 = F0, F1, F2, F6, F3, F4, design system (D1), application mobile v1 (M1), F8 ; v2 = F5, F7, F9 (`prompts/features-v2.tsv`). Voir CPS section 5.
 
 ## Documentation (à chaque fin de fonctionnalité)
 Dossier `docs/modules/<NNN-feature>/` :
@@ -50,7 +52,7 @@ Dossier `docs/modules/<NNN-feature>/` :
 ## Versionnement git (100 % Claude, local uniquement)
 - Une branche par fonctionnalité (`NNN-slug`) ; `hotfix/<slug>` pour les bugs ; `main` toujours vert.
 - Un commit Conventional Commits par étape TDD : `test(<Fx>)` → RED, `feat(<Fx>)` → GREEN, `refactor(<Fx>)` → REFACTOR (types : feat, fix, test, refactor, docs, chore, ci, build).
-- SemVer depuis la dernière balise `vX.Y.Z` (aucune → v0.0.0) : fonctionnalité = MINOR+1, uniquement des correctifs = PATCH+1, v1.0.0 quand F0 à F7 sont fusionnées. Version reportée dans tous les `package.json` et `services/*/pyproject.toml`.
+- SemVer depuis la dernière balise `vX.Y.Z` (aucune → v0.0.0) : fonctionnalité = MINOR+1, uniquement des correctifs = PATCH+1, v1.0.0 quand toute la v1 de la feuille de route est fusionnée (F0, F1, F2, F3, F4, F6, D1, M1, F8). Version reportée dans tous les `package.json` et `services/*/pyproject.toml`.
 - `CHANGELOG.md` tenu par le sous-agent `git-keeper` (Ajouts / Corrections / Documentation / Technique).
 - Fin de fonctionnalité = `/aylal.release <branche> <Fx>` ; bug = `/aylal.hotfix <description>`.
 - Aucun push, fetch, pull, remote ni `gh` ; jamais `reset --hard` ni réécriture d'historique (garde : `scripts/guard-git.sh`).
