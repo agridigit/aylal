@@ -8,7 +8,7 @@ describe("F4 US2 served advice (shared vectors f4_us2_last_known.json)", () => {
     it(`given ${v.name} then select_served_plan matches the shared vector`, async () => {
       const mod = (await import("../src/irrigation-last-known")) as Record<string, (i: unknown) => unknown>;
       expect(typeof mod.selectServedPlan).toBe("function");
-      matches(mod.selectServedPlan(structuredClone(v.input)), v.expected, v.tol ?? 0.01, v.exact ?? false);
+      matches(mod.selectServedPlan!(structuredClone(v.input)), v.expected, v.tol ?? 0.01, v.exact ?? false);
     });
   }
 });

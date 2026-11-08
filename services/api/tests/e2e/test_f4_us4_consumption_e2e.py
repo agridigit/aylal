@@ -7,7 +7,6 @@ import pytest
 
 from tests.e2e._f4 import BASE, farm_with_worker
 from tests.e2e.test_f4_us2_advice_e2e import DRIP
-from tests.helpers import sql
 
 
 @pytest.fixture(scope="module")

@@ -9,8 +9,17 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.helpers import auth, sql
-from tests.integration._f4 import TODAY4, call, export_of, seed_event, seed_plan, sync_event, sync_post, world4  # noqa: F401
+from tests.helpers import sql
+from tests.integration._f4 import (  # noqa: F401
+    TODAY4,
+    call,
+    export_of,
+    seed_event,
+    seed_plan,
+    sync_event,
+    sync_post,
+    world4,
+)
 
 REPO = Path(os.environ.get("AYLAL_REPO_DIR", "/repo"))
 COVERED_ROUTES = {

@@ -5,7 +5,15 @@ import uuid
 import pytest
 
 from tests.helpers import sql
-from tests.integration._f4 import FORBIDDEN, NOT_FOUND, assert_worker_safe, call, compute, seed_analysis, world4  # noqa: F401
+from tests.integration._f4 import (  # noqa: F401
+    FORBIDDEN,
+    NOT_FOUND,
+    assert_worker_safe,
+    call,
+    compute,
+    seed_analysis,
+    world4,
+)
 from tests.integration._f4_us import advice_url, assumption, depleted_parcel, seed_analysis_on
 
 

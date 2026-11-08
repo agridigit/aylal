@@ -7,7 +7,16 @@ from pathlib import Path
 import yaml
 
 from tests.helpers import sql
-from tests.integration._f4 import TODAY4, call, export_of, seed_event, seed_f4_rows, sync_event, sync_post, world4  # noqa: F401
+from tests.integration._f4 import (  # noqa: F401
+    TODAY4,
+    call,
+    export_of,
+    seed_event,
+    seed_f4_rows,
+    sync_event,
+    sync_post,
+    world4,
+)
 
 APP = Path(__file__).resolve().parents[2] / "app"
 REPO = Path(os.environ.get("AYLAL_REPO_DIR", "/repo"))

@@ -47,8 +47,8 @@ def test_given_a_season_without_irrigation_then_the_totals_are_zero_so_the_clien
 
 def test_given_other_sources_of_applied_water_then_they_are_counted_and_cancelled_events_are_not(client, token_for, world4):
     w = world4
-    done = seed_event(w["farm_a"], w["a1"], w["owner"], volume=20.0)
-    cancelled = seed_event(w["farm_a"], w["a1"], w["owner"], volume=99.0, status="cancelled")
+    seed_event(w["farm_a"], w["a1"], w["owner"], volume=20.0)
+    seed_event(w["farm_a"], w["a1"], w["owner"], volume=99.0, status="cancelled")
     sql("INSERT INTO irrigation_applied (id, farm_id, parcel_id, performed_on, volume_m3, net_mm) VALUES (gen_random_uuid(),$1,$2,$3,5,1)", w["farm_a"], w["a1"], YESTERDAY4)
     row = _by_parcel(_get(client, token_for, w, "owner").json())[str(w["a1"])]
     assert row["volume_m3"] == 25.0 and row["events"] == 2
@@ -96,7 +96,7 @@ def test_given_the_same_scope_then_a_conditional_read_is_a_304_and_the_etag_diff
     owner = _get(client, token_for, w, "owner")
     worker = _get(client, token_for, w, "worker")
     assert owner.headers["etag"] != worker.headers["etag"]
-    again = client.get(f"/v1/farms/{w['farm_a']}/irrigation/consumption", headers={**{"Authorization": f"Bearer {token_for(w['owner'])}"}, "If-None-Match": owner.headers["etag"]})
+    again = client.get(f"/v1/farms/{w['farm_a']}/irrigation/consumption", headers={"Authorization": f"Bearer {token_for(w['owner'])}", "If-None-Match": owner.headers["etag"]})
     assert again.status_code == 304
 
 

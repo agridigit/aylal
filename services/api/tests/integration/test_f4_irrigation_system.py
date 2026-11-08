@@ -5,8 +5,8 @@ import uuid
 import pytest
 
 from tests.helpers import sql
-from tests.integration._f4 import FORBIDDEN, NOT_FOUND, SYSTEM_BODY, call, world4  # noqa: F401
 from tests.integration._f2 import add_field
+from tests.integration._f4 import FORBIDDEN, NOT_FOUND, SYSTEM_BODY, call, world4  # noqa: F401
 
 DRIP = {"kind": "drip", "sectors_count": 2, "emitter_flow_lph": 4, "emitter_spacing_m": 0.5, "row_spacing_m": 2}
 

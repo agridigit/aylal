@@ -77,8 +77,8 @@ def test_given_the_live_advice_schemas_then_adviceworker_matches_the_contract_pr
 
 def test_given_seeded_data_then_responses_carry_the_required_fields_of_the_contract(client, token_for):
     from tests.helpers import sql
-    from tests.integration._f4 import call, seed_balance, seed_event, seed_plan, seed_system
     from tests.integration._f2 import add_field, new_user
+    from tests.integration._f4 import call, seed_balance, seed_event, seed_plan, seed_system
 
     owner = new_user()
     farm = uuid.uuid4()

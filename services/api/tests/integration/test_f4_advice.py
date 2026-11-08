@@ -5,8 +5,24 @@ import uuid
 import pytest
 
 from tests.helpers import sql
-from tests.integration._f4 import FORBIDDEN, NOT_FOUND, TODAY4, YESTERDAY4, assert_worker_safe, call, compute, seed_plan, world4  # noqa: F401
-from tests.integration._f4_us import advice_url, assumption, depleted_parcel, plan_of, seed_referentials
+from tests.integration._f4 import (  # noqa: F401
+    FORBIDDEN,
+    NOT_FOUND,
+    TODAY4,
+    YESTERDAY4,
+    assert_worker_safe,
+    call,
+    compute,
+    seed_plan,
+    world4,
+)
+from tests.integration._f4_us import (
+    advice_url,
+    assumption,
+    depleted_parcel,
+    plan_of,
+    seed_referentials,
+)
 
 STAFF_KEYS = {"et0", "kc", "effective_rain", "efficiency", "soil_texture"}
 

@@ -4,7 +4,15 @@ import uuid
 import pytest
 
 from tests.helpers import sql
-from tests.integration._f4 import FORBIDDEN, NOT_FOUND, SYSTEM_BODY, call, seed_analysis, seed_event, world4  # noqa: F401
+from tests.integration._f4 import (  # noqa: F401
+    FORBIDDEN,
+    NOT_FOUND,
+    SYSTEM_BODY,
+    call,
+    seed_analysis,
+    seed_event,
+    world4,
+)
 
 
 def _f(w, parcel):

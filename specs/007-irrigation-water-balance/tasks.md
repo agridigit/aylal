@@ -74,7 +74,7 @@
 - [x] T040 **G2-GREEN** : `services/api/app/irrigation/{consumption.py,cache.py}` (agrégats sur `irrigation_applied WHERE <visible_parcels>`, clé de cache portée) ; fait passer T009, T024.
 - [x] T041 **G3-GREEN** : `infra/powersync/sync-rules.yaml` étendu (colonnes explicites, dénormalisation, seaux `own`, colonnes worker-safe : `worker_assumptions` sans `assumptions`/`leaching_fraction`/`taw_mm`/`raw_mm`/`moisture_source` pour l'ouvrier), `scripts/validate-sync-rules.{sh,mjs}` ; fait passer T025, T034b et le volet synchro de T033.
 - [x] T042 **G4-GREEN** : plafonds `packages/domain/src/irrigation-limits.ts`, `services/api/app/domain/irrigation_limits.py`, contrôles avant parsing/I/O (`body_limit.py`), verrous par ferme et `irrigation:{farm}` dans `service.py`/`sync/irrigation.py`/workers, coalescence des recalculs ; fait passer T008, T026, T027.
-- [x] T043 **G5-GREEN** : extension `services/api/app/monitoring/gateways.py` (entrée `weather_observed`, `et0_mm` facultatif, liste blanche, `unavailable`, minimisation ; décisions point 17), `services/api/app/irrigation/{weather_input.py,reference.py}` (référentiels vides -> `unavailable`), `services/workers/tasks/import_irrigation_params.py` (`validated_by` + `source` obligatoires), validation de configuration au démarrage ; fait passer T010, T011, T012, T013, T028.
+- [x] T043 **G5-GREEN** : extension `services/api/app/monitoring/gateways.py` (entrée `weather_observed`, `et0_mm` facultatif, liste blanche, `unavailable`, minimisation ; décisions point 17), `services/api/app/irrigation/{weather_input.py,reference.py}` (référentiels vides -> `unavailable`), `services/workers/tasks/import_irrigation_params.py` (`validated_by` + `source` obligatoires), validation de configuration au démarrage ; fait passer T010, T011, T012, T013, T028. **Note : `reference.py` non créé ; lecture du référentiel dans `irrigation/engine.py`.**
 - [x] T044 **G6-GREEN** : rejet des clés/URL, `operation_id` serveur (uuid5), `app/auth/client_ip.py` réutilisé, limiteur Redis sur routes F4 ; fait passer T014, T015, T029, T030.
 - [x] T045 Domaine partagé GREEN : `packages/domain/src/{irrigation-efficiency,application-rate,et0,effective-rain,water-balance,irrigation-advice,leaching,advice-confidence,rainfed-stress,irrigation-units}.ts`, miroirs `services/api/app/domain/*.py`, génération Zod -> JSON Schema -> Pydantic (`scripts/gen-pydantic.sh`) ; fait passer T016.
 - [x] T046 GREEN contrat/e2e fondations : routeurs `services/api/app/routers/{irrigation_systems,irrigation_advice,irrigation_events,consumption,water_analyses}.py` (squelettes branchés sur `access.py`) ; fait passer T033, T034, T032. REFACTOR sans changer le comportement.
@@ -100,7 +100,7 @@
 - [x] T055 [P] [US2] Mobile `apps/mobile/src/irrigation/__tests__/{localBalance,adviceVoice}.test.ts` : R2-A6 hors ligne, SC-005 (30 jours simulés, bilan local = serveur sur vecteurs partagés ; pour l'ouvrier, pas de réserve utile locale : lecture du dernier conseil `worker_assumptions` synchronisé, décisions point 19), lecture vocale du conseil.
 - [x] T056 [US2] E2E API `services/api/tests/e2e/test_f4_us2_advice_e2e.py` : R2-A1..A7 (météo simulée via passerelle factice, horloge injectée, référentiel de test).
 ### GREEN
-- [x] T057 [US2] `services/api/app/irrigation/{plans.py,weather_input.py}`, `services/api/app/routers/irrigation_advice.py`, `services/workers/tasks/{compute_irrigation_plans.py,send_irrigation_reminders.py}`, `apps/mobile/src/irrigation/{localBalance.ts,adviceVoice.ts,viewModels/advice.ts}` ; fait passer T052-T056. REFACTOR.
+- [ ] T057 [US2] `services/api/app/irrigation/{plans.py,weather_input.py}`, `services/api/app/routers/irrigation_advice.py`, `services/workers/tasks/{compute_irrigation_plans.py,send_irrigation_reminders.py}`, `apps/mobile/src/irrigation/{localBalance.ts,adviceVoice.ts,viewModels/advice.ts}` ; fait passer T052-T056. REFACTOR. **PARTIEL : viewModels/advice.ts non créé (vient avec l'écran F4-E2, bloqué par T004) ; le reste est fait et vert.**
 
 ## Phase 5 : Récit 3 — Enregistrer une irrigation en un geste (P1) [US3]
 
@@ -110,7 +110,7 @@
 - [x] T060 [P] [US3] Intégration synchro + mobile `services/api/tests/integration/test_f4_event_sync.py`, `apps/mobile/src/irrigation/__tests__/pendingBadge.test.ts` : R3-A4 (enregistrement local « à envoyer », bilan local immédiat, rejeu sans doublon, SC-002 < 15 s au view model).
 - [x] T061 [US3] E2E API `services/api/tests/e2e/test_f4_us3_record_e2e.py` : R3-A1..A5 de bout en bout (REST + sync, journal F6, bilan lendemain).
 ### GREEN
-- [x] T062 [US3] `services/api/app/irrigation/{service.py,corrections.py}`, `services/api/app/routers/irrigation_events.py`, `services/api/app/sync/irrigation.py` (volet événements, opération F6 liée), `apps/mobile/src/irrigation/{pendingBadge.ts,viewModels/record.ts}` ; fait passer T058-T061. REFACTOR.
+- [ ] T062 [US3] `services/api/app/irrigation/{service.py,corrections.py}`, `services/api/app/routers/irrigation_events.py`, `services/api/app/sync/irrigation.py` (volet événements, opération F6 liée), `apps/mobile/src/irrigation/{pendingBadge.ts,viewModels/record.ts}` ; fait passer T058-T061. REFACTOR. **PARTIEL : corrections.py non créé (annulation/correction gérées dans service.py) ; le reste est fait et vert.**
 
 ## Phase 6 : Écrans P1 `[écran]` (bloqués par T004 ET fusion de 004-design-system)
 
@@ -130,7 +130,7 @@
 - [x] T070 [P] [US4] Intégration `services/api/tests/integration/test_f4_consumption.py` : R4-A1..A3, fenêtre <= 24 mois, <= 400 points, curseur, portée ouvrier (G2), toutes sources d'apport.
 - [x] T071 [US4] E2E API `services/api/tests/e2e/test_f4_us4_consumption_e2e.py` : R4-A1..A3.
 ### GREEN
-- [x] T072 [US4] `services/api/app/irrigation/consumption.py`, `services/api/app/routers/consumption.py`, `apps/mobile/src/irrigation/viewModels/consumption.ts` ; fait passer T069-T071.
+- [ ] T072 [US4] `services/api/app/irrigation/consumption.py`, `services/api/app/routers/consumption.py`, `apps/mobile/src/irrigation/viewModels/consumption.ts` ; fait passer T069-T071. **PARTIEL : viewModels/consumption.ts non créé (vient avec l'écran F4-E4, bloqué par T004) ; le reste est fait et vert.**
 - [ ] T073 [écran] [US4] RED puis GREEN `apps/mobile/src/screens/WaterConsumption/` (F4-E4) + `apps/mobile/maestro/consumption.yaml` : R4-A1..A3, 4 états, RTL.
 
 ## Phase 8 : Récit 5 — Analyse d'eau et lessivage (P2) [US5]
@@ -140,7 +140,7 @@
 - [x] T075 [P] [US5] Intégration `services/api/tests/integration/test_f4_water_analyses.py` : R5-A1 (rattachée à la parcelle ou à la source), plafonds (<= 50, EC <= 100, date <= aujourd'hui via `Clock`), ouvrier 403/404, jamais supprimée, recalcul du conseil.
 - [x] T076 [US5] E2E API `services/api/tests/e2e/test_f4_us5_water_analysis_e2e.py` : R5-A1..A4 (salinité faible puis élevée, durées comparées).
 ### GREEN
-- [x] T077 [US5] `services/api/app/routers/water_analyses.py`, extension `plans.py` (lessivage), `apps/mobile/src/irrigation/viewModels/waterAnalysis.ts` ; fait passer T074-T076.
+- [ ] T077 [US5] `services/api/app/routers/water_analyses.py`, extension `plans.py` (lessivage), `apps/mobile/src/irrigation/viewModels/waterAnalysis.ts` ; fait passer T074-T076. **PARTIEL : viewModels/waterAnalysis.ts non créé (vient avec l'écran F4-E5, bloqué par T004) ; le reste est fait et vert.**
 - [ ] T078 [écran] [US5] RED puis GREEN `apps/mobile/src/screens/WaterAnalysis/` (F4-E5) + `apps/mobile/maestro/water_analysis.yaml` : R5-A1..A4, 4 états, RTL.
 
 ## Phase finale : Finition

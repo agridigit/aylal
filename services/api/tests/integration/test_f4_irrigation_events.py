@@ -5,8 +5,17 @@ import uuid
 import pytest
 
 from tests.helpers import sql
-from tests.integration._f4 import FORBIDDEN, NOT_FOUND, TODAY4, YESTERDAY4, call, compute, seed_event, world4  # noqa: F401
-from tests.integration._f4_us import advice_url, assumption, depleted_parcel, plan_of
+from tests.integration._f4 import (  # noqa: F401
+    FORBIDDEN,
+    NOT_FOUND,
+    TODAY4,
+    YESTERDAY4,
+    call,
+    compute,
+    seed_event,
+    world4,
+)
+from tests.integration._f4_us import advice_url, depleted_parcel
 
 
 def _url(w, parcel, suffix="irrigation/events"):
