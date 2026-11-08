@@ -7,3 +7,6 @@
 5. **Composants UI manquants** à demander à `004-design-system` (sans modifier `packages/ui` ni `docs/design/*`) : `StatusBadge`, `WeatherDayCard`, `AlertRow`, `VigorChart`, `VigorMapOverlay`, `ZoneGuidanceCard`, `StaleDataBanner`.
 6. **Porte design T-DESIGN-GATE** : validation humaine à consigner ici avant tout écran.
 7. **Numéro de migration** : `0010` provisoire, à recaler lors de la fusion.
+
+## Analyse (analyze) — correctifs
+- Sécurité : le seau `user_summaries` est soumis à l'appartenance active et filtré par `(farm_id, user_id)` ; purge des résumés/préférences au retrait, changement de rôle et suppression de ferme (FR-021, T027a/T027b). Aucune autre incohérence CRITICAL/HIGH trouvée : chaque FR a une tâche, chaque récit P1 a RED avant GREEN.

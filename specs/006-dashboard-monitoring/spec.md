@@ -178,6 +178,7 @@ L'agriculteur reçoit un résumé vocal de la journée sous forme de notificatio
 - **FR-017** : Hors réseau, le tableau de bord MUST afficher les dernières données chargées avec leur date.
 - **FR-018** : Chaque écran MUST avoir les quatre états conçus (chargement, vide, erreur, hors ligne) et une mise en page RTL complète ; aucun texte en dur, tout traduit en darija, arabe et français.
 - **FR-019** : Un ouvrier MUST ne voir (tableau de bord, alertes, résumé vocal) que les parcelles qui lui sont attribuées ; une parcelle archivée ou supprimée MUST disparaître du tableau de bord et ne plus générer d'alerte.
+- **FR-021** : Un membre retiré, dont le rôle change, ou une ferme supprimée MUST immédiatement perdre l'accès (REST, synchronisation, export) aux résumés et préférences qui lui étaient propres ; ces données dérivées par utilisateur sont purgées avec le retrait.
 - **FR-020** : Les données de monitoring MUST appartenir à l'agriculteur, être incluses dans son export et supprimées avec son compte (loi 09-08).
 
 ### Entités principales
