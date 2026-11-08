@@ -133,8 +133,8 @@
 
 **Dépend de** : Récit 3.
 
-- [ ] T075 [P] [US6] RED unitaire + intégration + contrat R6-A1, R6-A2 : `packages/domain/tests/vigor.test.ts` (alignement des dates), `services/api/tests/integration/test_f3_year_compare.py` (<= 2 x 200 points, sans historique N-1 -> message explicatif, jamais de courbe vide), `services/api/tests/contract/test_f3_compare_contract.py`.
-- [ ] T076 [US6] RED e2e (API) : `services/api/tests/e2e/test_f3_year_compare_e2e.py`.
+- [x] T075 [P] [US6] RED unitaire + intégration + contrat R6-A1, R6-A2 : `packages/domain/tests/vigor.test.ts` (alignement des dates), `services/api/tests/integration/test_f3_year_compare.py` (<= 2 x 200 points, sans historique N-1 -> message explicatif, jamais de courbe vide), `services/api/tests/contract/test_f3_compare_contract.py`.
+- [x] T076 [US6] RED e2e (API) : `services/api/tests/e2e/test_f3_year_compare_e2e.py`.
 - [ ] T077 [US6] GREEN : route comparaison dans `services/api/app/routers/vigor.py` + view model `apps/mobile/src/monitoring/viewModels/yearCompareViewModel.ts` (+ `__tests__`).
 - [ ] T078 [US6] [écran] RED puis GREEN F3-E7 `apps/mobile/src/screens/YearCompare/` (+ `__tests__`, Maestro `apps/mobile/maestro/year_compare.yaml`) ; dépend de T004 + fusion 004.
 
@@ -142,9 +142,9 @@
 
 **Dépend de** : Récits 2 et 5.
 
-- [ ] T079 [P] [US7] RED unitaire R7-A1, R7-A2 : `packages/domain/tests/voice-summary.test.ts` (vecteur `f3_summary.json` : rouges d'abord, langue ary/ar/fr, portée du destinataire) + `apps/mobile/src/monitoring/__tests__/voiceSummary.test.ts` (repli arabe puis texte si pas de voix darija).
-- [ ] T080 [P] [US7] RED intégration + contrat R7-A1 à R7-A3 : `services/api/tests/integration/test_f3_daily_summary.py` (un destinataire par ligne, payload limité à la portée, `summary_hour`, aucune fuite d'une parcelle invisible, 429 sur résumé) et `services/workers/tests/test_send_daily_summary.py`, `services/api/tests/contract/test_f3_summary_contract.py`.
-- [ ] T081 [US7] RED e2e (API) : `services/api/tests/e2e/test_f3_summary_e2e.py`.
+- [x] T079 [P] [US7] RED unitaire R7-A1, R7-A2 : `packages/domain/tests/voice-summary.test.ts` (vecteur `f3_summary.json` : rouges d'abord, langue ary/ar/fr, portée du destinataire) + `apps/mobile/src/monitoring/__tests__/voiceSummary.test.ts` (repli arabe puis texte si pas de voix darija).
+- [x] T080 [P] [US7] RED intégration + contrat R7-A1 à R7-A3 : `services/api/tests/integration/test_f3_daily_summary.py` (un destinataire par ligne, payload limité à la portée, `summary_hour`, aucune fuite d'une parcelle invisible, 429 sur résumé) et `services/workers/tests/test_send_daily_summary.py`, `services/api/tests/contract/test_f3_summary_contract.py`.
+- [x] T081 [US7] RED e2e (API) : `services/api/tests/e2e/test_f3_summary_e2e.py`.
 - [ ] T082 [US7] GREEN : `services/api/app/routers/summary.py`, `services/workers/tasks/send_daily_summary.py`, `apps/mobile/src/monitoring/voiceSummary.ts` (expo-speech, local, hors ligne) + view model + `__tests__`.
 - [ ] T083 [US7] [écran] RED puis GREEN F3-E8 `apps/mobile/src/screens/VoiceSummary/` (+ `__tests__`, Maestro `apps/mobile/maestro/voice_summary.yaml`) ; dépend de T004 + fusion 004.
 

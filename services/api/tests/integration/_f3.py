@@ -173,3 +173,20 @@ def keys_of(obj):
     elif isinstance(obj, list):
         for v in obj:
             yield from keys_of(v)
+
+
+def seed_vigor_points(farm, parcel, dates, *, clear=95, vigor=0.5):
+    """One valid (or not, per `clear`) vigor point and its scene for each date, in two statements; scenes use a private tile."""
+    tile = f"{uuid.uuid4().int % 50 + 10}ZZQ"
+    sql("INSERT INTO imagery_tiles (tile_id, last_ingested_on) VALUES ($1, current_date) ON CONFLICT DO NOTHING", tile)
+    sql("WITH s AS (INSERT INTO imagery_scenes (id, tile_id, acquired_on, cloud_pct_scene, raster_key, ingested_at)"
+        " SELECT gen_random_uuid(), $1, d, 5, 'rasters/' || gen_random_uuid()::text, now() FROM unnest($2::date[]) AS d RETURNING id, acquired_on)"
+        " INSERT INTO parcel_vigor_points (id, farm_id, parcel_id, scene_id, acquired_on, vigor_mean, plant_moisture_mean, clear_pct)"
+        " SELECT gen_random_uuid(), $3, $4, id, acquired_on, $5, 0.4, $6 FROM s", tile, list(dates), farm, parcel, vigor, clear)
+
+
+def seed_season_at(farm, parcel, started_at):
+    """An active season of a fresh reference crop (unique slug) started on `started_at`."""
+    cid, slug = uuid.uuid4(), f"fx_{uuid.uuid4().hex[:10]}"
+    sql("INSERT INTO crops (id, slug, name_ary, name_ar, name_fr, cycle) VALUES ($1,$2,$2,$2,$2,'perennial')", cid, slug)
+    sql("INSERT INTO seasons (id, farm_id, field_id, crop_id, started_at) VALUES ($1,$2,$3,$4,$5)", uuid.uuid4(), farm, parcel, cid, started_at)
