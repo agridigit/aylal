@@ -11,6 +11,7 @@ from typing import Any
 from sqlalchemy import text
 
 from app.auth.farm_context import FarmContext
+from app.domain.irrigation_last_known import select_served_plan
 from app.irrigation import cache
 from app.irrigation.access import visible_parcels
 from app.irrigation.worker_view import advice_view
@@ -64,13 +65,12 @@ def serve(rows: list[Any], parcel_id: uuid.UUID, today: dt.date, now: dt.datetim
     """Today's valid plan; else the latest older valid plan (dated, confidence lowered); else the latest unavailable one
     (its reason is the answer); else a placeholder. `rows` carry at most the latest valid and the latest unavailable plan."""
     staff = role in ("owner", "manager")
-    mine = [r for r in rows if r.parcel_id == parcel_id and r.for_date <= today]
-    valid = max((r for r in mine if r.kind != "unavailable"), key=lambda r: r.for_date, default=None)
-    unavailable = max((r for r in mine if r.kind == "unavailable"), key=lambda r: r.for_date, default=None)
-    if valid is not None:
-        advice = _advice(valid, staff=staff, last_known=valid.for_date < today)
-    elif unavailable is not None:
-        advice = _advice(unavailable, staff=staff, last_known=False)
+    mine = [r for r in rows if r.parcel_id == parcel_id]
+    picked = select_served_plan({"plans": [{"for_date": r.for_date.isoformat(), "kind": r.kind, "confidence": r.confidence} for r in mine], "today": today.isoformat()})
+    served = picked["served"]
+    if served is not None:
+        row = next(r for r in mine if r.for_date.isoformat() == served["for_date"] and r.kind == served["kind"])
+        advice = _advice(row, staff=staff, last_known=picked["is_last_known"])
     else:
         advice = _placeholder(parcel_id, today, now, staff=staff)
     return advice_view({"role": role, "advice": advice})

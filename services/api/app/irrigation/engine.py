@@ -134,6 +134,17 @@ async def _one(db: Db, sql: str, params: dict[str, Any]) -> dict[str, Any] | Non
     return rows[0] if rows else None
 
 
+_PLAN_NOW = (
+    "SELECT kind, total_minutes, net_need_mm, leaching_fraction, stress_level, unavailable_reason, confidence FROM irrigation_plans WHERE farm_id = :farm AND parcel_id = :parcel AND for_date = :day"
+)
+
+
+def _same_plan(old: dict[str, Any], out: dict[str, Any]) -> bool:
+    numbers = all(_n(_f(old[k])) == _n(_f(out[o])) for k, o in (("net_need_mm", "net_need_mm"), ("leaching_fraction", "leaching_fraction")))
+    return numbers and all(old[k] == out[o] for k, o in (
+        ("kind", "kind"), ("total_minutes", "total_minutes"), ("stress_level", "stress_level"), ("unavailable_reason", "unavailable_reason"), ("confidence", "confidence")))
+
+
 def _unavailable(day: dt.date, reason: str, at: dt.datetime, ready: bool) -> dict[str, Any]:
     return {
         "kind": "unavailable", "unavailable_reason": reason, "total_minutes": None, "net_need_mm": None, "sectors": [],
@@ -143,7 +154,10 @@ def _unavailable(day: dt.date, reason: str, at: dt.datetime, ready: bool) -> dic
 
 
 async def _store_plan(db: Db, farm: uuid.UUID, parcel: uuid.UUID, season: uuid.UUID | None, day: dt.date, out: dict[str, Any]) -> None:
-    """The full assumptions and the worker view are written together (same statement, same transaction)."""
+    """The full assumptions and the worker view are written together (same statement, same transaction).
+    `out["plan_changed"]` tells whether the advice differs from the one already stored for the day (a new plan counts as changed)."""
+    old = await _one(db, _PLAN_NOW, {"farm": farm, "parcel": parcel, "day": day})
+    out["plan_changed"] = old is None or not _same_plan(old, out)
     await db.execute(_UPSERT_PLAN, {
         "id": uuid.uuid4(), "farm": farm, "parcel": parcel, "season": season, "day": day, "kind": out["kind"],
         "minutes": out["total_minutes"], "sectors": json.dumps(out["sectors"]), "net": _n(out["net_need_mm"]),
@@ -307,7 +321,7 @@ async def compute_parcel_plan(db: Db, farm_id: uuid.UUID, parcel_id: uuid.UUID, 
         assumptions.append({"key": "rain_source", "value": rain_ref, "source": "gateway"})
     assumptions += [
         {"key": "taw_mm", "value": round(taw, 1), "source": "computed"},
-        {"key": "soil_texture", "value": gap["texture_used"], "source": "referential"},
+        {"key": "soil_texture", "value": gap["texture_used"], "source": "default" if gap.get("soil_default") else "referential"},
     ]
     if analysis is not None:
         assumptions += [

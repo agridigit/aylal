@@ -22,6 +22,7 @@ async def compute_irrigation_plans(ctx: dict[str, Any], farm_id: uuid.UUID | str
     clock = clock_for(now, ctx.get("clock"))
     moment = instant(clock)
     computed: list[str] = []
+    changed_farms: list[uuid.UUID] = []
     conn = await asyncpg.connect(dsn())
     try:
         farms = [uuid.UUID(str(farm_id))] if farm_id else [r["id"] for r in await conn.fetch("SELECT id FROM farms WHERE deleted_at IS NULL")]
@@ -35,13 +36,20 @@ async def compute_irrigation_plans(ctx: dict[str, Any], farm_id: uuid.UUID | str
                 db = AsyncpgDb(conn)
                 for row in await conn.fetch(query, *args):
                     job = jobs.get(row["id"])
-                    if await compute_parcel_plan(db, farm, row["id"], clock, job["from_date"] if job else None) is not None:
+                    plan = await compute_parcel_plan(db, farm, row["id"], clock, job["from_date"] if job else None)
+                    if plan is not None:
                         computed.append(str(row["id"]))
+                        if plan.get("plan_changed") and farm not in changed_farms:
+                            changed_farms.append(farm)
                 if jobs:
                     await conn.execute("UPDATE irrigation_jobs SET state = 'done' WHERE farm_id = $1 AND id = ANY($2)", farm, [j["id"] for j in jobs.values()])
             await bump_irrigation_version(farm)
     finally:
         await conn.close()
+    redis = ctx.get("redis")
+    if redis is not None:
+        for farm in changed_farms:  # the parcel status reads the advice: one recompute per farm, only when an advice changed
+            await redis.enqueue_job("recompute_status", farm_id=farm)
     return {"parcels": computed, "ready_before_7": is_before_local_hour(moment, READY_HOUR)}
 
 

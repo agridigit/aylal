@@ -56,6 +56,8 @@ async def send_irrigation_reminders(ctx: dict[str, Any], farm_id: uuid.UUID | st
                 targets.append({"user_id": str(member["user_id"]), "parcel_ids": [str(p) for p in parcels]})
                 if not gateway.configured():
                     continue
+                if await conn.fetchval("SELECT 1 FROM irrigation_notification_log WHERE farm_id = $1 AND user_id = $2 AND for_date = $3", farm, member["user_id"], day):
+                    continue  # replay of the same local day: already reminded
                 prefs = await conn.fetchrow("SELECT push_token FROM notification_prefs WHERE farm_id = $1 AND user_id = $2 AND alerts_enabled", farm, member["user_id"])
                 if prefs is None or not prefs["push_token"]:
                     continue

@@ -40,6 +40,7 @@ async def refresh_weather(ctx: dict[str, Any], now: dt.datetime | None = None) -
         allowed_hosts=[h for h in os.environ.get("AYLAL_EXTERNAL_ALLOWED_HOSTS", "").split(",") if h.strip()],
     )
     stats = {"cells": 0, "farms": 0}
+    refreshed: list[Any] = []
     conn = await asyncpg.connect(dsn())
     try:
         farms = await conn.fetch("SELECT id, ST_Y(location) AS lat, ST_X(location) AS lon FROM farms WHERE deleted_at IS NULL")
@@ -70,8 +71,14 @@ async def refresh_weather(ctx: dict[str, Any], now: dt.datetime | None = None) -
             for f in members:
                 await _store(conn, f["id"], cell_id, now if days else None, result["availability"], result.get("reason"), days)
                 stats["farms"] += 1
+                if result["availability"] == "ok" and days:
+                    refreshed.append(f["id"])
     finally:
         await conn.close()
+    redis = ctx.get("redis")
+    if redis is not None:
+        for farm in refreshed:  # F4: a new forecast triggers the advice computation of the farm
+            await redis.enqueue_job("compute_irrigation_plans", farm_id=farm)
     return stats
 
 
