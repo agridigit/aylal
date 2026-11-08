@@ -148,6 +148,20 @@
 - [ ] T082 [US7] GREEN : `services/api/app/routers/summary.py`, `services/workers/tasks/send_daily_summary.py`, `apps/mobile/src/monitoring/voiceSummary.ts` (expo-speech, local, hors ligne) + view model + `__tests__`.
 - [ ] T083 [US7] [écran] RED puis GREEN F3-E8 `apps/mobile/src/screens/VoiceSummary/` (+ `__tests__`, Maestro `apps/mobile/maestro/voice_summary.yaml`) ; dépend de T004 + fusion 004.
 
+## Phase 9 bis : Défauts relevés au GREEN des récits 1 à 5
+
+**Source** : `decisions.md` (points ouverts, GREEN récits 1 à 5). Tests RED seulement ici ; chaque GREEN fait passer les tests de sa ligne.
+
+- [x] T088 RED défaut 1 (aucun consommateur des jobs `backfill`) : `services/workers/tests/test_drain_backfill_jobs.py`, `services/api/tests/e2e/test_f3_backfill_drain_e2e.py`.
+- [ ] T089 GREEN défaut 1 : `services/workers/tasks/drain_backfill_jobs.py` (`drain_backfill_jobs(ctx, now=None, *, farm_id=None) -> int`), enregistrée dans `WorkerSettings.functions` et `cron_jobs` (cadence espacée ou âge minimal du job, voir `decisions.md`).
+- [x] T090 RED défaut 2 (plafond de retraitement compté sans `kind`) : `services/api/tests/integration/test_f3_reprocess_quota_backfill.py`.
+- [ ] T091 GREEN défaut 2 : `request_reprocess` ne compte que `kind = 'reprocess'` pour le plafond de 5 actifs.
+- [x] T092 RED défaut 3 (visibilité/archivage du backfill) : `services/workers/tests/test_backfill_visibility.py`.
+- [ ] T093 GREEN défaut 3 : `backfill_parcel_vigor` lit la parcelle via `VISIBLE_PARCELS_SQL` (`access_sql`), clôt le job en `failed` sans lecture de raster.
+- [x] T094 RED défaut 4 (image worker sans `libexpat`) : `tests/platform/test_worker_raster_libs.sh`.
+- [ ] T095 GREEN défaut 4 : `services/workers/Dockerfile` installe les bibliothèques système de rasterio (`libexpat1`, vérifier le reste avec le test).
+- [x] T096 Défaut 5 : lint et typecheck des tests RED F3 corrigés (`tests/unit/test_f3_parcel_status.py`, `packages/domain/tests/alert-rules.test.ts`), aucune assertion modifiée.
+
 ## Phase finale : Finition
 
 - [ ] T084 Revue transverse non-écran : couverture >= 80 % du code métier F3, `scripts/check-test-pyramid.sh` vert (unitaire, intégration, contrat, e2e pour chaque récit P1), aucun `// eslint-disable`, aucune chaîne en dur, parité i18n.

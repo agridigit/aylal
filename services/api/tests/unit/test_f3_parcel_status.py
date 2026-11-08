@@ -58,6 +58,6 @@ def test_given_the_vectors_when_combining_collected_signals_then_the_status_matc
 
 @pytest.mark.parametrize("available", [set(), {"weather_alert"}])
 def test_given_no_signal_at_all_when_collecting_then_the_parcel_is_green_nothing_to_do(available):
-    registry = {s: (lambda: []) for s in available}
+    registry = dict.fromkeys(available, list)
     out = parcel_status(collect_signals(registry), __import__("datetime").datetime(2026, 12, 5, 9, tzinfo=__import__("datetime").UTC), [])
     assert out["color"] == "green" and out["reason_key"] == "status.nothing_to_do"

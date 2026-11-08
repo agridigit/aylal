@@ -12,8 +12,8 @@ describe("F3 alert rules", () => {
       expect(out.map((a: { type: string }) => a.type).sort()).toEqual(c.expected.map((e: { type: string }) => e.type).sort());
       for (const e of c.expected) {
         const got = out.find((a: { type: string }) => a.type === e.type);
-        if (e.severity) expect(got.severity).toBe(e.severity);
-        if (e.advice_key) expect(got.adviceKey).toBe(e.advice_key);
+        if (e.severity) expect(got?.severity).toBe(e.severity);
+        if (e.advice_key) expect(got?.adviceKey).toBe(e.advice_key);
       }
     });
   }
@@ -27,7 +27,10 @@ describe("F3 alert rules", () => {
   });
   it("given any one component changing then the dedup key changes", () => {
     const b = v.dedup.base;
-    const key = (o: Record<string, string>) => dedupKey({ farmId: o.farm_id, parcelId: o.parcel_id, cropSlug: o.crop_slug, type: o.type, forecastDay: o.forecast_day });
+    const key = (o: Record<string, string>) => {
+      const f = (k: string): string => o[k] ?? "";
+      return dedupKey({ farmId: f("farm_id"), parcelId: f("parcel_id"), cropSlug: f("crop_slug"), type: f("type"), forecastDay: f("forecast_day") });
+    };
     const keys = new Set([key(b), ...v.dedup.variants.map((x: object) => key({ ...b, ...x }))]);
     expect(keys.size).toBe(v.dedup.variants.length + 1);
   });
