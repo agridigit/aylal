@@ -85,3 +85,23 @@ describe("F3 monitoring rights (G1)", () => {
     expect(f3.filter((m) => /finance|price|cost|amount/.test(m.action))).toEqual([]);
   });
 });
+
+const f4: { role: string; action: string; allowed: boolean }[] = JSON.parse(
+  readFileSync(new URL("../vectors/f4_roles.json", import.meta.url), "utf-8"),
+);
+
+describe("F4 irrigation rights (G1)", () => {
+  for (const m of f4) {
+    it(`given role ${m.role} when doing ${m.action} then allowed is ${m.allowed}`, () => {
+      expect(can(m.role, m.action)).toBe(m.allowed);
+    });
+  }
+  it("given the worker then water analyses are never readable nor writable", () => {
+    expect(can("worker", "water_analysis.read")).toBe(false);
+    expect(can("worker", "water_analysis.write")).toBe(false);
+  });
+  it("given the F4 actions then none is a financial action and nobody can ingest moisture through a route", () => {
+    expect(f4.filter((m) => /finance|price|cost|amount/.test(m.action))).toEqual([]);
+    expect(ROLES.some((r) => can(r, "moisture.ingest"))).toBe(false);
+  });
+});

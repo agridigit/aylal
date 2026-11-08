@@ -101,9 +101,8 @@ def test_given_a_role_change_then_summaries_and_preferences_of_the_member_are_pu
 
 
 def test_given_a_deleted_then_purged_farm_then_all_member_summaries_and_preferences_are_gone(client, token_for, world3):
-    from app.monitoring.lifecycle import purge_farm_monitoring
-
     from app.db.session import sessionmaker
+    from app.monitoring.lifecycle import purge_farm_monitoring
 
     w = world3
     _setup(w)

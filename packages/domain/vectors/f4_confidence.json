@@ -1,0 +1,182 @@
+[
+ {
+  "name": "no degrading factor is high",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": true,
+   "et0_method": "gateway",
+   "rain_source": "observed",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "high",
+   "factors": []
+  }
+ },
+ {
+  "name": "one factor: Hargreaves estimate is medium",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": true,
+   "et0_method": "hargreaves",
+   "rain_source": "observed",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "medium",
+   "factors": [
+    "et0_estimated"
+   ]
+  }
+ },
+ {
+  "name": "unvalidated referential lowers confidence with a named factor",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": false,
+   "et0_method": "gateway",
+   "rain_source": "observed",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "medium",
+   "factors": [
+    "not_validated"
+   ]
+  }
+ },
+ {
+  "name": "two factors are still medium",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": false,
+   "et0_method": "gateway",
+   "rain_source": "forecast",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "medium",
+   "factors": [
+    "not_validated",
+    "rain_not_observed"
+   ]
+  }
+ },
+ {
+  "name": "three factors are low",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": false,
+   "et0_method": "gateway",
+   "rain_source": "forecast",
+   "soil_default": true,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "low",
+   "factors": [
+    "not_validated",
+    "rain_not_observed",
+    "soil_default"
+   ]
+  }
+ },
+ {
+  "name": "stale data is low whatever the rest",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": true,
+   "et0_method": "gateway",
+   "rain_source": "observed",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": true
+  },
+  "expected": {
+   "confidence": "low",
+   "factors": [
+    "stale_data"
+   ]
+  }
+ },
+ {
+  "name": "greenhouse ignored rain is not a degrading factor",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": true,
+   "et0_method": "gateway",
+   "rain_source": "ignored_greenhouse",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": false,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "high",
+   "factors": []
+  }
+ },
+ {
+  "name": "default efficiency and assumed initial state count",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": true,
+   "et0_method": "gateway",
+   "rain_source": "observed",
+   "soil_default": false,
+   "efficiency_is_default": true,
+   "analysis_old": false,
+   "initial_state_assumed": true,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "medium",
+   "factors": [
+    "efficiency_default",
+    "initial_state_assumed"
+   ]
+  }
+ },
+ {
+  "name": "old analysis counts",
+  "fn": "advice_confidence",
+  "input": {
+   "validated": true,
+   "et0_method": "gateway",
+   "rain_source": "observed",
+   "soil_default": false,
+   "efficiency_is_default": false,
+   "analysis_old": true,
+   "initial_state_assumed": false,
+   "stale": false
+  },
+  "expected": {
+   "confidence": "medium",
+   "factors": [
+    "analysis_old"
+   ]
+  }
+ }
+]

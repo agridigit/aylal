@@ -1,0 +1,42 @@
+# Règles PowerSync F4 (à fusionner dans infra/powersync/sync-rules.yaml). Contraintes du service : aucune jointure, aucune
+# sous-requête, pas de IN (...), une colonne id par requête, chaque requête de données couvre TOUS les paramètres de son seau.
+# Aucune clé de stockage (F4 n'en a pas). Les parcelles archivées sortent de tous les seaux (parcel_archived_at IS NULL).
+# Les écritures ne passent PAS par PowerSync : le connecteur mobile envoie ps_crud vers POST /v1/sync/upload.
+bucket_definitions:
+  # propriétaire et gestionnaire : toute la ferme (appartenance ACTIVE dans la requête de paramètres)
+  farm_irrigation:
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role != 'worker' AND removed_at IS NULL
+    data:
+      - SELECT id, farm_id, parcel_id, kind, emitter_flow_lph, emitter_spacing_m, row_spacing_m, pump_flow_m3h, sectors_count, efficiency, efficiency_is_default, parcel_archived_at, updated_at, server_version, field_versions FROM irrigation_systems WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, season_id, operation_id, performed_on, sector_no, input_mode, duration_min, volume_m3, net_mm, author_id, note, status, parcel_archived_at, updated_at, server_version FROM irrigation_events WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, season_id, performed_on, sector_no, volume_m3, net_mm, parcel_archived_at FROM irrigation_applied WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, water_source, ec_ds_m, analysed_on, parcel_archived_at, updated_at, server_version FROM water_analyses WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, season_id, day, et0_mm, et0_method, kc, etc_mm, rain_mm, rain_source, rain_eff_mm, irrigation_net_mm, taw_mm, raw_mm, depletion_mm, moisture_source FROM water_balance_days WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, season_id, for_date, kind, total_minutes, sectors, net_need_mm, leaching_fraction, stress_level, confidence, assumptions, unavailable_reason, computed_at, ready_before_7, parcel_archived_at FROM irrigation_plans WHERE farm_id = bucket.farm_id
+  # ouvrier : parcelles attribuées et non archivées (un seul paramètre). Données SANS auteur ni note : irrigation_applied sert
+  # au bilan de tous les apports de la parcelle ; water_analyses n'est jamais servie à l'ouvrier.
+  # COLONNES « WORKER-SAFE » (deny-by-default, décisions point 19) : irrigation_plans ne sort pour l'ouvrier QUE avec
+  # worker_assumptions (colonne séparée, expurgée côté serveur par liste blanche de clés à l'écriture du plan) ; JAMAIS
+  # assumptions ni leaching_fraction (ECw, source d'eau, âge d'analyse, sol, fraction de lessivage). water_balance_days
+  # sans taw_mm, raw_mm (réserve utile = donnée de sol) ni moisture_source. Aucune expurgation n'est faite par la règle
+  # (PowerSync n'a ni fonction JSON ni jointure) : elle est faite à l'écriture, une seule fois, par worker_view.
+  farm_worker_irrigation:
+    parameters: SELECT parcel_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, parcel_id, kind, emitter_flow_lph, emitter_spacing_m, row_spacing_m, pump_flow_m3h, sectors_count, efficiency, efficiency_is_default, parcel_archived_at FROM irrigation_systems WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, season_id, performed_on, sector_no, volume_m3, net_mm, parcel_archived_at FROM irrigation_applied WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, season_id, day, et0_mm, et0_method, kc, etc_mm, rain_mm, rain_source, rain_eff_mm, irrigation_net_mm, depletion_mm FROM water_balance_days WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, season_id, for_date, kind, total_minutes, sectors, net_need_mm, stress_level, confidence, worker_assumptions, unavailable_reason, computed_at, ready_before_7, parcel_archived_at FROM irrigation_plans WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+  # patron F6 (données d'auteur) : l'ouvrier ne reçoit que SES irrigations. Deux paramètres, chaque requête de données les couvre.
+  farm_worker_irrigation_own:
+    parameters: SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, parcel_id, season_id, operation_id, performed_on, sector_no, input_mode, duration_min, volume_m3, net_mm, author_id, note, status, parcel_archived_at, updated_at, server_version FROM irrigation_events WHERE parcel_id = bucket.parcel_id AND author_id = bucket.user_id AND parcel_archived_at IS NULL
+  # référentiels globaux (aucun paramètre), servis à tous les rôles : revus, aucune donnée de ferme (seuils de culture et textures
+  # génériques, pas la salinité ni le sol d'une parcelle) ; la date de source s'affiche hors ligne
+  irrigation_reference:
+    data:
+      - SELECT crop_slug || ':' || stage_key AS id, crop_slug, stage_key, kc, root_depth_m, depletion_fraction, ece_threshold_ds_m, ece_max_ds_m, validated, source, imported_at FROM crop_irrigation_params
+      - SELECT texture_key AS id, texture_key, available_water_mm_per_m, source FROM soil_textures
+      - SELECT key AS id, key, value, source FROM irrigation_params
+# NON synchronisés : irrigation_system_versions (consultation en ligne), moisture_corrections, irrigation_notification_log.

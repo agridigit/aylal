@@ -15,10 +15,12 @@ from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
 HORIZON_DAYS = 8
+OBSERVED_WINDOW_DAYS = 7
 STALE_AFTER = dt.timedelta(hours=24)
 CELL_SLOT_SECONDS = 3 * 3600
 OUTBOUND_ALLOWLIST: dict[str, frozenset[str]] = {
     "weather": frozenset({"lat", "lon", "days"}),
+    "weather_observed": frozenset({"lat", "lon", "from", "to"}),  # F4: observed rain of past days, window <= 7 days
     "imagery": frozenset({"mgrs", "from", "to"}),
     "push": frozenset({"device_token", "alert_id", "locale"}),
 }
@@ -42,6 +44,26 @@ def build_weather_request(*, lat: float, lon: float) -> dict[str, Any]:
     req: dict[str, Any] = {"lat": _round_01(lat), "lon": _round_01(lon), "days": HORIZON_DAYS}
     assert_outbound("weather", req)
     return req
+
+
+def build_weather_observed_request(*, lat: float, lon: float, date_from: str, date_to: str) -> dict[str, Any]:
+    """Position rounded to 0.1 degree and a window of at most 7 days: nothing else leaves the country."""
+    start, end = dt.date.fromisoformat(date_from), dt.date.fromisoformat(date_to)
+    if end < start or (end - start).days + 1 > OBSERVED_WINDOW_DAYS:
+        raise ValueError("observed window must be 1 to 7 days")
+    req: dict[str, Any] = {"lat": _round_01(lat), "lon": _round_01(lon), "from": date_from, "to": date_to}
+    assert_outbound("weather_observed", req)
+    return req
+
+
+def normalise_forecast_day(day: Mapping[str, Any]) -> dict[str, Any]:
+    """A forecast day as served: the optional `et0_mm` is kept when the gateway sends it and NEVER filled in otherwise."""
+    out = {k: day[k] for k in _DAY_KEYS}
+    if day.get("et0_mm") is not None:
+        out["et0_mm"] = day["et0_mm"]
+    if "code" in day:
+        out["code"] = day["code"]
+    return out
 
 
 def build_imagery_request(*, mgrs: str, date_from: str, date_to: str) -> dict[str, Any]:
@@ -101,6 +123,22 @@ class WeatherGateway(_Gateway):
         return {"availability": "ok", "days": days}
 
 
+class ObservedWeatherGateway(_Gateway):
+    def fetch(self, *, lat_r: float, lon_r: float, date_from: str, date_to: str) -> dict[str, Any]:
+        """Observed daily rain for a 0.1 degree cell, as the gateway sent it, or an unavailable status with no value."""
+        req = build_weather_observed_request(lat=lat_r, lon=lon_r, date_from=date_from, date_to=date_to)  # refuses a long window before any call
+        if not self.configured():
+            return _unavailable("gateway_not_configured")
+        try:
+            answer = self.http("GET", self.url, params=req)
+            days = answer["days"]
+            if not isinstance(days, list) or not all(isinstance(d, dict) and "date" in d and "rain_mm" in d for d in days):
+                return _unavailable("gateway_unreachable")
+        except (OSError, ValueError, KeyError, TypeError):
+            return _unavailable("gateway_unreachable")
+        return {"availability": "ok", "days": days}
+
+
 class ImageryGateway(_Gateway):
     def scenes(self, *, mgrs: str, date_from: str, date_to: str) -> dict[str, Any]:
         if not self.configured():
@@ -143,12 +181,12 @@ def _redis() -> Any:
     return redis.from_url(os.environ.get("AYLAL_REDIS_URL", "redis://redis:6379/0"))  # type: ignore[no-untyped-call]
 
 
-async def acquire_cell_slot(cell_id: str, now: dt.datetime) -> bool:
-    """One call per 0.1 degree cell and per 3 hours (Redis lock); False when the slot is already taken."""
-    slot = int(now.timestamp()) // CELL_SLOT_SECONDS
+async def acquire_cell_slot(cell_id: str, now: dt.datetime, slot_seconds: int = CELL_SLOT_SECONDS) -> bool:
+    """One call per 0.1 degree cell and per slot (3 hours; 6 hours for the observed rain) (Redis lock); False when taken."""
+    slot = int(now.timestamp()) // slot_seconds
     client = _redis()
     try:
-        return bool(await client.set(f"gw:weather:cell:{cell_id}:{slot}", "1", nx=True, ex=CELL_SLOT_SECONDS))
+        return bool(await client.set(f"gw:weather:cell:{cell_id}:{slot}", "1", nx=True, ex=slot_seconds))
     finally:
         await client.aclose()
 

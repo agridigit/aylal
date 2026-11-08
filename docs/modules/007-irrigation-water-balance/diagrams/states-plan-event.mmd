@@ -1,0 +1,20 @@
+stateDiagram-v2
+  state "Evenement d'irrigation" as EVT {
+    [*] --> done: enregistrement
+    done --> cancelled: annulation (jamais l'inverse)
+  }
+  state "Conseil du jour" as PLN {
+    [*] --> unavailable: referentiel vide ou pas d'installation
+    unavailable --> irrigate
+    unavailable --> no_need
+    irrigate --> no_need
+    no_need --> irrigate
+    irrigate --> postpone_rain: pluie > 10 mm
+    postpone_rain --> irrigate
+  }
+  state "Job de recalcul" as JOB {
+    [*] --> queued
+    queued --> running
+    running --> done
+    running --> failed
+  }

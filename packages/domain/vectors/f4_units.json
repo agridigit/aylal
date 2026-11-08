@@ -1,0 +1,58 @@
+[
+ {
+  "name": "duration to volume and net mm (60 min, 4 mm/h, 5000 m2, 90 %)",
+  "fn": "from_duration",
+  "input": {
+   "minutes": 60,
+   "rate_mm_h": 4,
+   "area_m2": 5000,
+   "efficiency": 0.9
+  },
+  "expected": {
+   "volume_m3": 20,
+   "net_mm": 3.6
+  }
+ },
+ {
+  "name": "volume to duration and net mm (inverse)",
+  "fn": "from_volume",
+  "input": {
+   "volume_m3": 20,
+   "rate_mm_h": 4,
+   "area_m2": 5000,
+   "efficiency": 0.9
+  },
+  "expected": {
+   "minutes": 60,
+   "net_mm": 3.6
+  }
+ },
+ {
+  "name": "volume without a surface: net mm is unavailable, not guessed",
+  "fn": "from_volume",
+  "input": {
+   "volume_m3": 20,
+   "rate_mm_h": null,
+   "area_m2": null,
+   "efficiency": 0.9
+  },
+  "expected": {
+   "minutes": null,
+   "net_mm": null
+  }
+ },
+ {
+  "name": "duration without a rate: no volume invented",
+  "fn": "from_duration",
+  "input": {
+   "minutes": 60,
+   "rate_mm_h": null,
+   "area_m2": 5000,
+   "efficiency": 0.9
+  },
+  "expected": {
+   "volume_m3": null,
+   "net_mm": null
+  }
+ }
+]

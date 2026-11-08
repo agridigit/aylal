@@ -1,0 +1,74 @@
+[
+ {
+  "name": "drip default",
+  "fn": "resolve_efficiency",
+  "input": {
+   "kind": "drip",
+   "efficiency": null
+  },
+  "expected": {
+   "efficiency": 0.9,
+   "is_default": true
+  }
+ },
+ {
+  "name": "sprinkler default",
+  "fn": "resolve_efficiency",
+  "input": {
+   "kind": "sprinkler",
+   "efficiency": null
+  },
+  "expected": {
+   "efficiency": 0.75,
+   "is_default": true
+  }
+ },
+ {
+  "name": "pivot treated as sprinkler",
+  "fn": "resolve_efficiency",
+  "input": {
+   "kind": "pivot",
+   "efficiency": null
+  },
+  "expected": {
+   "efficiency": 0.75,
+   "is_default": true
+  }
+ },
+ {
+  "name": "gravity default",
+  "fn": "resolve_efficiency",
+  "input": {
+   "kind": "gravity",
+   "efficiency": null
+  },
+  "expected": {
+   "efficiency": 0.6,
+   "is_default": true
+  }
+ },
+ {
+  "name": "explicit override stays visible as non default",
+  "fn": "resolve_efficiency",
+  "input": {
+   "kind": "drip",
+   "efficiency": 0.8
+  },
+  "expected": {
+   "efficiency": 0.8,
+   "is_default": false
+  }
+ },
+ {
+  "name": "override of 1 is the upper bound",
+  "fn": "resolve_efficiency",
+  "input": {
+   "kind": "gravity",
+   "efficiency": 1
+  },
+  "expected": {
+   "efficiency": 1,
+   "is_default": false
+  }
+ }
+]

@@ -1,0 +1,52 @@
+erDiagram
+  PARCELS ||--o| IRRIGATION_SYSTEMS : "1 active"
+  IRRIGATION_SYSTEMS ||--o{ IRRIGATION_SYSTEM_VERSIONS : historique
+  PARCELS ||--o{ IRRIGATION_EVENTS : recoit
+  IRRIGATION_EVENTS ||--o| IRRIGATION_APPLIED : "trigger (done)"
+  IRRIGATION_EVENTS ||--|| OPERATIONS : "operation_id derive"
+  PARCELS ||--o{ WATER_ANALYSES : analyse
+  SEASONS ||--o{ WATER_BALANCE_DAYS : journal
+  PARCELS ||--o{ IRRIGATION_PLANS : conseil
+  PARCELS ||--o{ IRRIGATION_JOBS : recalcul
+  PARCELS ||--o{ MOISTURE_CORRECTIONS : "F9"
+  IRRIGATION_SYSTEMS {
+    uuid id PK
+    text kind
+    numeric efficiency
+    int sectors_count
+  }
+  IRRIGATION_EVENTS {
+    uuid id PK
+    date performed_on
+    text input_mode
+    numeric net_mm
+    text status
+    uuid author_id
+  }
+  IRRIGATION_APPLIED {
+    uuid id PK
+    numeric volume_m3
+    numeric net_mm
+  }
+  WATER_ANALYSES {
+    uuid id PK
+    numeric ec_ds_m
+    date analysed_on
+  }
+  WATER_BALANCE_DAYS {
+    uuid id PK
+    date day
+    numeric depletion_mm
+    text rain_source
+  }
+  IRRIGATION_PLANS {
+    uuid id PK
+    date for_date
+    text kind
+    text confidence
+    jsonb worker_assumptions
+  }
+  IRRIGATION_JOBS {
+    uuid id PK
+    text state
+  }

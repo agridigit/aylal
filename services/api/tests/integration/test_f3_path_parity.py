@@ -22,7 +22,8 @@ COVERED_TABLES = {"farm_weather", "alerts", "parcel_status", "parcel_status_item
 COVERED_TASKS = {"drain_backfill_jobs", "refresh_weather", "evaluate_alerts", "import_crop_thresholds", "recompute_status", "detect_zones", "send_daily_summary",
                  "ingest_imagery", "backfill_parcel_vigor"}
 PRE_F3_TASKS = {"__init__", "build_registry_export", "build_tiles", "expire_invitations", "import_phyto_catalog", "mark_overdue_operations",
-                "object_storage", "purge_archived_fields", "purge_deleted_accounts", "purge_expired_registry", "send_otp"}
+                "object_storage", "purge_archived_fields", "purge_deleted_accounts", "purge_expired_registry", "send_otp",
+                "compute_irrigation_plans", "send_irrigation_reminders", "import_irrigation_params"}
 F3_PATH = re.compile(r"^/v1/farms/\{farm_id\}/(dashboard|weather|alerts|zones|summary|parcels/\{parcel_id\}/(status|vigor))")
 
 

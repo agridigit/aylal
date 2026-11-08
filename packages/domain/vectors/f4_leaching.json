@@ -1,0 +1,118 @@
+[
+ {
+  "name": "below the tolerance threshold no leaching is added",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 1.5,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": 8,
+   "leaching_max": 0.15
+  },
+  "expected": {
+   "leaching_fraction": 0
+  }
+ },
+ {
+  "name": "exactly at the threshold no leaching is added",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 2,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": 8,
+   "leaching_max": 0.15
+  },
+  "expected": {
+   "leaching_fraction": 0
+  }
+ },
+ {
+  "name": "above the threshold LR = ECw / (5 ECe_max - ECw)",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 3,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": 8,
+   "leaching_max": 0.15
+  },
+  "expected": {
+   "leaching_fraction": 0.0811
+  },
+  "tol": 0.0005
+ },
+ {
+  "name": "LR is capped by leaching_max",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 6,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": 4,
+   "leaching_max": 0.15
+  },
+  "expected": {
+   "leaching_fraction": 0.15
+  }
+ },
+ {
+  "name": "denominator <= 0 gives the cap",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 20,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": 4,
+   "leaching_max": 0.15
+  },
+  "expected": {
+   "leaching_fraction": 0.15
+  }
+ },
+ {
+  "name": "no ECe_max in the referential: unavailable, nothing invented",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 3,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": null,
+   "leaching_max": 0.15
+  },
+  "expected": {
+   "leaching_fraction": null,
+   "unavailable_reason": "no_salinity_reference"
+  }
+ },
+ {
+  "name": "no leaching_max in the referential: unavailable",
+  "fn": "leaching_fraction",
+  "input": {
+   "ecw_ds_m": 3,
+   "ece_threshold_ds_m": 2,
+   "ece_max_ds_m": 8,
+   "leaching_max": null
+  },
+  "expected": {
+   "leaching_fraction": null,
+   "unavailable_reason": "no_salinity_reference"
+  }
+ },
+ {
+  "name": "gross need = net / (1 - LR)",
+  "fn": "gross_need",
+  "input": {
+   "net_need_mm": 18,
+   "leaching_fraction": 0.1
+  },
+  "expected": {
+   "gross_need_mm": 20
+  }
+ },
+ {
+  "name": "gross need without leaching is the net need",
+  "fn": "gross_need",
+  "input": {
+   "net_need_mm": 18,
+   "leaching_fraction": 0
+  },
+  "expected": {
+   "gross_need_mm": 18
+  }
+ }
+]

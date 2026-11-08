@@ -1,0 +1,96 @@
+[
+ {
+  "name": "fixture method fraction 0.5 on 10 mm",
+  "fn": "effective_rain",
+  "input": {
+   "rain_mm": 10,
+   "method": {
+    "method": "fraction",
+    "params": {
+     "fraction": 0.5
+    }
+   },
+   "greenhouse": false
+  },
+  "expected": {
+   "rain_eff_mm": 5
+  }
+ },
+ {
+  "name": "no rain gives zero",
+  "fn": "effective_rain",
+  "input": {
+   "rain_mm": 0,
+   "method": {
+    "method": "fraction",
+    "params": {
+     "fraction": 0.5
+    }
+   },
+   "greenhouse": false
+  },
+  "expected": {
+   "rain_eff_mm": 0
+  }
+ },
+ {
+  "name": "no method in the referential: unavailable, no default fraction",
+  "fn": "effective_rain",
+  "input": {
+   "rain_mm": 10,
+   "method": null,
+   "greenhouse": false
+  },
+  "expected": {
+   "rain_eff_mm": null,
+   "unavailable_reason": "no_effective_rain_method"
+  }
+ },
+ {
+  "name": "unknown method name: unavailable",
+  "fn": "effective_rain",
+  "input": {
+   "rain_mm": 10,
+   "method": {
+    "method": "mystery",
+    "params": {}
+   },
+   "greenhouse": false
+  },
+  "expected": {
+   "rain_eff_mm": null,
+   "unavailable_reason": "no_effective_rain_method"
+  }
+ },
+ {
+  "name": "greenhouse ignores rain even without a method",
+  "fn": "effective_rain",
+  "input": {
+   "rain_mm": 30,
+   "method": null,
+   "greenhouse": true
+  },
+  "expected": {
+   "rain_eff_mm": 0,
+   "rain_source": "ignored_greenhouse"
+  }
+ },
+ {
+  "name": "negative rain is refused as unavailable",
+  "fn": "effective_rain",
+  "input": {
+   "rain_mm": -1,
+   "method": {
+    "method": "fraction",
+    "params": {
+     "fraction": 0.5
+    }
+   },
+   "greenhouse": false
+  },
+  "expected": {
+   "rain_eff_mm": null,
+   "unavailable_reason": "no_weather"
+  }
+ }
+]

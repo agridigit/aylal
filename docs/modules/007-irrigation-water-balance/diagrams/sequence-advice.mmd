@@ -1,0 +1,17 @@
+sequenceDiagram
+  participant C as Cron Arq (nuit, minute 05)
+  participant W as compute_irrigation_plans
+  participant DB as PostgreSQL
+  participant D as Domaine (bilan + conseil)
+  participant F as recompute_status F3
+  C->>W: nightly_irrigation_plans
+  W->>DB: verrou irrigation:{farm}, jobs queued -> running
+  W->>DB: parcelles visibles (non archivees)
+  loop chaque parcelle
+    W->>DB: installation, referentiels, farm_weather, evenements, analyses
+    W->>D: replayBalance puis computeAdvice
+    D-->>W: kind, minutes par secteur, confiance, hypotheses
+    W->>DB: water_balance_days + irrigation_plans (+ worker_assumptions)
+  end
+  W->>DB: jobs done, bump de version du cache
+  W->>F: recompute_status si le conseil change

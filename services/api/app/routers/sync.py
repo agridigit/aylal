@@ -12,12 +12,16 @@ from app.auth import WRITE_ROLES, current_user, farm_role, issue_token
 from app.config import get_settings
 from app.db.models import FarmMember, SyncConflict, TrialRecord
 from app.db.session import get_session
+from app.domain.clock import Clock, get_clock
 from app.domain.operation_limits import LIMITS
 from app.sync.admin import ADMIN_TABLES, apply_admin_op, authorize
 from app.sync.apply import apply_op
 from app.sync.fields import F2_TABLES
 from app.sync.fields import apply_op as apply_f2_op
 from app.sync.fields import authorize as authorize_f2
+from app.sync.irrigation import IRRIGATION_TABLES
+from app.sync.irrigation import apply_op as apply_f4_op
+from app.sync.irrigation import authorize as authorize_f4
 from app.sync.monitoring import MONITORING_TABLES
 from app.sync.monitoring import apply_op as apply_f3_op
 from app.sync.monitoring import authorize as authorize_f3
@@ -38,7 +42,7 @@ class Op(BaseModel):
     table: Literal[
         "trial_records", "farms", "farm_members", "worker_parcels", "invitations",
         "parcels", "seasons", "field_blocks", "crops", "field_commands", "operations",
-        "zone_observations", "attention_zones",
+        "zone_observations", "attention_zones", "irrigation_systems", "irrigation_events", "water_analyses",
     ]
     kind: Literal["put", "patch", "delete"]
     record_id: uuid.UUID
@@ -83,8 +87,9 @@ async def upload(
     batch: UploadBatch,
     user_id: uuid.UUID = Depends(current_user),
     session: AsyncSession = Depends(get_session),
+    clock: Clock = Depends(get_clock),
 ) -> dict[str, list[dict[str, Any]]]:
-    if sum(1 for o in batch.ops if o.table in OPERATION_TABLES + MONITORING_TABLES) > LIMITS["batch"]:
+    if sum(1 for o in batch.ops if o.table in OPERATION_TABLES + MONITORING_TABLES + IRRIGATION_TABLES) > LIMITS["batch"]:
         raise HTTPException(status_code=413, detail={"code": "batch_too_large"})  # before any read or write
     results = []
     async with session.begin():  # one commit per batch: a cut connection never leaves a half batch
@@ -93,8 +98,11 @@ async def upload(
         await authorize_f2(session, user_id, ops)
         await authorize_f6(session, user_id, ops)
         await authorize_f3(session, user_id, ops)
+        await authorize_f4(session, user_id, ops)
         for data in ops:
-            if data["table"] in ADMIN_TABLES:
+            if data["table"] in IRRIGATION_TABLES:
+                results.append(await apply_f4_op(session, user_id, data, clock.now()))
+            elif data["table"] in ADMIN_TABLES:
                 results.append(await apply_admin_op(session, user_id, data))
             elif data["table"] in MONITORING_TABLES:
                 results.append(await apply_f3_op(session, user_id, data))

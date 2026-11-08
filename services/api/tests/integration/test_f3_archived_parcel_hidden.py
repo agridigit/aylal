@@ -9,10 +9,9 @@ APP = pathlib.Path(__file__).resolve().parents[2] / "app"
 
 
 def _ctx_ids(farm, user, role):
-    from app.monitoring.access import visible_parcels
-
     from app.auth.farm_context import FarmContext
     from app.db.session import sessionmaker
+    from app.monitoring.access import visible_parcels
 
     async def run():
         async with sessionmaker() as s:
@@ -108,9 +107,8 @@ def test_given_an_archived_parcel_then_the_worker_export_drops_it_and_the_staff_
 def test_given_notification_workers_then_recipients_and_per_recipient_parcels_come_from_visible_parcels(world3):
     import asyncio as aio
 
-    from app.monitoring.service import notification_recipients  # noqa: F401  (recipients and their parcels, via visible_parcels)
-
     from app.db.session import sessionmaker
+    from app.monitoring.service import notification_recipients  # noqa: F401  (recipients and their parcels, via visible_parcels)
 
     w = world3
 

@@ -1,0 +1,17 @@
+flowchart TD
+    A[Ouvrir la parcelle] --> B{Parcelle irriguée ?}
+    B -- Non --> C[Indicateur de stress hydrique]
+    B -- Oui --> D{Installation décrite ?}
+    D -- Non --> E[Décrire mon installation]
+    E --> D
+    D -- Oui --> F[Voir le conseil du jour]
+    F --> G{Quel conseil ?}
+    G -- Pas besoin --> H[Rien à faire aujourd'hui]
+    G -- Reporter pour pluie --> I[Attendre la pluie prévue]
+    G -- Irriguer --> J[Voir les hypothèses et la confiance]
+    G -- Indisponible --> K[Suivre l'action proposée]
+    J --> L{Durée ou volume différent ?}
+    L -- Non --> M[Toucher Fait]
+    L -- Oui --> N[Saisir la durée ou le volume]
+    N --> M
+    M --> O[Bilan et conseil de demain mis à jour]

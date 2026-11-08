@@ -131,6 +131,8 @@ services:
       # AYLAL_EXTERNAL_ALLOWED_HOSTS are ever called; no key is committed.
       AYLAL_WEATHER_URL: ${AYLAL_WEATHER_URL:-}
       AYLAL_WEATHER_KEY: ${AYLAL_WEATHER_KEY:-}
+      # F4: observed-weather gateway (rain/ET0), empty by default = unavailable
+      AYLAL_WEATHER_OBSERVED_URL: ${AYLAL_WEATHER_OBSERVED_URL:-}
       AYLAL_IMAGERY_URL: ${AYLAL_IMAGERY_URL:-}
       AYLAL_IMAGERY_KEY: ${AYLAL_IMAGERY_KEY:-}
       AYLAL_PUSH_URL: ${AYLAL_PUSH_URL:-}
@@ -162,6 +164,8 @@ services:
       # F3: same empty-by-default gateways as the API (the worker is the only caller)
       AYLAL_WEATHER_URL: ${AYLAL_WEATHER_URL:-}
       AYLAL_WEATHER_KEY: ${AYLAL_WEATHER_KEY:-}
+      # F4: observed-weather gateway (rain/ET0), empty by default = unavailable
+      AYLAL_WEATHER_OBSERVED_URL: ${AYLAL_WEATHER_OBSERVED_URL:-}
       AYLAL_IMAGERY_URL: ${AYLAL_IMAGERY_URL:-}
       AYLAL_IMAGERY_KEY: ${AYLAL_IMAGERY_KEY:-}
       AYLAL_PUSH_URL: ${AYLAL_PUSH_URL:-}

@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: AYLAL F4 - Irrigation et bilan hydrique
+  version: 0.1.0
+  description: |
+    Toutes les routes passent par farm_context/require(action). Non-membre, membre retiré, ferme inconnue ou supprimée => 404 {"detail":"not_found"} identique.
+    Parcelle non attribuée (ouvrier), archivée (ouvrier) ou inconnue => 404 identique. Rôle insuffisant sur une parcelle visible => 403.
+    Agrégats calculés sur la portée de l'appelant. Aucune clé de stockage ni URL n'est acceptée en entrée ; extra=forbid.
+    Corps lus avec plafond avant parsing (413). Limiteur Redis par IP/utilisateur/ferme ; 429 + Retry-After. IP via client_ip() (AYLAL_TRUSTED_PROXIES).
+    VUE OUVRIER (worker-safe, décisions point 19) : pour le rôle worker, Advice/AdviceList sont servis sous la forme AdviceWorker (pas de leaching_fraction ; assumptions = worker_assumptions, liste blanche de clés, aucune clé d'analyse d'eau, de sol ou de salinité) ; BalanceDay sans taw_mm/raw_mm/moisture_source ; même expurgation pour l'export, les rappels et la synchro.
+    Aucune lecture ne déclenche de calcul ni d'appel sortant. Aucune valeur agronomique par défaut : donnée absente => kind=unavailable + unavailable_reason.
+servers: [{url: /v1}]
+components:
+  parameters:
+    FarmId: {name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}
+    ParcelId: {name: parcel_id, in: path, required: true, schema: {type: string, format: uuid}}
+  responses:
+    NotFound: {description: "404 identique (ferme inconnue/supprimée/inter-ferme, parcelle invisible)", content: {application/json: {schema: {type: object, properties: {detail: {const: not_found}}}}}}
+    Forbidden: {description: "403 rôle insuffisant", content: {application/json: {schema: {type: object, properties: {detail: {const: forbidden}}}}}}
+    TooMany: {description: "429", headers: {Retry-After: {schema: {type: integer}}}}
+    TooLarge: {description: "413 plafond dépassé avant traitement"}
+    Invalid: {description: "422 champ invalide : {detail:'validation', field, code}"}
+  schemas:
+    SystemKind: {type: string, enum: [drip, sprinkler, pivot, gravity]}
+    IrrigationSystemInput:
+      type: object
+      additionalProperties: false
+      required: [kind, sectors_count]
+      properties:
+        id: {type: string, format: uuid}
+        kind: {$ref: "#/components/schemas/SystemKind"}
+        emitter_flow_lph: {type: number, exclusiveMinimum: 0}
+        emitter_spacing_m: {type: number, exclusiveMinimum: 0}
+        row_spacing_m: {type: number, exclusiveMinimum: 0}
+        pump_flow_m3h: {type: number, exclusiveMinimum: 0}
+        sectors_count: {type: integer, minimum: 1, maximum: 50}
+        efficiency: {type: [number, "null"], exclusiveMinimum: 0, maximum: 1}
+    IrrigationSystem:
+      allOf:
+        - $ref: "#/components/schemas/IrrigationSystemInput"
+        - type: object
+          required: [parcel_id, efficiency_effective, efficiency_is_default, application_rate_mm_h]
+          properties:
+            parcel_id: {type: string, format: uuid}
+            efficiency_effective: {type: number}
+            efficiency_is_default: {type: boolean}
+            application_rate_mm_h: {type: [number, "null"]}
+            server_version: {type: integer}
+    Assumption: {type: object, required: [key, source], properties: {key: {type: string}, value: {}, source: {type: string, enum: [referential, gateway, computed, default, user, sensor]}, validated: {type: boolean}}}
+    Confidence: {type: string, enum: [high, medium, low]}
+    SectorAdvice: {type: object, required: [sector_no, minutes, volume_m3], properties: {sector_no: {type: integer}, minutes: {type: integer}, volume_m3: {type: number}}}
+    Advice:
+      type: object
+      required: [parcel_id, for_date, kind, confidence, assumptions, computed_at]
+      properties:
+        parcel_id: {type: string, format: uuid}
+        for_date: {type: string, format: date, description: "jour local de la ferme (Africa/Casablanca)"}
+        kind: {type: string, enum: [irrigate, postpone_rain, no_need, rainfed_stress, unavailable]}
+        total_minutes: {type: [integer, "null"]}
+        sectors: {type: array, maxItems: 50, items: {$ref: "#/components/schemas/SectorAdvice"}}
+        net_need_mm: {type: [number, "null"]}
+        leaching_fraction: {type: [number, "null"]}
+        stress_level: {type: [string, "null"], enum: [none, watch, high, null]}
+        confidence: {$ref: "#/components/schemas/Confidence"}
+        assumptions: {type: array, items: {$ref: "#/components/schemas/Assumption"}}
+        unavailable_reason: {type: [string, "null"], enum: [no_system, no_crop_coefficient, no_root_depth, no_depletion_fraction, no_soil_reference, no_soil_reserve, no_effective_rain_method, no_weather, no_salinity_reference, gateway_not_configured, gateway_unreachable, stale, null]}
+        computed_at: {type: string, format: date-time}
+        is_last_known: {type: boolean, description: "true si le conseil du jour n'a pas pu être calculé (météo absente) : date + confiance abaissée"}
+        ready_before_7: {type: boolean}
+    AdviceWorker:
+      description: "Vue ouvrier de Advice : sans leaching_fraction ; assumptions = worker_assumptions (liste blanche de clés : et0, kc, effective_rain, efficiency, application_rate, rain_source) ; aucune clé ece/ecw/salinity/water_source/analysis_age/soil/taw/raw/moisture/leaching/cost"
+      type: object
+      additionalProperties: false
+      required: [parcel_id, for_date, kind, confidence, assumptions, computed_at]
+      properties:
+        parcel_id: {type: string, format: uuid}
+        for_date: {type: string, format: date}
+        kind: {type: string, enum: [irrigate, postpone_rain, no_need, rainfed_stress, unavailable]}
+        total_minutes: {type: [integer, "null"]}
+        sectors: {type: array, maxItems: 50, items: {$ref: "#/components/schemas/SectorAdvice"}}
+        net_need_mm: {type: [number, "null"]}
+        stress_level: {type: [string, "null"], enum: [none, watch, high, null]}
+        confidence: {$ref: "#/components/schemas/Confidence"}
+        assumptions: {type: array, items: {$ref: "#/components/schemas/Assumption"}}
+        unavailable_reason: {type: [string, "null"]}
+        computed_at: {type: string, format: date-time}
+        is_last_known: {type: boolean}
+        ready_before_7: {type: boolean}
+    AdviceList: {type: object, required: [items, generated_at], properties: {items: {type: array, maxItems: 100, items: {oneOf: [{$ref: "#/components/schemas/Advice"}, {$ref: "#/components/schemas/AdviceWorker"}], description: "AdviceWorker si l'appelant est ouvrier"}}, next_cursor: {type: [string, "null"]}, to_irrigate_count: {type: integer, description: "calculé sur la portée de l'appelant"}, generated_at: {type: string, format: date-time}}}
+    IrrigationEventInput:
+      type: object
+      additionalProperties: false
+      required: [id, performed_on]
+      properties:
+        id: {type: string, format: uuid, description: "idempotence : rejeu = no-op"}
+        performed_on: {type: string, format: date}
+        sector_no: {type: [integer, "null"], minimum: 1}
+        duration_min: {type: integer, minimum: 1, maximum: 1440}
+        volume_m3: {type: number, exclusiveMinimum: 0}
+        note: {type: string, maxLength: 500}
+      description: "exactement un de duration_min / volume_m3 ; le complément et net_mm sont calculés par le serveur"
+    IrrigationEvent:
+      allOf:
+        - $ref: "#/components/schemas/IrrigationEventInput"
+        - type: object
+          required: [parcel_id, operation_id, duration_min, volume_m3, net_mm, status]
+          properties:
+            parcel_id: {type: string, format: uuid}
+            operation_id: {type: string, format: uuid, description: "émis par le serveur (uuid5 de farm_id:event_id) ; opération F6 liée"}
+            net_mm: {type: [number, "null"]}
+            status: {type: string, enum: [done, cancelled]}
+            possible_duplicate: {type: boolean}
+            pending: {type: boolean}
+    Consumption:
+      type: object
+      required: [parcels, generated_at]
+      properties:
+        season_id: {type: string, format: uuid}
+        parcels: {type: array, maxItems: 100, items: {type: object, required: [parcel_id, volume_m3, volume_m3_per_ha], properties: {parcel_id: {type: string, format: uuid}, volume_m3: {type: number}, volume_m3_per_ha: {type: [number, "null"]}, area_ha: {type: number}, events: {type: integer}}}}
+        total_m3: {type: number, description: "somme des parcelles VISIBLES de l'appelant ; jamais un total ferme"}
+        data_as_of: {type: string, format: date-time}
+        generated_at: {type: string, format: date-time}
+    WaterAnalysisInput: {type: object, additionalProperties: false, required: [id, ec_ds_m, analysed_on], properties: {id: {type: string, format: uuid}, ec_ds_m: {type: number, exclusiveMinimum: 0, maximum: 100}, analysed_on: {type: string, format: date}, water_source: {type: string, maxLength: 80}}}
+    WaterAnalysis: {allOf: [{$ref: "#/components/schemas/WaterAnalysisInput"}, {type: object, properties: {parcel_id: {type: string, format: uuid}, age_days: {type: integer}}}]}
+    BalanceDay: {type: object, description: "taw_mm, raw_mm et moisture_source ABSENTS pour l'ouvrier (données de sol)", required: [day, depletion_mm], properties: {day: {type: string, format: date}, et0_mm: {type: number}, et0_method: {type: string, enum: [gateway, hargreaves]}, kc: {type: number}, etc_mm: {type: number}, rain_mm: {type: number}, rain_source: {type: string, enum: [observed, forecast, ignored_greenhouse]}, rain_eff_mm: {type: number}, irrigation_net_mm: {type: number}, taw_mm: {type: number}, raw_mm: {type: number}, depletion_mm: {type: number}, moisture_source: {type: [string, "null"]}}}
+paths:
+  /farms/{farm_id}/parcels/{parcel_id}/irrigation-system:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
+    get: {operationId: getIrrigationSystem, description: "action irrigation_system.read (ouvrier : attribuée)", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/IrrigationSystem"}}}}, "404": {$ref: "#/components/responses/NotFound"}}}
+    put: {operationId: putIrrigationSystem, description: "irrigation_system.write (ouvrier : 403) ; parcelle pluviale : 422 ; verrou de ferme", requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/IrrigationSystemInput"}}}}, responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/IrrigationSystem"}}}}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}, "413": {$ref: "#/components/responses/TooLarge"}, "422": {$ref: "#/components/responses/Invalid"}, "429": {$ref: "#/components/responses/TooMany"}}}
+  /farms/{farm_id}/parcels/{parcel_id}/irrigation-system/versions:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
+    get: {operationId: listSystemVersions, description: "historique, irrigation_system.write", responses: {"200": {description: ok}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}}}
+  /farms/{farm_id}/irrigation/advice:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 50}}, {name: cursor, in: query, schema: {type: string}}]
+    get: {operationId: listAdvice, description: "lecture seule du cache ; portée de l'appelant ; ETag borné à la portée", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/AdviceList"}}}}, "404": {$ref: "#/components/responses/NotFound"}, "429": {$ref: "#/components/responses/TooMany"}}}
+  /farms/{farm_id}/parcels/{parcel_id}/irrigation/advice:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
+    get: {operationId: getAdvice, description: "conseil du jour + hypothèses ; pluvial => kind=rainfed_stress", responses: {"200": {description: ok, content: {application/json: {schema: {oneOf: [{$ref: "#/components/schemas/Advice"}, {$ref: "#/components/schemas/AdviceWorker"}]}}}}, "404": {$ref: "#/components/responses/NotFound"}}}
+  /farms/{farm_id}/parcels/{parcel_id}/irrigation/balance:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}]
+    get: {operationId: getBalance, description: "fenêtre <= 400 jours (422 au-delà, avant lecture)", responses: {"200": {description: ok, content: {application/json: {schema: {type: object, required: [days, availability], properties: {days: {type: array, maxItems: 400, items: {$ref: "#/components/schemas/BalanceDay"}}, availability: {type: string, enum: [ok, stale, unavailable]}, reason: {type: string, description: "présent si availability != ok (état de la passerelle météo)"}}}}}}, "404": {$ref: "#/components/responses/NotFound"}, "422": {$ref: "#/components/responses/Invalid"}}}
+  /farms/{farm_id}/parcels/{parcel_id}/irrigation/events:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
+    get: {operationId: listEvents, description: "ouvrier : les siennes seulement", parameters: [{name: limit, in: query, schema: {type: integer, maximum: 100}}, {name: cursor, in: query, schema: {type: string}}], responses: {"200": {description: ok}, "404": {$ref: "#/components/responses/NotFound"}}}
+    post: {operationId: recordIrrigation, description: "irrigation.record ; crée l'opération F6 liée dans la même transaction ; rejeu du même id = 200 sans doublon ; antidatage <= 400 j ; verrou de ferme + recalcul planifié", requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/IrrigationEventInput"}}}}, responses: {"201": {description: created, content: {application/json: {schema: {$ref: "#/components/schemas/IrrigationEvent"}}}}, "200": {description: "rejeu idempotent"}, "404": {$ref: "#/components/responses/NotFound"}, "413": {$ref: "#/components/responses/TooLarge"}, "422": {$ref: "#/components/responses/Invalid"}, "429": {$ref: "#/components/responses/TooMany"}}}
+  /farms/{farm_id}/parcels/{parcel_id}/irrigation/events/{event_id}/cancel:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}, {name: event_id, in: path, required: true, schema: {type: string, format: uuid}}]
+    post: {operationId: cancelIrrigation, description: "irrigation.correct ; jamais de DELETE ; opération de correction F6 ; ouvrier : la sienne, sinon 403", responses: {"200": {description: ok}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}}}
+  /farms/{farm_id}/irrigation/consumption:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {name: season_id, in: query, schema: {type: string, format: uuid}}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}, {name: limit, in: query, schema: {type: integer, maximum: 100}}, {name: cursor, in: query, schema: {type: string}}]
+    get: {operationId: getConsumption, description: "consumption.read ; agrégat sur la portée de l'appelant ; fenêtre <= 24 mois", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Consumption"}}}}, "404": {$ref: "#/components/responses/NotFound"}, "429": {$ref: "#/components/responses/TooMany"}}}
+  /farms/{farm_id}/parcels/{parcel_id}/water-analyses:
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
+    get: {operationId: listWaterAnalyses, description: "water_analysis.read ; ouvrier : 403", responses: {"200": {description: ok}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}}}
+    post: {operationId: addWaterAnalysis, description: "water_analysis.write ; <= 50 par parcelle (verrou) ; ouvrier : 403", requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/WaterAnalysisInput"}}}}, responses: {"201": {description: created}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}, "422": {$ref: "#/components/responses/Invalid"}, "429": {$ref: "#/components/responses/TooMany"}}}
+  /sync/upload:
+    post: {operationId: syncUploadF4, description: "tables acceptées F4 : irrigation_systems (put/patch), irrigation_events (put, patch=cancel), water_analyses (put) ; lot <= 100 (413 avant écriture) ; refusé entier (403) si une écriture viole le rôle ; champs serveur ignorés ; toute clé/URL d'objet => invalid_object_ref", responses: {"200": {description: ok}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}, "413": {$ref: "#/components/responses/TooLarge"}}}

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { flattenKeys } from "../src/index";
 
-const NAMESPACES = ["auth", "onboarding", "farm", "team", "account", "fields", "crops", "seasons", "map", "operations", "phyto", "registry", "reminders", "dashboard", "weather", "alerts", "vigor", "zones", "status", "summary"];
+const NAMESPACES = ["auth", "onboarding", "farm", "team", "account", "fields", "crops", "seasons", "map", "operations", "phyto", "registry", "reminders", "dashboard", "weather", "alerts", "vigor", "zones", "status", "summary", "irrigation", "advice", "waterbalance", "wateranalysis"];
 const LOCALES = ["ary", "ar", "fr"];
 const load = (l: string, n: string) =>
   JSON.parse(readFileSync(join(__dirname, "..", "locales", l, `${n}.json`), "utf8"));

@@ -1,0 +1,18 @@
+sequenceDiagram
+  actor U as Agriculteur
+  participant M as Mobile SQLite
+  participant S as /v1/sync/upload
+  participant A as irrigation/service.py
+  participant DB as PostgreSQL
+  participant W as Worker compute_irrigation_plans
+  U->>M: Saisit duree ou volume (id client)
+  M->>M: Ligne locale "a envoyer", bilan local recalcule
+  M->>S: Lot PUT irrigation_events
+  S->>S: authorize (role, parcelle visible) sur tout le lot
+  S->>A: record_event
+  A->>DB: verrou de ferme, quotas
+  A->>DB: derives net_mm, volume, operation_id (uuid5)
+  A->>DB: irrigation_events + operation F6 + trigger irrigation_applied
+  A->>DB: irrigation_jobs (coalesce a la date la plus ancienne)
+  S-->>M: ack (rejeu du meme id = idempotent)
+  W->>DB: verrou irrigation:{farm}, rejoue le bilan, ecrit irrigation_plans

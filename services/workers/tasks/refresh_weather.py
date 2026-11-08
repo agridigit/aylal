@@ -9,7 +9,7 @@ import json
 import os
 from typing import Any
 
-from gateways import WeatherGateway, acquire_cell_slot, acquire_daily_budget
+from gateways import ObservedWeatherGateway, WeatherGateway, acquire_cell_slot, acquire_daily_budget
 from monitoring_db import dsn
 
 DAILY_BUDGET = int(os.environ.get("AYLAL_WEATHER_DAILY_BUDGET", "2000") or "2000")
@@ -35,7 +35,12 @@ async def refresh_weather(ctx: dict[str, Any], now: dt.datetime | None = None) -
         url=os.environ.get("AYLAL_WEATHER_URL", ""),
         allowed_hosts=[h for h in os.environ.get("AYLAL_EXTERNAL_ALLOWED_HOSTS", "").split(",") if h.strip()],
     )
+    observed_gateway = ctx.get("observed_gateway") or ObservedWeatherGateway(
+        url=os.environ.get("AYLAL_WEATHER_OBSERVED_URL", ""),
+        allowed_hosts=[h for h in os.environ.get("AYLAL_EXTERNAL_ALLOWED_HOSTS", "").split(",") if h.strip()],
+    )
     stats = {"cells": 0, "farms": 0}
+    refreshed: list[Any] = []
     conn = await asyncpg.connect(dsn())
     try:
         farms = await conn.fetch("SELECT id, ST_Y(location) AS lat, ST_X(location) AS lon FROM farms WHERE deleted_at IS NULL")
@@ -55,6 +60,7 @@ async def refresh_weather(ctx: dict[str, Any], now: dt.datetime | None = None) -
             else:
                 result = await asyncio.to_thread(gateway.fetch, lat_r=lat_r, lon_r=lon_r)
             stats["cells"] += 1
+            await _observed(conn, observed_gateway, cell_id, lat_r, lon_r, now)
             days = [_icon(d) for d in result.get("days", [])]
             if result["availability"] == "ok":
                 await conn.execute(
@@ -65,8 +71,14 @@ async def refresh_weather(ctx: dict[str, Any], now: dt.datetime | None = None) -
             for f in members:
                 await _store(conn, f["id"], cell_id, now if days else None, result["availability"], result.get("reason"), days)
                 stats["farms"] += 1
+                if result["availability"] == "ok" and days:
+                    refreshed.append(f["id"])
     finally:
         await conn.close()
+    redis = ctx.get("redis")
+    if redis is not None:
+        for farm in refreshed:  # F4: a new forecast triggers the advice computation of the farm
+            await redis.enqueue_job("compute_irrigation_plans", farm_id=farm)
     return stats
 
 
@@ -79,3 +91,25 @@ async def _store(conn: Any, farm_id: Any, cell_id: str | None, fetched_at: dt.da
         " days = CASE WHEN $4 = 'ok' THEN $6::jsonb ELSE farm_weather.days END",
         farm_id, cell_id, fetched_at, availability, reason, json.dumps(days),
     )
+
+
+OBSERVED_SLOT_SECONDS = 6 * 3600
+
+
+async def _observed(conn: Any, gateway: Any, cell_id: str, lat_r: float, lon_r: float, now: dt.datetime) -> None:
+    """F4: observed rain of the 7 past days for a cell (optional gateway, once per 6 hours). Without it nothing is written and the
+    balance falls back to the last forecast with a lowered confidence."""
+    if not gateway.configured() or not await acquire_cell_slot(f"obs:{cell_id}", now, OBSERVED_SLOT_SECONDS):
+        return
+    if not await acquire_daily_budget("weather_observed", DAILY_BUDGET, now.date()):
+        return
+    day = now.date()
+    answer = await asyncio.to_thread(gateway.fetch, lat_r=lat_r, lon_r=lon_r, date_from=(day - dt.timedelta(days=7)).isoformat(), date_to=(day - dt.timedelta(days=1)).isoformat())
+    if answer["availability"] != "ok":
+        return
+    for d in answer["days"]:
+        await conn.execute(
+            "INSERT INTO weather_observed (cell_id, day, rain_mm, fetched_at) VALUES ($1, $2, $3, $4)"
+            " ON CONFLICT (cell_id, day) DO UPDATE SET rain_mm = $3, fetched_at = $4",
+            cell_id, dt.date.fromisoformat(str(d["date"])), d["rain_mm"], now,
+        )

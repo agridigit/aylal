@@ -1,0 +1,317 @@
+[
+ {
+  "name": "no crop row: no_crop_coefficient",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": null,
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": "no_crop_coefficient"
+  }
+ },
+ {
+  "name": "row without kc: no_crop_coefficient",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": null,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": "no_crop_coefficient"
+  }
+ },
+ {
+  "name": "row without root depth: no_root_depth",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": null,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": "no_root_depth"
+  }
+ },
+ {
+  "name": "row without depletion fraction: no_depletion_fraction",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": null,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": "no_depletion_fraction"
+  }
+ },
+ {
+  "name": "empty soil referential: no_soil_reference",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": "no_soil_reference"
+  }
+ },
+ {
+  "name": "matched texture without a reserve: no_soil_reserve",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": null
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": "no_soil_reserve"
+  }
+ },
+ {
+  "name": "known texture: its own reserve, not flagged",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "c"
+  },
+  "expected": {
+   "unavailable_reason": null,
+   "soil_reserve_mm_per_m": 80,
+   "texture_used": "c",
+   "soil_default": false
+  }
+ },
+ {
+  "name": "unknown texture: the weakest reserve of the referential, flagged",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "zzz"
+  },
+  "expected": {
+   "unavailable_reason": null,
+   "soil_reserve_mm_per_m": 60,
+   "texture_used": "b",
+   "soil_default": true
+  }
+ },
+ {
+  "name": "no texture at all: the weakest reserve, flagged",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": null
+  },
+  "expected": {
+   "unavailable_reason": null,
+   "soil_reserve_mm_per_m": 60,
+   "texture_used": "b",
+   "soil_default": true
+  }
+ },
+ {
+  "name": "not validated rows still answer but say so",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": false
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": null,
+   "validated": false
+  }
+ },
+ {
+  "name": "validated rows say so",
+  "fn": "reference_gap",
+  "input": {
+   "crop_row": {
+    "kc": 0.7,
+    "root_depth_m": 0.5,
+    "depletion_fraction": 0.5,
+    "validated": true
+   },
+   "soil_rows": [
+    {
+     "texture_key": "a",
+     "available_water_mm_per_m": 100
+    },
+    {
+     "texture_key": "b",
+     "available_water_mm_per_m": 60
+    },
+    {
+     "texture_key": "c",
+     "available_water_mm_per_m": 80
+    }
+   ],
+   "texture": "a"
+  },
+  "expected": {
+   "unavailable_reason": null,
+   "validated": true
+  }
+ }
+]
