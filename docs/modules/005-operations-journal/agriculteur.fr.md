@@ -1,12 +1,11 @@
 # AYLAL : mon journal des travaux
 
-> **À venir : pas encore utilisable.**
-> Les écrans de l'application ne sont pas encore prêts.
-> Les maquettes attendent encore leur validation.
-> Ce guide dit ce qui est **prévu**. Ne cherchez pas ces boutons : ils n'existent pas encore.
-> Les noms exacts des boutons seront ajoutés quand les écrans seront validés.
-> **Parler pour noter** et **photo de l'étiquette** ne sont pas encore branchés.
-> **Combien de temps le registre est gardé** (5 ans prévus) reste à confirmer.
+> **À savoir : les écrans arrivent bientôt.**
+> **Disponible aujourd'hui** : le travail en coulisses. Le serveur garde vos travaux, vérifie les traitements, calcule la date de récolte et prépare le registre PDF et Excel. Le téléphone sait aussi vous rappeler un travail prévu.
+> **Pas encore à l'écran** : le journal, les formulaires, la date de récolte sur la parcelle, l'export du registre, la validation par le gestionnaire. Ne cherchez pas ces boutons : ils n'existent pas encore.
+> **À venir** : ces écrans, après validation des maquettes. Ensuite la dictée et la photo de l'étiquette, qui ne sont pas encore branchées.
+> **À confirmer** : la liste des produits homologués n'est pas encore chargée, et la durée de garde du registre (5 ans prévus).
+> Ce guide dit ce qui est **prévu**.
 
 ## 1. À quoi ça sert
 
@@ -30,7 +29,7 @@ Vous pouvez aussi sortir votre registre de traitements pour un contrôle.
 4. Choisissez la date.
 5. Enregistrez. Rien d'autre n'est obligatoire.
 6. Plusieurs parcelles à la fois ? Une quantité est partagée selon la surface de chaque parcelle. Vous voyez le partage.
-7. Le travail apparaît dans la liste, du plus ancien au plus récent, avec son icône.
+7. Le travail apparaît dans la liste, du plus récent au plus ancien, avec son icône.
 
 ### Noter un traitement
 
@@ -57,7 +56,7 @@ Vous pouvez aussi sortir votre registre de traitements pour un contrôle.
 
 1. Notez le travail avec une date à venir.
 2. Il devient « planifié ».
-3. Le jour venu, le téléphone vous rappelle. Même si vous étiez sans réseau en le notant.
+3. Le jour venu, le matin, le téléphone vous rappelle. Même si vous étiez sans réseau en le notant.
 4. Le travail est fait ? Confirmez. Il passe à « fait ».
 5. Pas fait à temps ? Il reste visible, en retard. Reportez-le, faites-le ou annulez-le.
 

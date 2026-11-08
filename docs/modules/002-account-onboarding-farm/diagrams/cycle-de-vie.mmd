@@ -1,0 +1,7 @@
+stateDiagram-v2
+    [*] --> EnAttente : numéro vérifié
+    EnAttente --> Actif : consentement et profil complets
+    EnAttente --> Efface : aucun consentement après 24 h
+    Actif --> SuppressionDemandee : demande confirmée
+    SuppressionDemandee --> Efface : après 30 jours au plus
+    Efface --> [*]

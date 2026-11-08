@@ -1,0 +1,21 @@
+flowchart TD
+    A[Ferme existante] --> B[Dessiner la parcelle]
+    B --> C{Dessin valide ?}
+    C -- Non : croisé, moins de 3 points, surface nulle --> B
+    C -- Oui --> D[Surface calculée en hectares]
+    D --> E[Nom, culture, variété, date de plantation ou de semis]
+    E --> F[Irrigation et serre]
+    F --> G[Parcelle enregistrée sur le téléphone]
+    G --> H{Réseau ?}
+    H -- Non --> I[Marquée à envoyer]
+    I --> H
+    H -- Oui --> J[Envoyée à la ferme]
+    J --> K[Campagne active : parcelle, culture, période]
+    K --> L[Voir sur la carte]
+    K --> M[Découper en blocs ou fusionner]
+    K --> N[Nouvelle campagne ou rotation]
+    N --> K
+    J --> O[Suppression : archivée 90 jours]
+    O --> P{Reprise avant 90 jours ?}
+    P -- Oui --> J
+    P -- Non --> Q[Effacée définitivement]

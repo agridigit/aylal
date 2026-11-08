@@ -1,0 +1,15 @@
+flowchart TD
+    A[L'agriculteur ouvre AYLAL] --> B[Écran d'accueil en français]
+    B --> C{Changer de langue ?}
+    C -- Oui --> D[Darija, arabe ou français<br/>mise en miroir pour l'arabe]
+    C -- Non --> E[Saisir un essai]
+    D --> E
+    E --> F[Enregistrement sur le téléphone<br/>chiffré, sans réseau requis]
+    F --> G[Étiquette Non envoyé]
+    G --> H{Réseau disponible ?}
+    H -- Non --> I[Il continue à travailler<br/>jusqu'à 30 jours]
+    I --> H
+    H -- Oui --> J[Envoi automatique au serveur<br/>contrôle d'accès par ferme]
+    J --> K{Même donnée modifiée ailleurs ?}
+    K -- Non --> L[Étiquette Envoyé]
+    K -- Oui --> M[Étiquette Conflit à vérifier<br/>aucune version perdue]

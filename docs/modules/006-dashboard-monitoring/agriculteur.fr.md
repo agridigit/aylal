@@ -1,13 +1,12 @@
 # AYLAL : ma ferme au jour le jour
 
-> **À venir : pas encore utilisable.**
-> Les écrans de l'application ne sont pas encore prêts.
-> Les maquettes attendent encore leur validation.
-> Ce guide dit ce qui est **prévu**. Ne cherchez pas ces boutons : ils n'existent pas encore.
-> Les noms exacts des boutons seront ajoutés quand les écrans seront validés.
-> La météo, le satellite et les notifications ne sont **pas encore branchés**.
-> Les seuils d'alerte (gel, vent, pluie, chergui) ne sont **pas encore fixés** pour chaque culture.
-> Sans ces seuils, l'application n'affiche **ni alerte ni zone à vérifier**.
+> **Où en est-on ? Pas encore utilisable dans l'application.**
+> **Prêt aujourd'hui (en coulisses) :** le calcul des alertes, de la couleur des parcelles et des zones à vérifier ; la protection de vos données ; l'accès limité des ouvriers.
+> **À venir :** tous les écrans (tableau de bord, météo, alertes, vigueur, zone à vérifier, comparaison, résumé vocal). Les maquettes attendent leur validation.
+> Ne cherchez pas ces boutons : ils n'existent pas encore. Leurs noms exacts seront ajoutés plus tard.
+> **Pas encore branchés :** la météo, le satellite et les notifications.
+> **Pas encore fixés :** les seuils d'alerte par culture (gel, vent, pluie, chergui). Sans eux, l'application n'affiche **ni alerte ni zone à vérifier**.
+> Ce guide décrit ce qui est **prévu**.
 
 ## 1. À quoi ça sert
 

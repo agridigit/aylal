@@ -36,6 +36,7 @@ En cas de conflit : constitution > CPS > spec de la fonctionnalité > plan > tâ
 ## Documentation (à chaque fin de fonctionnalité)
 Dossier `docs/modules/<NNN-feature>/` :
 - `ingenieur.md` : document expert ingénieur logiciel.
+- `metier.md` : document métier (valeur, acteurs, processus, règles, état réel de livraison).
 - `agriculteur.fr.md` et `agriculteur.ar.md` : guide utilisateur agriculteur.
 - `diagrams/*.mmd` : diagrammes en code Mermaid (`flowchart`, `sequenceDiagram`, `erDiagram`, `stateDiagram-v2`).
 - `img/*.svg` et `img/*.png` : rendus générés par `make diagrams` ; chaque doc intègre l'image ET le bloc de code source.

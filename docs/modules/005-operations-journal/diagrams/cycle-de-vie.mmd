@@ -1,0 +1,16 @@
+stateDiagram-v2
+    [*] --> Planifiee: date a venir
+    [*] --> AValider: date passee ou du jour, ouvrier
+    [*] --> Validee: date passee ou du jour, proprietaire ou gestionnaire
+    Planifiee --> Planifiee: reportee
+    Planifiee --> Annulee: annulee
+    Planifiee --> Validee: faite (proprietaire ou gestionnaire)
+    Planifiee --> AValider: faite (ouvrier)
+    AValider --> Validee: validee par le gestionnaire
+    AValider --> Annulee: annulee par le gestionnaire
+    Validee --> Validee: corrigee (historique garde)
+    Validee --> Annulee: annulee (historique garde)
+    Annulee --> [*]
+    note right of Planifiee
+      En retard = planifiee dont la date est passee
+    end note

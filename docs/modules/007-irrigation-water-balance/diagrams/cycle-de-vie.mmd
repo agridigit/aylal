@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> Indisponible : installation ou données de référence absentes
+    [*] --> Calcule : données complètes et météo reçue
+    Indisponible --> Calcule : données complétées
+    Calcule --> DernierConnu : météo du jour absente
+    DernierConnu --> Calcule : météo reçue
+    Calcule --> Calcule : irrigation enregistrée, bilan recalculé
+    Calcule --> [*] : fin de campagne, nouveau bilan

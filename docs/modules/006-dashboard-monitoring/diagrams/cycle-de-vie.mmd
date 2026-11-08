@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> open: zone détectée
+    open --> visited: observation enregistrée
+    open --> dismissed: écartée par le personnel
+    visited --> resolved: vigueur remontée sur 2 images
+    open --> resolved: vigueur remontée sur 2 images
+    dismissed --> [*]
+    resolved --> [*]

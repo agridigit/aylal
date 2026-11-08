@@ -1,0 +1,22 @@
+flowchart TD
+    A[Agriculteur ou ouvrier note un travail] --> B[Choix du type, de la parcelle, de la date]
+    B --> C{Date a venir ?}
+    C -- Oui --> D[Travail planifie + rappel local]
+    D --> E{Fait a temps ?}
+    E -- Oui --> G
+    E -- Non --> F[En retard : reporter, faire ou annuler]
+    F --> G
+    C -- Non --> G{Traitement phyto ?}
+    G -- Oui --> H[Controles : homologation, dose, nombre de passages, delai avant recolte]
+    H --> I{Avertissement ?}
+    I -- Oui --> J[Avertissement affiche et conserve dans le registre]
+    I -- Non --> K
+    J --> K[Enregistrement, jamais bloque]
+    G -- Non --> K
+    K --> L{Auteur = ouvrier ?}
+    L -- Oui --> M[A valider par le gestionnaire]
+    L -- Non --> N[Valide d'emblee]
+    M --> N
+    N --> O[Date de recolte au plus tot]
+    N --> P[Registre PDF ou Excel pour controle]
+    N --> Q[Operations fournies au bilan hydrique F4 et aux couts F8]

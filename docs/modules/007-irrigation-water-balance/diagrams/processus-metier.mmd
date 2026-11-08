@@ -1,0 +1,18 @@
+flowchart TD
+    A[Parcelle avec culture] --> B{Irriguée ou pluvial ?}
+    B -- Pluvial --> C[Pas de conseil, indicateur de stress hydrique]
+    B -- Irriguée --> D{Installation décrite ?}
+    D -- Non --> E[Conseil indisponible, inviter à décrire l'installation]
+    D -- Oui --> F{Données de culture et de sol validées ?}
+    F -- Non --> G[Conseil indisponible avec la raison]
+    F -- Oui --> H{Météo du jour reçue ?}
+    H -- Non --> I[Dernier conseil connu, daté, confiance abaissée]
+    H -- Oui --> J[Calcul nocturne du bilan hydrique]
+    J --> K{Pluie prévue supérieure à 10 mm ?}
+    K -- Oui --> L[Conseil : reporter]
+    K -- Non --> M{Besoin d'eau ?}
+    M -- Non --> N[Conseil : pas besoin]
+    M -- Oui --> O[Conseil : durée d'irrigation, confiance et hypothèses]
+    O --> P[L'agriculteur irrigue et enregistre : fait, durée ou volume]
+    P --> Q[Opération d'irrigation dans le journal]
+    Q --> R[Bilan et conseil du lendemain mis à jour]
