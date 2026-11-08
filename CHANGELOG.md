@@ -2,6 +2,32 @@
 
 Tenu automatiquement par Claude (sous-agent `git-keeper`). Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [SemVer](https://semver.org/lang/fr/).
 
+## [0.6.0] - 2026-11-08 — F4 Irrigation et bilan hydrique
+### Ajouts
+- green - setup
+- green - foundations
+- green - US1 installation (T051)
+- green - US2 daily advice (T057)
+- green - US3 record an irrigation (T062)
+- green - US4 water consumption (T072)
+- green - US5 water analysis and leaching (T077)
+### Documentation
+- engineer and farmer documentation
+### Technique
+- red - foundations
+- extend the F3 task inventory with the three F4 tasks
+- red - US1 installation (T047-T050)
+- red - US2 daily advice (T052-T056)
+- red - US3 record an irrigation (T058-T061)
+- red - US4 water consumption (T069-T071)
+- red - US5 water analysis and leaching (T074-T076)
+- fix contradictory fixtures (irrigation_jobs, global bucket, fx_* crops)
+- lint and typecheck fixes, honest task ticks
+- APK budget derogation (T080)
+- mark 007-irrigation-water-balance as merged
+
+Documentation du module : [docs/modules/007-irrigation-water-balance/](docs/modules/007-irrigation-water-balance/)
+
 ## [0.5.0] - 2026-11-08 — F3 Tableau de bord et monitoring
 ### Ajouts
 - Tableau de bord et monitoring : météo, alertes par culture et stade, vigueur, zones à vérifier, état résumé, comparaison N-1, résumé vocal
