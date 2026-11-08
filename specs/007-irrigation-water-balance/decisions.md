@@ -27,3 +27,10 @@ Valeurs ou règles sur lesquelles le CPS est muet ; le plan applique la règle c
 ## Poids de l'APK
 
 Aucune dérogation à ce stade. Une section nommée « Dérogation » (titre de niveau 2) n'est à créer **uniquement** si la mesure `make apk-size` dépasse 40 Mo ; alors créer aussi `specs/007-irrigation-water-balance/apk-budget.env` avec `DECISION_REF=specs/007-irrigation-water-balance/decisions.md`. Le script refuse un `DECISION_REF` sans section « Dérogation » : la dérogation de F2/F3 n'est pas héritée.
+
+## Journal d'exécution
+
+- T004 (porte design humaine) : non faite ; bloque les tâches [écran] T063-T068, T073, T078.
+- Écarts de test : aucun.
+- Migration : 0012 provisoire, à recaler à la fusion.
+- T001 : tzdata épinglé (pip, 2025.2) ; AYLAL_WEATHER_OBSERVED_URL ajoutée à api et worker (vide par défaut).

@@ -4,7 +4,7 @@ WORKDIR /app
 # rasterio wheels link against libexpat
 RUN apt-get update && apt-get install -y --no-install-recommends libexpat1 && rm -rf /var/lib/apt/lists/*
 COPY services/workers/pyproject.toml ./
-RUN pip install --no-cache-dir ".[dev]"
+RUN pip install --no-cache-dir ".[dev]" tzdata==2025.2
 COPY services/workers/ ./
 # Rendering code shared with the API (single source: services/api/app/operations); the worker image does not embed `app`.
 COPY services/api/app/operations/export_job.py ./export_job.py
