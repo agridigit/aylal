@@ -1,0 +1,51 @@
+flowchart LR
+  subgraph Mobile["Mobile - logique livree, ecrans reportes"]
+    VM["View models monitoring<br/>staleness, guidance, voiceSummary"]
+    LN["alertNotifications<br/>notifications locales"]
+    SQL[("SQLite + PowerSync")]
+  end
+  subgraph API["API FastAPI"]
+    RT["Routes dashboard, weather, alerts,<br/>zones, status, vigor, summary"]
+    ACC["monitoring/access.py<br/>visible_parcels + appartenance active"]
+    CACHE["cache Redis<br/>ferme + role + parcelles"]
+    SYNC["/v1/sync/upload<br/>zone_observations"]
+  end
+  subgraph Workers["Workers arq"]
+    RW["refresh_weather"]
+    EA["evaluate_alerts"]
+    RS["recompute_status"]
+    DZ["detect_zones"]
+    II["ingest_imagery"]
+    BF["drain_backfill_jobs<br/>backfill_parcel_vigor"]
+    DS["send_daily_summary"]
+  end
+  subgraph GW["Passerelles - URL vide = non disponible"]
+    GWW["meteo"]
+    GWI["imagerie"]
+    GWP["push optionnel"]
+  end
+  PG[("PostgreSQL + PostGIS")]
+  PS["PowerSync service"]
+  RD[("Redis")]
+  S3[("MinIO")]
+  VM --> SQL
+  LN --> SQL
+  SQL <--> PS
+  PS --> PG
+  VM --> RT
+  RT --> ACC --> PG
+  RT --> CACHE --> RD
+  SYNC --> PG
+  RT --> S3
+  RW --> GWW
+  II --> GWI
+  DS -.-> GWP
+  RW --> PG
+  PG --> EA --> PG
+  II --> BF
+  BF -.->|"ctx tiles_for / stats_for non cables"| S3
+  DZ --> PG
+  RS --> PG
+  DS --> PG
+  RW --> RD
+  RS --> RD

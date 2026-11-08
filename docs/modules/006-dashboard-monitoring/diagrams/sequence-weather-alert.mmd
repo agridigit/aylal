@@ -1,0 +1,31 @@
+sequenceDiagram
+  autonumber
+  participant Cron as arq cron
+  participant RW as refresh_weather
+  participant GW as Passerelle meteo
+  participant PG as PostgreSQL
+  participant EA as evaluate_alerts
+  participant RS as recompute_status
+  participant PS as PowerSync
+  participant App as Mobile
+  Cron->>RW: minute 10
+  RW->>PG: cellules des fermes localisees
+  RW->>GW: lat, lon arrondis 0,1 degre, days=8 (verrou 1 appel par cellule et 3 h)
+  alt URL vide, hote hors liste ou erreur
+    RW->>PG: farm_weather availability=unavailable, reason
+  else reponse valide
+    GW-->>RW: 8 jours
+    RW->>PG: weather_cells puis farm_weather (ok)
+  end
+  Cron->>EA: heures 0,3,...,21 minute 20
+  EA->>PG: lit farm_weather, seuils par culture et stade
+  Note over EA: sans seuil valide en base, aucune alerte
+  EA->>PG: upsert alerts par dedup_key, notify_at (gel : frost_notify_hour, 17 h par defaut)
+  Note over EA,RS: aucun declencheur par signal, cron horaire seulement
+  Cron->>RS: minute 40
+  RS->>PG: parcel_status et parcel_status_items
+  PG-->>PS: replication (seaux sans jointure)
+  PS-->>App: alerts, parcel_status, farm_weather
+  App->>App: planAlertNotifications(alerts, planned, now)
+  App->>App: programme ou annule les notifications locales
+  Note over App: hors ligne, les notifications deja programmees sont emises

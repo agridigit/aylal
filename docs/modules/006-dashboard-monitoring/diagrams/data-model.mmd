@@ -1,0 +1,124 @@
+erDiagram
+  PARCELS ||--o{ ALERTS : "farm_id parcel_id"
+  PARCELS ||--|| PARCEL_STATUS : ""
+  PARCELS ||--o{ PARCEL_STATUS_ITEMS : ""
+  PARCELS ||--o{ PARCEL_VIGOR_POINTS : ""
+  PARCELS ||--o{ VIGOR_MAPS : ""
+  PARCELS ||--o{ ATTENTION_ZONES : ""
+  PARCELS ||--o{ MONITORING_JOBS : ""
+  ATTENTION_ZONES ||--o{ ZONE_OBSERVATIONS : ""
+  FARMS ||--|| FARM_WEATHER : ""
+  FARMS ||--o{ DAILY_SUMMARIES : ""
+  FARMS ||--o{ NOTIFICATION_PREFS : ""
+  FARMS ||--o{ OBSERVATION_UPLOADS : ""
+  WEATHER_CELLS ||--o{ FARM_WEATHER : "copie, cell_id"
+  IMAGERY_TILES ||--o{ IMAGERY_SCENES : tile_id
+  IMAGERY_SCENES ||--o{ PARCEL_VIGOR_POINTS : "scene_id"
+  CROP_WEATHER_THRESHOLDS ||..o{ ALERTS : "crop_slug, stage_key (regle)"
+  MONITORING_PARAMS ||..o{ ATTENTION_ZONES : "parametres (regle)"
+  ALERTS {
+    uuid id PK
+    uuid farm_id
+    uuid parcel_id
+    text type "frost chergui heavy_rain strong_wind"
+    text severity "info warning critical"
+    text status "active resolved dismissed expired"
+    date forecast_day
+    text dedup_key UK
+    int revision
+    timestamptz notify_at
+    timestamptz notified_at
+  }
+  PARCEL_STATUS {
+    uuid parcel_id PK
+    uuid farm_id
+    text color "green orange red"
+    int rank
+    text imagery_reliability "ok low"
+    timestamptz data_age_at
+  }
+  PARCEL_STATUS_ITEMS {
+    uuid id PK
+    text source
+    text severity "watch act"
+    uuid source_ref
+  }
+  PARCEL_VIGOR_POINTS {
+    uuid id PK
+    uuid scene_id
+    date acquired_on
+    numeric clear_pct
+    bool valid "clear_pct >= 80"
+  }
+  VIGOR_MAPS {
+    uuid id PK
+    text map_key "serveur seulement"
+    jsonb bounds
+  }
+  ATTENTION_ZONES {
+    uuid id PK
+    geometry geometry
+    numeric area_ha
+    text status "open visited dismissed resolved"
+  }
+  ZONE_OBSERVATIONS {
+    uuid id PK "UUID client"
+    uuid author_id
+    text note "500 max"
+    text photo_key "serveur seulement"
+  }
+  OBSERVATION_UPLOADS {
+    uuid id PK
+    text object_key "serveur seulement"
+    timestamptz expires_at
+    timestamptz consumed_at
+  }
+  DAILY_SUMMARIES {
+    uuid id PK
+    uuid user_id
+    date summary_date
+    jsonb payload "portee du destinataire"
+  }
+  NOTIFICATION_PREFS {
+    uuid farm_id PK
+    uuid user_id PK
+    int summary_hour
+    bool alerts_enabled
+    text push_token "jamais synchronise"
+  }
+  MONITORING_JOBS {
+    uuid id PK
+    text kind "backfill reprocess"
+    text state
+  }
+  FARM_WEATHER {
+    uuid farm_id PK
+    text cell_id
+    text availability "ok stale unavailable"
+    jsonb days
+  }
+  WEATHER_CELLS {
+    text cell_id PK
+    timestamptz fetched_at
+    jsonb days
+  }
+  IMAGERY_TILES {
+    text tile_id PK
+    date last_ingested_on
+  }
+  IMAGERY_SCENES {
+    uuid id PK
+    date acquired_on
+    numeric cloud_pct_scene
+    text raster_key "serveur seulement"
+  }
+  CROP_WEATHER_THRESHOLDS {
+    uuid id PK
+    text crop_slug
+    text stage_key
+    text validated_by
+  }
+  MONITORING_PARAMS {
+    text key PK
+    jsonb value
+  }
