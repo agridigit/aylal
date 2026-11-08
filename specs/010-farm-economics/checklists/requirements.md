@@ -10,7 +10,7 @@
 - [x] Sections obligatoires complètes
 
 ## Complétude des exigences
-- [ ] Aucun marqueur [NEEDS CLARIFICATION] (3 à lever à l'étape clarify)
+- [x] Aucun marqueur [NEEDS CLARIFICATION] (3 levés à l'étape clarify)
 - [x] Exigences testables et non ambiguës
 - [x] Critères de réussite mesurables
 - [x] Critères indépendants de la technologie

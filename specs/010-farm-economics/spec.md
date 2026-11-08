@@ -124,6 +124,19 @@ Comparer ses coûts par hectare à la moyenne anonyme des fermes similaires de s
 - Quantité décimale en litres, kilos, unités : précision fixée, arrondis documentés, pas de dérive cumulée.
 - Prix du marché obsolète (plus de 14 jours) : signalé comme ancien.
 
+## Clarifications
+
+### Session 2026-11-08 (mode autonome, réponses tirées du CPS sections 4, 15, 16, 19 et de la constitution)
+
+- Q1 : quel moteur lit les tickets ? → Reconnaissance de texte open source auto-hébergée au Maroc, exécutée en tâche de fond ; elle ne fait que proposer (montant, date, catégorie), jamais enregistrer. Service indisponible ou URL vide : aucune proposition, saisie manuelle (principes 2, 3 et vie privée section 15).
+- Q2 : quelle source pour les prix de gros ? → Une passerelle externe configurable par l'équipe AYLAL ; le CPS n'impose aucune source. URL vide ou erreur : « non disponible » avec le dernier relevé connu daté, jamais de valeur inventée. La source retenue est une donnée de référence à faire valider avant la v1.
+- Q3 : quelles parcelles pour le prorata ? → Par défaut, les parcelles à campagne active à la date de la dépense ; l'agriculteur peut ajuster la sélection. La répartition est figée à la saisie.
+- Q4 : unités de stock ? → Chaque produit suivi a une seule unité de stock (L, kg ou unité) ; une opération dans une autre unité compatible est convertie, sinon le mouvement est signalé « à régulariser » sans bloquer le journal.
+- Q5 : méthode de prix d'achat ? → Prix moyen pondéré après chaque achat ; une consommation ne modifie pas le prix moyen.
+- Q6 : qui voit quoi ? → Propriétaire et gestionnaire voient et saisissent tout (montants, stocks, récoltes, ventes). L'ouvrier ne voit aucun montant, marge, prix d'achat, valeur de stock ni stock ; ses opérations du journal consomment le stock sans qu'il le voie. Il peut enregistrer une récolte (quantité) sur ses parcelles assignées non archivées, sans montant.
+- Q7 : arrondis ? → Montants en centimes entiers (MAD) ; le reliquat d'une répartition va à la plus grande part ; marges et coûts par ha / kg arrondis à l'affichage seulement.
+- Q8 : campagnes sans date de fin ? → Le bilan couvre la campagne en cours ; les dépenses hors campagne restent rattachées à la parcelle.
+
 ## Écrans et états *(obligatoire)*
 
 Chaque écran a quatre états conçus.
@@ -205,9 +218,9 @@ Chaque écran a quatre états conçus.
 ## Hypothèses
 
 - La monnaie est le dirham marocain (MAD), montants en centimes entiers.
-- La lecture automatique de la photo du ticket est un service auto-hébergé au Maroc [NEEDS CLARIFICATION: moteur de lecture des tickets non précisé dans le CPS].
-- La source des prix des marchés de gros est externe et optionnelle [NEEDS CLARIFICATION: source officielle des prix de gros non précisée dans le CPS].
-- La répartition au prorata utilise les surfaces des parcelles sélectionnées par l'agriculteur [NEEDS CLARIFICATION: parcelles concernées par défaut (toutes ou celles à campagne active) non précisées dans le CPS].
+- La lecture automatique de la photo du ticket est un service de reconnaissance de texte open source auto-hébergé au Maroc (Clarification 1) ; sans ce service, la saisie manuelle reste complète.
+- La source des prix des marchés de gros est une passerelle externe optionnelle, configurée par l'équipe (Clarification 2) ; sans configuration, « non disponible ».
+- La répartition au prorata utilise par défaut les parcelles à campagne active à la date de la dépense, modifiables par l'agriculteur (Clarification 3).
 - Une opération du journal (F6) est la seule source de consommation automatique de stock ; F8 ne crée pas de second registre d'opérations.
 - Le seuil d'alerte de stock est fixé par l'agriculteur par produit ; sans seuil, aucune alerte n'est produite.
 - La notification d'alerte de stock suit les préférences de notification de F3.
