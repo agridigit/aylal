@@ -13,7 +13,7 @@ Numéro de branche : NNN = 1 + le plus grand préfixe à 3 chiffres parmi `git b
 
 A. Reprise : si une branche `*-<SLUG>` existe :
    - si elle est extraite dans `.worktrees/<branche>` (préparation anticipée) : attends la fin de son agent de préparation, vérifie `git -C .worktrees/<branche> status --porcelain` vide (sinon commit `spec(<ID>): prepare`), puis `git worktree remove .worktrees/<branche>` ;
-   - place-toi dessus ; si son `specs/<branche>/.status` commence par MERGED, passe à la suivante ;
+   - place-toi dessus ; si son `specs/<branche>/.status` commence par MERGED ou PAUSED, passe à la suivante ;
    - si `main` n'est pas ancêtre de la branche : `git merge main --no-edit -m "merge(<ID>): main into <branche>"` (récupère les fonctionnalités fusionnées depuis la préparation).
 B. Sur `main`, si la branche n'existe pas : `speckit-runner` étape `specify`, avec les arguments de prompts/specify-F0.tpl pour F0, sinon prompts/specify.tpl où tu remplaces {ID} {TITRE} {SECTION} {SLUG}.
 C. Lance successivement `speckit-runner`, en sautant toute étape dont le fichier de sortie existe déjà :
@@ -34,6 +34,8 @@ E. Contrôle + documentation EN PARALLÈLE, dans un seul message :
 F. Fin de la documentation : quand les trois agents ont répondu, exécute les étapes 3 à 5 de /aylal.docs <branche> (`make diagrams`, vérification des images, commit `docs(<branche>): …`, `DOCS_DONE` dans `.status`), puis `make check-cached` (seules les docs ont changé : ne rend que les diagrammes).
 G. Fusion : exécute /aylal.release <branche> <ID> (sous-agent git-keeper : SemVer, CHANGELOG, fusion locale, balises). Si la réponse commence par ÉCHEC, note-la dans `.aylal/blocked.md` et passe à la suivante.
 H. Affiche une ligne : `<ID> fusionné — tâches x/y — docs OK`.
+
+Porte design : si une tâche d'écran est bloquée faute de `docs/design/<branche>/VALIDATION.md`, produis les maquettes (stories + captures FR/AR), écris `BLOCKED: porte design — maquettes prêtes dans docs/design/<branche>/` et passe à la suivante ; n'écris jamais VALIDATION.md toi-même.
 
 FIN : `make docs-index`, `make report`, puis un résumé de 10 lignes au plus : fonctionnalités fusionnées, bloquées (avec la raison), prochaines actions.
 

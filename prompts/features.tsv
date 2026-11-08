@@ -5,7 +5,6 @@ F2	fields-crops	7	Parcelles et cultures
 F6	operations-journal	11	Journal des opérations et registre phyto
 F3	dashboard-monitoring	8	Tableau de bord et monitoring
 F4	irrigation-water-balance	9	Irrigation et bilan hydrique
-F5	crop-health	10	Santé des cultures : diagnostic photo et alertes
-F7	voice-assistant	12	Assistant IA vocal
-F8	farm-economics	13	Dépenses, stocks, récoltes et prix du marché
-F9	sharing-sensors	14	Partage, conseillers et capteurs
+D1	design-system	15	Design system FarmQA v2 selon docs/design/aylal-design-system.md : jetons à deux niveaux et Unistyles, icônes trait arrondi, composants de structure (reprend la branche design/farmqa-v2 : jetons déjà faits)
+M1	mobile-app-v1	6,7,8,9,11	Application mobile v1 : écrans de F1, F2, F6, F3 et F4 (reprend les tâches d'écran et Maestro bloquées par la porte design dans specs/002, 003, 005, 006 et 007), parcours complets sur l'émulateur, état de parcelle sans F5, APK de 40 Mo au plus
+F8	farm-economics	13	Dépenses, stocks, récoltes et prix du marché (serveur, domaine et écrans)

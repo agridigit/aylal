@@ -103,6 +103,15 @@ Neuf fonctionnalités, chacune destinée à une spécification Spec Kit ; le lan
 | F8 | Dépenses, stocks, récoltes et prix | Connaître ses coûts et sa marge, suivre les prix | Phase 2 | F6 |
 | F9 | Partage, conseillers et capteurs | Inviter son conseiller ou sa coopérative, brancher des capteurs | Phase 2-3 | F1 à F6 |
 
+### Feuille de route décidée le 2026-11-08 (remplace la répartition MVP ci-dessus)
+
+Décision du porteur du projet : livrer d'abord une application mobile utilisable de bout en bout, plutôt que d'ajouter des fonctionnalités sans écran.
+
+- **Version 1** (v1.0.0), dans cet ordre : F0, F1, F2, F6, F3, F4 (serveur et domaine déjà fusionnés) → **design system** (`docs/design/aylal-design-system.md`) → **application mobile v1** : écrans, parcours Maestro et APK ≤ 40 Mo pour F1, F2, F6, F3 et F4 → **F8** (serveur, domaine et écrans).
+- **Version 2** : F5 (santé des cultures), F7 (assistant vocal), F9 (partage, conseillers, capteurs), ainsi que les parties « phase 2 » de F4. Les travaux déjà commencés sur F5 et F7 sont conservés sur leurs branches, en pause.
+- Tant que F5 n'est pas livrée, l'état d'une parcelle (F3) ne contient pas de composante « risque sanitaire » et le dit sans erreur ; le registre phyto (F6) fonctionne sans F5.
+- Données de référence à fournir par une source validée avant la v1 (aucune valeur inventée) : coefficients culturaux et paramètres de sol (F4, FAO-56), catalogue des produits phytosanitaires homologués ONSSA (F6), référentiel des cultures et variétés (F2).
+
 ## 6. F1 — Compte, onboarding et ferme
 
 **Objectif.** Un agriculteur installe AYLAL et a créé son compte et sa ferme en moins de 2 minutes, sans e-mail ni mot de passe.
