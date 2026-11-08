@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import text
 
 from app.auth.farm_context import FarmContext
+from app.domain.consumption import summarise_consumption
 from app.irrigation import cache
 from app.monitoring.access_sql import VISIBLE_PARCELS_SQL, scope_params
 
@@ -36,13 +37,10 @@ async def consumption(ctx: FarmContext, first: dt.date, last: dt.date, season_id
     if season_id:
         params["season"] = season_id
     rows = (await ctx.session.execute(text(_SQL.format(season=season)), params)).all()
-    parcels: list[dict[str, Any]] = []
-    for r in rows:
-        volume = float(r.volume_m3)
-        area = None if r.area_ha is None else float(r.area_ha)
-        parcels.append({"parcel_id": str(r.parcel_id), "volume_m3": volume, "volume_m3_per_ha": volume / area if area else None,
-                        "area_ha": area, "events": int(r.events)})
-    total = sum(p["volume_m3"] for p in parcels)
+    raw = [{"parcel_id": str(r.parcel_id), "volume_m3": float(r.volume_m3), "area_ha": None if r.area_ha is None else float(r.area_ha)} for r in rows]
+    summary = summarise_consumption({"parcels": raw})
+    parcels = [{**s, "area_ha": r["area_ha"], "events": int(row.events)} for s, r, row in zip(summary["parcels"], raw, rows, strict=True)]
+    total = summary["total_m3"]
     page = parcels[offset: offset + limit]
     body: dict[str, Any] = {"parcels": page, "total_m3": total, "generated_at": now.isoformat(), "next_cursor": str(offset + limit) if offset + limit < len(parcels) else None}
     if season_id:
