@@ -114,15 +114,19 @@ async def dashboard(ctx: FarmContext, limit: int, offset: int) -> tuple[dict[str
 
 
 async def parcel_status(ctx: FarmContext, parcel_id: uuid.UUID) -> dict[str, Any]:
-    row = (
+    row: Any = (
         await ctx.session.execute(
             text("SELECT ps.*, p.name FROM parcel_status ps JOIN parcels p ON p.id = ps.parcel_id AND p.farm_id = ps.farm_id"
                  " WHERE ps.farm_id = :f AND ps.parcel_id = :p"),
             {"f": ctx.farm_id, "p": parcel_id},
         )
     ).mappings().first()
-    if row is None:
-        raise NOT_FOUND
+    if row is None:  # visible parcel not computed yet: a doubt (orange), never a false green; F4 sources already contribute items
+        name = (await ctx.session.execute(text("SELECT name FROM parcels WHERE farm_id = :f AND id = :p"), {"f": ctx.farm_id, "p": parcel_id})).scalar_one_or_none()
+        if name is None:
+            raise NOT_FOUND
+        row = {"parcel_id": parcel_id, "name": name, "color": "orange", "reason_key": "status.stale_data", "reason_params": {},
+               "computed_at": dt.datetime.now(dt.UTC), "data_age_at": None, "imagery_reliability": "ok"}
     items = (
         await ctx.session.execute(
             text("SELECT source, severity, reason_key, reason_params, observed_at FROM parcel_status_items"

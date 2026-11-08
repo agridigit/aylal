@@ -10,12 +10,16 @@ from app.routers import (
     alerts,
     auth,
     blocks,
+    consumption,
     crops,
     dashboard,
     farms,
     fields,
     geo,
     health,
+    irrigation_advice,
+    irrigation_events,
+    irrigation_systems,
     me,
     operations,
     phyto_products,
@@ -24,6 +28,7 @@ from app.routers import (
     summary,
     sync,
     vigor,
+    water_analyses,
     zones,
 )
 
@@ -56,3 +61,5 @@ app.include_router(alerts.router, prefix="/v1")
 app.include_router(vigor.router, prefix="/v1")
 app.include_router(zones.router, prefix="/v1")
 app.include_router(summary.router, prefix="/v1")
+for _f4 in (irrigation_systems, irrigation_advice, irrigation_events, consumption, water_analyses):
+    app.include_router(_f4.router, prefix="/v1")

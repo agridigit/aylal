@@ -21,6 +21,7 @@ from app.db.session import get_session
 from app.domain.phone import normalize_phone
 from app.domain.roles import can_assign_parcels_to, can_remove_member
 from app.domain.validation import validate
+from app.irrigation import lifecycle as irrigation_lifecycle
 from app.monitoring import lifecycle
 
 router = APIRouter(prefix="/farms")
@@ -186,6 +187,7 @@ async def change_role(
     member.role = body.role
     if changed:  # the scope changes: summaries and preferences of the member go in the same transaction (FR-021)
         await lifecycle.purge_member_monitoring(ctx.session, ctx.farm_id, user_id)
+        await irrigation_lifecycle.purge_member_irrigation(ctx.session, ctx.farm_id, user_id)
     if body.role != "worker":
         await ctx.session.execute(
             delete(WorkerParcel).where(
@@ -205,6 +207,7 @@ async def remove_member(
         raise HTTPException(status_code=403, detail="owner_not_removable")
     member.removed_at = func.now()
     await lifecycle.purge_member_monitoring(ctx.session, ctx.farm_id, user_id)
+    await irrigation_lifecycle.purge_member_irrigation(ctx.session, ctx.farm_id, user_id)
     await ctx.session.execute(
         delete(WorkerParcel).where(
             WorkerParcel.farm_id == ctx.farm_id, WorkerParcel.user_id == user_id

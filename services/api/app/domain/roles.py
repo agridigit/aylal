@@ -54,6 +54,15 @@ MATRIX: dict[str, frozenset[str]] = {
     "imagery.reprocess": OWNER_MANAGER,
     "summary.read": frozenset(ROLES),
     "summary.settings": frozenset(ROLES),
+    # F4 (vectors f4_roles.json): the worker never reads nor writes water analyses; moisture.ingest and irrigation.delete have no route
+    "irrigation_system.read": frozenset(ROLES),
+    "irrigation_system.write": OWNER_MANAGER,
+    "advice.read": frozenset(ROLES),
+    "irrigation.record": frozenset(ROLES),
+    "irrigation.correct": frozenset(ROLES),
+    "consumption.read": frozenset(ROLES),
+    "water_analysis.read": OWNER_MANAGER,
+    "water_analysis.write": OWNER_MANAGER,
 }
 
 

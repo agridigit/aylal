@@ -57,6 +57,15 @@ export const MATRIX: Record<string, readonly Role[]> = {
   "imagery.reprocess": OWNER_MANAGER,
   "summary.read": ALL,
   "summary.settings": ALL,
+  // F4 (vectors/f4_roles.json): the worker never reads nor writes water analyses; moisture.ingest and irrigation.delete have no route
+  "irrigation_system.read": ALL,
+  "irrigation_system.write": OWNER_MANAGER,
+  "advice.read": ALL,
+  "irrigation.record": ALL,
+  "irrigation.correct": ALL,
+  "consumption.read": ALL,
+  "water_analysis.read": OWNER_MANAGER,
+  "water_analysis.write": OWNER_MANAGER,
 };
 
 export function can(role: string, action: string): boolean {

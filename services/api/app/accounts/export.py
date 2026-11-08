@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.farm_context import FarmContext
 from app.db.models import Consent, Farm, FarmMember, TrialRecord, User
+from app.irrigation.worker_view import advice_view
 from app.monitoring.access import visible_parcels
 from app.operations.access import visible_lines
 
@@ -123,6 +124,65 @@ async def _f3_data(session: AsyncSession, user_id: uuid.UUID, roles: list[tuple[
     }
 
 
+_PLAN_STAFF = (
+    "t.id, t.farm_id, t.parcel_id, t.season_id, t.for_date, t.kind, t.total_minutes, t.sectors, t.net_need_mm, t.leaching_fraction, t.stress_level,"
+    " t.confidence, t.assumptions, t.unavailable_reason, t.computed_at, t.ready_before_7"
+)
+# the worker's plan carries the AdviceWorker keys ONLY: no assumptions, no worker_assumptions, no leaching (decisions point 19)
+_PLAN_WORKER = (
+    "t.parcel_id, t.for_date, t.kind, t.total_minutes, t.sectors, t.net_need_mm, t.stress_level, t.confidence, t.unavailable_reason,"
+    " t.computed_at, t.ready_before_7"
+)
+
+
+async def _f4_data(session: AsyncSession, user_id: uuid.UUID, roles: list[tuple[uuid.UUID, str]]) -> dict[str, Any]:
+    """F4 irrigation. Staff get the farm, archived parcels included (read-only history); a worker gets the parcels `visible_parcels`
+    gives, their own events, the worker view of the plans and no water analysis, no reserve and no moisture source."""
+    staff_farms = [f for f, r in roles if r != "worker"]
+    parcels: list[uuid.UUID] = []
+    for farm_id, role in roles:
+        if role == "worker":
+            parcels += await visible_parcels(FarmContext(farm_id, user_id, role, session))
+    params = {"u": user_id, "farms": staff_farms, "parcels": parcels}
+    scope = "(t.farm_id = ANY(:farms) OR t.parcel_id = ANY(:parcels))"
+
+    async def rows(sql: str) -> list[dict[str, Any]]:
+        return [r[0] for r in (await session.execute(text(f"SELECT to_jsonb(q) FROM ({sql}) q"), params)).all()]
+
+    return {
+        "systems": await rows(
+            "SELECT t.id, t.farm_id, t.parcel_id, t.kind, t.emitter_flow_lph, t.emitter_spacing_m, t.row_spacing_m, t.pump_flow_m3h, t.sectors_count,"
+            f" t.efficiency, t.efficiency_is_default FROM irrigation_systems t WHERE {scope} ORDER BY t.id"
+        ),
+        "system_versions": await rows(
+            "SELECT t.id, t.farm_id, t.system_id, t.parcel_id, t.snapshot, t.changed_by, t.changed_at FROM irrigation_system_versions t"
+            " WHERE t.farm_id = ANY(:farms) ORDER BY t.changed_at, t.id"
+        ),
+        "events": await rows(
+            "SELECT t.id, t.farm_id, t.parcel_id, t.season_id, t.operation_id, t.performed_on, t.sector_no, t.input_mode, t.duration_min,"
+            " t.volume_m3, t.net_mm, t.author_id, t.note, t.status FROM irrigation_events t WHERE t.farm_id = ANY(:farms)"
+            " OR (t.parcel_id = ANY(:parcels) AND t.author_id = :u AND t.parcel_archived_at IS NULL) ORDER BY t.performed_on, t.id"
+        ),
+        "analyses": await rows(
+            "SELECT t.id, t.farm_id, t.parcel_id, t.water_source, t.ec_ds_m, t.analysed_on, t.author_id FROM water_analyses t"
+            " WHERE t.farm_id = ANY(:farms) ORDER BY t.analysed_on, t.id"
+        ),
+        "plans": await rows(f"SELECT {_PLAN_STAFF} FROM irrigation_plans t WHERE t.farm_id = ANY(:farms) ORDER BY t.for_date, t.id")
+        + [
+            advice_view({"role": "worker", "advice": plan})  # the single redaction point: AdviceWorker keys only
+            for plan in await rows(f"SELECT {_PLAN_WORKER} FROM irrigation_plans t WHERE t.parcel_id = ANY(:parcels) AND t.parcel_archived_at IS NULL ORDER BY t.for_date, t.parcel_id")
+        ],
+        "balance_days": await rows(
+            "SELECT t.id, t.farm_id, t.parcel_id, t.season_id, t.day, t.et0_mm, t.et0_method, t.kc, t.etc_mm, t.rain_mm, t.rain_source, t.rain_eff_mm,"
+            " t.irrigation_net_mm, t.taw_mm, t.raw_mm, t.depletion_mm, t.moisture_source FROM water_balance_days t WHERE t.farm_id = ANY(:farms) ORDER BY t.day, t.id"
+        )
+        + await rows(
+            "SELECT t.id, t.farm_id, t.parcel_id, t.season_id, t.day, t.et0_mm, t.et0_method, t.kc, t.etc_mm, t.rain_mm, t.rain_source, t.rain_eff_mm,"
+            " t.irrigation_net_mm, t.depletion_mm FROM water_balance_days t WHERE t.parcel_id = ANY(:parcels) AND t.parcel_archived_at IS NULL ORDER BY t.day, t.id"
+        ),
+    }
+
+
 async def build_export(session: AsyncSession, user_id: uuid.UUID) -> dict[str, Any]:
     user = (await session.execute(select(User).where(User.id == user_id))).scalar_one()
     consents = (
@@ -148,6 +208,7 @@ async def build_export(session: AsyncSession, user_id: uuid.UUID) -> dict[str, A
     return {
         **data,
         "monitoring": await _f3_data(session, user_id, [(f, r) for f, r in farms]),
+        "irrigation": await _f4_data(session, user_id, [(f, r) for f, r in farms]),
         "profile": {"phone": user.phone_e164, "display_name": user.display_name, "language": user.language},
         "consents": [
             {

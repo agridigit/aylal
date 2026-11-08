@@ -9,11 +9,13 @@ from arq.connections import RedisSettings
 from tasks.backfill_parcel_vigor import backfill_parcel_vigor
 from tasks.build_registry_export import build_registry_export
 from tasks.build_tiles import build_tiles
+from tasks.compute_irrigation_plans import compute_irrigation_plans, nightly_irrigation_plans
 from tasks.drain_backfill_jobs import drain_backfill_jobs
 from tasks.detect_zones import detect_zones
 from tasks.evaluate_alerts import evaluate_alerts
 from tasks.expire_invitations import expire_invitations
 from tasks.import_crop_thresholds import import_crop_thresholds
+from tasks.import_irrigation_params import import_irrigation_params
 from tasks.import_phyto_catalog import import_phyto_catalog
 from tasks.ingest_imagery import ingest_imagery
 from tasks.mark_overdue_operations import mark_overdue_operations
@@ -23,6 +25,7 @@ from tasks.purge_expired_registry import purge_expired_registry
 from tasks.recompute_status import recompute_status
 from tasks.refresh_weather import refresh_weather
 from tasks.send_daily_summary import send_daily_summary
+from tasks.send_irrigation_reminders import morning_irrigation_reminders, send_irrigation_reminders
 from tasks.send_otp import send_otp
 
 
@@ -39,7 +42,8 @@ class WorkerSettings:
     functions = [health, send_otp, purge_pending, purge_deleted, expire_invitations, build_tiles, purge_archived_fields,
                  purge_expired_registry, mark_overdue_operations, build_registry_export, import_phyto_catalog,
                  refresh_weather, evaluate_alerts, import_crop_thresholds, recompute_status, detect_zones, send_daily_summary, ingest_imagery, backfill_parcel_vigor,
-                 drain_backfill_jobs]
+                 drain_backfill_jobs, compute_irrigation_plans, nightly_irrigation_plans, send_irrigation_reminders,
+                 morning_irrigation_reminders, import_irrigation_params]
     cron_jobs = [
         cron(purge_pending, minute=0),
         cron(purge_deleted, hour=3, minute=0),
@@ -54,6 +58,8 @@ class WorkerSettings:
         cron(detect_zones, hour=6, minute=0),
         cron(send_daily_summary, minute=5),
         cron(drain_backfill_jobs, minute={3, 13, 23, 33, 43, 53}),
+        cron(nightly_irrigation_plans, hour={2, 3}, minute=5),  # 03:00 local is 02:00 or 03:00 UTC depending on the zone database
+        cron(morning_irrigation_reminders, hour={5, 6}, minute=30),
     ]
     redis_settings = _redis_settings()
     health_check_interval = 5

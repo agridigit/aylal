@@ -59,7 +59,17 @@ async def _farm(conn: Any, farm: uuid.UUID, now: dt.datetime) -> int:
             by_source["vigor_anomaly"].append(_signal("vigor_anomaly", "watch", "status.vigor_zone", now, z["id"], {}))
         for o in await conn.fetch("SELECT operation_id FROM operation_parcels WHERE parcel_id = $1 AND status = 'planned' AND performed_on < $2", p["id"], now.date()):
             by_source["overdue_operations"].append(_signal("overdue_operations", "watch", "status.overdue", now, o["operation_id"], {}))
-        # irrigation (F4) and health (F5) are not registered: they contribute nothing, without error
+        by_source["irrigation_need"] = []
+        plan = await conn.fetchrow(
+            "SELECT id, kind, total_minutes, stress_level, computed_at FROM irrigation_plans WHERE farm_id = $1 AND parcel_id = $2"
+            " AND parcel_archived_at IS NULL ORDER BY for_date DESC LIMIT 1", farm, p["id"],
+        )
+        if plan is not None:  # the plan is the source: unavailable, no_need and postpone_rain contribute nothing (never a false alarm)
+            if plan["kind"] == "irrigate":
+                by_source["irrigation_need"].append(_signal("irrigation_need", "act", "status.irrigation_needed", plan["computed_at"], plan["id"], {"minutes": plan["total_minutes"]}))
+            elif plan["kind"] == "rainfed_stress" and plan["stress_level"] in ("watch", "high"):
+                by_source["irrigation_need"].append(_signal("irrigation_need", "act" if plan["stress_level"] == "high" else "watch", "status.water_stress", plan["computed_at"], plan["id"], {}))
+        # health (F5) is not registered: it contributes nothing, without error
         signals = drop_unreliable_vigor(collect_signals({name: (lambda rows=rows: rows) for name, rows in by_source.items()}), reliability)
         doubts: list[str] = []
         if not signals and await _unknown_threshold(conn, p["id"], farm, thresholds):
@@ -82,9 +92,9 @@ async def _farm(conn: Any, farm: uuid.UUID, now: dt.datetime) -> int:
             sig = by_source.get(item["source"])
             await conn.execute(
                 "INSERT INTO parcel_status_items (id, farm_id, parcel_id, source, severity, reason_key, reason_params, source_ref, observed_at)"
-                " VALUES ($1,$2,$3,$4,$5,$6,'{}'::jsonb,$7,$8)",
+                " VALUES ($1,$2,$3,$4,$5,$6,$9::jsonb,$7,$8)",
                 uuid.uuid4(), farm, p["id"], item["source"], item["severity"], item["reason_key"], sig["source_ref"] if sig else None,
-                dt.datetime.fromisoformat(item["observed_at"]),
+                dt.datetime.fromisoformat(item["observed_at"]), json.dumps(sig["params"] if sig else {}),
             )
     return len(computed)
 

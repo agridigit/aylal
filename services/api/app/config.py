@@ -35,6 +35,9 @@ class Settings:
     imagery_url: str = ""
     push_url: str = ""
     weather_key: str = ""
+    # F4: optional observed-rain gateway (empty = unavailable: the past day then uses the last forecast, confidence lowered)
+    weather_observed_url: str = ""
+    weather_observed_key: str = ""
     imagery_key: str = ""
     push_key: str = ""
     external_allowed_hosts: tuple[str, ...] = ()
@@ -83,6 +86,8 @@ def get_settings() -> Settings:
         imagery_url=os.environ.get("AYLAL_IMAGERY_URL", "").strip(),
         push_url=os.environ.get("AYLAL_PUSH_URL", "").strip(),
         weather_key=os.environ.get("AYLAL_WEATHER_KEY", ""),
+        weather_observed_url=os.environ.get("AYLAL_WEATHER_OBSERVED_URL", "").strip(),
+        weather_observed_key=os.environ.get("AYLAL_WEATHER_OBSERVED_KEY", ""),
         imagery_key=os.environ.get("AYLAL_IMAGERY_KEY", ""),
         push_key=os.environ.get("AYLAL_PUSH_KEY", ""),
         external_allowed_hosts=tuple(
@@ -112,7 +117,10 @@ def validate_external_gateways(settings: Settings) -> None:
     """Outside dev/test a gateway URL must be HTTPS and its host listed in AYLAL_EXTERNAL_ALLOWED_HOSTS (G5)."""
     if settings.env in _LOCAL_ENVS:
         return
-    for name, url in (("WEATHER", settings.weather_url), ("IMAGERY", settings.imagery_url), ("PUSH", settings.push_url)):
+    for name, url in (
+        ("WEATHER", settings.weather_url), ("WEATHER_OBSERVED", settings.weather_observed_url),
+        ("IMAGERY", settings.imagery_url), ("PUSH", settings.push_url),
+    ):
         if not url:
             continue
         parsed = urlparse(url)

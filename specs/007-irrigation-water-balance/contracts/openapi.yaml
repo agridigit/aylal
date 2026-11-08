@@ -63,7 +63,7 @@ components:
         stress_level: {type: [string, "null"], enum: [none, watch, high, null]}
         confidence: {$ref: "#/components/schemas/Confidence"}
         assumptions: {type: array, items: {$ref: "#/components/schemas/Assumption"}}
-        unavailable_reason: {type: [string, "null"], enum: [no_system, no_crop_coefficient, no_soil_reference, no_effective_rain_method, no_weather, gateway_not_configured, null]}
+        unavailable_reason: {type: [string, "null"], enum: [no_system, no_crop_coefficient, no_root_depth, no_depletion_fraction, no_soil_reference, no_soil_reserve, no_effective_rain_method, no_weather, no_salinity_reference, gateway_not_configured, gateway_unreachable, stale, null]}
         computed_at: {type: string, format: date-time}
         is_last_known: {type: boolean, description: "true si le conseil du jour n'a pas pu être calculé (météo absente) : date + confiance abaissée"}
         ready_before_7: {type: boolean}
@@ -139,7 +139,7 @@ paths:
     get: {operationId: getAdvice, description: "conseil du jour + hypothèses ; pluvial => kind=rainfed_stress", responses: {"200": {description: ok, content: {application/json: {schema: {oneOf: [{$ref: "#/components/schemas/Advice"}, {$ref: "#/components/schemas/AdviceWorker"}]}}}}, "404": {$ref: "#/components/responses/NotFound"}}}
   /farms/{farm_id}/parcels/{parcel_id}/irrigation/balance:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}]
-    get: {operationId: getBalance, description: "fenêtre <= 400 jours (422 au-delà, avant lecture)", responses: {"200": {description: ok, content: {application/json: {schema: {type: object, properties: {days: {type: array, maxItems: 400, items: {$ref: "#/components/schemas/BalanceDay"}}}}}}}, "404": {$ref: "#/components/responses/NotFound"}, "422": {$ref: "#/components/responses/Invalid"}}}
+    get: {operationId: getBalance, description: "fenêtre <= 400 jours (422 au-delà, avant lecture)", responses: {"200": {description: ok, content: {application/json: {schema: {type: object, required: [days, availability], properties: {days: {type: array, maxItems: 400, items: {$ref: "#/components/schemas/BalanceDay"}}, availability: {type: string, enum: [ok, stale, unavailable]}, reason: {type: string, description: "présent si availability != ok (état de la passerelle météo)"}}}}}}, "404": {$ref: "#/components/responses/NotFound"}, "422": {$ref: "#/components/responses/Invalid"}}}
   /farms/{farm_id}/parcels/{parcel_id}/irrigation/events:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]
     get: {operationId: listEvents, description: "ouvrier : les siennes seulement", parameters: [{name: limit, in: query, schema: {type: integer, maximum: 100}}, {name: cursor, in: query, schema: {type: string}}], responses: {"200": {description: ok}, "404": {$ref: "#/components/responses/NotFound"}}}
@@ -148,7 +148,7 @@ paths:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}, {name: event_id, in: path, required: true, schema: {type: string, format: uuid}}]
     post: {operationId: cancelIrrigation, description: "irrigation.correct ; jamais de DELETE ; opération de correction F6 ; ouvrier : la sienne, sinon 403", responses: {"200": {description: ok}, "403": {$ref: "#/components/responses/Forbidden"}, "404": {$ref: "#/components/responses/NotFound"}}}
   /farms/{farm_id}/irrigation/consumption:
-    parameters: [{$ref: "#/components/parameters/FarmId"}, {name: season_id, in: query, schema: {type: string, format: uuid}}, {name: limit, in: query, schema: {type: integer, maximum: 100}}, {name: cursor, in: query, schema: {type: string}}]
+    parameters: [{$ref: "#/components/parameters/FarmId"}, {name: season_id, in: query, schema: {type: string, format: uuid}}, {name: from, in: query, schema: {type: string, format: date}}, {name: to, in: query, schema: {type: string, format: date}}, {name: limit, in: query, schema: {type: integer, maximum: 100}}, {name: cursor, in: query, schema: {type: string}}]
     get: {operationId: getConsumption, description: "consumption.read ; agrégat sur la portée de l'appelant ; fenêtre <= 24 mois", responses: {"200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Consumption"}}}}, "404": {$ref: "#/components/responses/NotFound"}, "429": {$ref: "#/components/responses/TooMany"}}}
   /farms/{farm_id}/parcels/{parcel_id}/water-analyses:
     parameters: [{$ref: "#/components/parameters/FarmId"}, {$ref: "#/components/parameters/ParcelId"}]

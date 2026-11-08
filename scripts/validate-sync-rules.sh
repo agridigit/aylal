@@ -7,8 +7,6 @@ docker run --rm --entrypoint node -v "$root/scripts/validate-sync-rules.mjs:/v.m
   -v "$root/infra/powersync/sync-rules.yaml:/rules.yaml:ro" "$img" /v.mjs /rules.yaml \
   || { echo "validate-sync-rules: règles PowerSync rejetées par le service" >&2; exit 1; }
 # F4 cases (specs/007-irrigation-water-balance): buckets present, no join/subquery, worker-safe columns only (static, on the host file).
-# Gated by AYLAL_VALIDATE_F4=1 while the F4 rules do not exist (so `make up` keeps working in RED); T041 (GREEN) removes the gate.
-if [ "${AYLAL_VALIDATE_F4:-0}" = 1 ]; then
 rules="$root/infra/powersync/sync-rules.yaml"
 for b in farm_irrigation farm_worker_irrigation farm_worker_irrigation_own irrigation_reference; do
   grep -Eq "^  $b:" "$rules" || { echo "validate-sync-rules: bucket F4 manquant: $b" >&2; exit 1; }
@@ -19,6 +17,5 @@ if echo "$block" | grep -Eq '\b(assumptions|leaching_fraction|taw_mm|raw_mm|mois
 fi
 if grep -v '^ *#' "$rules" | grep -Eiq '\bJOIN\b|\( *SELECT|\bIN *\('; then
   echo "validate-sync-rules: jointure, sous-requete ou liste IN interdites" >&2; exit 1
-fi
 fi
 echo "sync rules OK"
