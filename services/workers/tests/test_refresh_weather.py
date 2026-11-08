@@ -25,6 +25,11 @@ def _cell():
     return lat_r, lon_r
 
 
+def _slot_start(moment):
+    """Start of the 3 h Redis slot containing `moment` (slots are epoch aligned)."""
+    return dt.datetime.fromtimestamp(int(moment.timestamp()) // 10800 * 10800, dt.UTC)
+
+
 def _mine(spy, lat_r, lon_r):
     return [c for c in spy.calls if (c["lat_r"], c["lon_r"]) == (lat_r, lon_r)]
 
@@ -56,7 +61,7 @@ def test_given_a_cell_already_refreshed_less_than_3_hours_ago_when_refreshing_ag
 
     async def scenario(conn):
         farm = await seed_farm(conn, lat=lat_r, lon=lon_r)
-        now = dt.datetime.now(dt.UTC)
+        now = _slot_start(dt.datetime.now(dt.UTC)) + dt.timedelta(minutes=1)  # frozen inside one 3 h slot
         await refresh_weather({"gateway": spy}, now)
         first = await _row(conn, farm)
         await refresh_weather({"gateway": spy}, now + dt.timedelta(minutes=30))

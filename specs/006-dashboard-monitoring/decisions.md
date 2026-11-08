@@ -119,3 +119,19 @@
 - **Résumé** : `weather_code` vaut `null` quand le jour n'a ni `icon` ni `code` (le repère « unknown » de vue météo n'est pas un code). Un segment `summary.weather` porte `weatherCode`.
 - **Test corrigé 9** (`test_f3_path_parity.py`, `COVERED_TASKS`) : ajout de `drain_backfill_jobs` (tâche F3 exigée par T089), même motif que le test corrigé 7.
 - **Test corrigé 10** (`test_migration_0004.py` et `test_migration_0006.py`, comptage des 16 cultures) : les cultures de test F3 (slug `fx_...`) sont écartées, même cause racine que le test corrigé 8 (les fixtures `seed_season_at` des tests F3 insèrent des cultures globales jamais supprimées). Aucune autre assertion modifiée.
+
+## Test non déterministe corrigé : `test_refresh_weather` (cellule déjà rafraîchie)
+- **Avant** : le test passait `now = dt.datetime.now(dt.UTC)` puis `now + 30 min`. Le verrou Redis de cellule est indexé sur `epoch // 10800` (tranches de 3 h alignées sur l'heure UTC) : dans les 30 dernières minutes d'une tranche, le second appel tombait dans la tranche suivante, prenait un nouveau verrou et appelait la passerelle une seconde fois (échec 1 fois sur 6 environ).
+- **Après** : le test fige `now` via le paramètre `now` de la tâche, au début de la tranche courante + 1 minute (`_slot_start`), donc `now + 30 min` reste toujours dans la même tranche. Assertions inchangées (un seul appel, prévision et date conservées). Le code de production n'est pas modifié.
+- **Revue des autres tests F3** : les autres appels à l'horloge réelle utilisent une cellule aléatoire neuve ou ne dépendent pas d'une frontière de tranche ; non modifiés.
+
+## Flaky 429 sous xdist : Redis partagé
+- **Constat** : `make check` a échoué 2 fois sur `test_f3_rate_limit[series]` et `test_f6_dictation` (limite horaire non atteinte) mais les deux passent isolément. Cause : `test_f6_rate_limit.py` exécute un `FLUSHDB` global qui remet à zéro les compteurs des autres workers xdist en parallèle.
+- **Correction (infrastructure, aucun test ni assertion modifiés)** : `services/api/tests/conftest.py` attribue à chaque worker xdist sa propre base Redis (1 à 8) via `AYLAL_REDIS_URL`.
+
+## Dérogation au budget APK (CPS §15)
+- Valeur : limite APK portée de 40 Mo à 52 Mo pour la branche `006-dashboard-monitoring` uniquement (`specs/006-dashboard-monitoring/apk-budget.env`). La dérogation de `005-operations-journal` ne s'applique pas à cette branche. Plafond absolu d'une dérogation : 60 Mo.
+- Mesure : `app-release.apk` = 50 480 024 o (limite par défaut 41 943 040 o), sous 52 Mo. Aucune dépendance native F3 (`expo-speech`, `expo-location`) n'est encore ajoutée : la mesure sera refaite avec les écrans (T085).
+- Cause : `libmaplibre` intégré à `main` par F2 (dérogation F2, voir `specs/003-fields-crops/decisions.md`) et dépendances de F6 (voir `specs/005-operations-journal/decisions.md`, décision F2/F6) héritées par la branche.
+- Condition de réexamen : allègement de MapLibre, découpage en AAB (split par ABI/densité), ou ajout d'`expo-speech`/`expo-location` faisant dépasser 52 Mo.
+- Règle : chaque fonctionnalité qui grossit l'APK doit re-justifier sa propre dérogation.

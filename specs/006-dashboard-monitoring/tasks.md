@@ -164,7 +164,7 @@
 
 ## Phase finale : Finition
 
-- [ ] T084 Revue transverse non-écran : couverture >= 80 % du code métier F3, `scripts/check-test-pyramid.sh` vert (unitaire, intégration, contrat, e2e pour chaque récit P1), aucun `// eslint-disable`, aucune chaîne en dur, parité i18n.
+- [x] T084 Revue transverse non-écran : couverture >= 80 % du code métier F3, `scripts/check-test-pyramid.sh` vert (unitaire, intégration, contrat, e2e pour chaque récit P1), aucun `// eslint-disable`, aucune chaîne en dur, parité i18n.
 - [ ] T085 **Mesure APK (`make apk-size`)** : construire (`make apk`) puis mesurer `app-release.apk` avec `scripts/check-apk-size.sh` après ajout d'`expo-speech` et `expo-location` (budget 40 Mo par défaut ; budget de branche possible via `specs/006-dashboard-monitoring/apk-budget.env` seulement si une dérogation est acceptée). **Rappel : toute dérogation au budget APK exige une section « Dérogation » dans `specs/006-dashboard-monitoring/decisions.md`** (valeur, mesure, cause, alternatives écartées, condition de réexamen ; plafond absolu 60 Mo ; décision humaine requise) ; ne jamais relâcher un seuil sans cette section.
 - [ ] T086 **`make check` vert** (sync-rules, test-deps, test-pyramid, lint, typecheck, tests, coverage, test-visual, `apk-size`, diagrams, e2e) ; les tâches `[écran]` bloquées par T004/004 sont signalées dans `decisions.md` si non terminées.
 - [ ] T087 **Documentation de fin de module (/aylal.docs)** : `docs/modules/006-dashboard-monitoring/{ingenieur.md,agriculteur.fr.md,agriculteur.ar.md}`, `diagrams/*.mmd` (flowchart, sequenceDiagram, erDiagram, stateDiagram-v2 des alertes/zones/scènes), rendus `img/*.svg` et `img/*.png` via `make diagrams`, image ET bloc de code source intégrés.
