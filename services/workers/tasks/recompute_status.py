@@ -10,8 +10,9 @@ from typing import Any
 
 from access_sql import VISIBLE_PARCELS_SQL, asyncpg_query, scope_params
 from imagery_reliability import imagery_reliability
-from monitoring_db import STAFF_SCOPE_USER, bump_data_version, dsn, param
+from monitoring_db import STAFF_SCOPE_USER, bump_data_version, dsn, load_thresholds, param
 from parcel_status import parcel_status, sort_parcels
+from status_sources import collect_signals, drop_unreliable_vigor
 from weather_thresholds import thresholds_for
 
 TTL_S = 24 * 3600
@@ -22,14 +23,15 @@ def _signal(source: str, severity: str, reason_key: str, observed: dt.datetime, 
             "source_ref": ref, "params": params}
 
 
-async def recompute_status(ctx: dict[str, Any], now: dt.datetime | None = None) -> int:
+async def recompute_status(ctx: dict[str, Any], now: dt.datetime | None = None, farm_id: uuid.UUID | None = None) -> int:
     import asyncpg
 
     now = now or dt.datetime.now(dt.UTC)
     total = 0
     conn = await asyncpg.connect(dsn())
     try:
-        for farm in [r["id"] for r in await conn.fetch("SELECT id FROM farms WHERE deleted_at IS NULL")]:
+        farms = [farm_id] if farm_id else [r["id"] for r in await conn.fetch("SELECT id FROM farms WHERE deleted_at IS NULL")]
+        for farm in farms:
             async with conn.transaction():
                 await conn.execute("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", f"monitoring:{farm}")  # serialises recomputes
                 total += await _farm(conn, farm, now)
@@ -41,7 +43,7 @@ async def recompute_status(ctx: dict[str, Any], now: dt.datetime | None = None) 
 
 async def _farm(conn: Any, farm: uuid.UUID, now: dt.datetime) -> int:
     min_area = float(await param(conn, "min_area_ha", 0.3))
-    thresholds = [dict(r) for r in await conn.fetch("SELECT * FROM crop_weather_thresholds")]
+    thresholds = await load_thresholds(conn)
     query, args = asyncpg_query(
         f"SELECT p.id, p.name, COALESCE(p.area_calc_ha, p.area_declared_ha, 0) AS area, p.greenhouse FROM parcels p"
         f" WHERE p.id IN ({VISIBLE_PARCELS_SQL})",
@@ -49,18 +51,21 @@ async def _farm(conn: Any, farm: uuid.UUID, now: dt.datetime) -> int:
     )
     computed: list[dict[str, Any]] = []
     for p in await conn.fetch(query, *args):
-        signals: list[dict[str, Any]] = []
+        reliability = imagery_reliability(float(p["area"]), p["greenhouse"], min_area)
+        by_source: dict[str, list[dict[str, Any]]] = {"weather_alert": [], "vigor_anomaly": [], "overdue_operations": []}
         for a in await conn.fetch("SELECT id, severity, reason_key, reason_params, updated_at FROM alerts WHERE parcel_id = $1 AND status = 'active'", p["id"]):
-            signals.append(_signal("weather_alert", "act" if a["severity"] == "critical" else "watch", a["reason_key"].replace("alert.", "status."), a["updated_at"], a["id"], {}))
+            by_source["weather_alert"].append(_signal("weather_alert", "act" if a["severity"] == "critical" else "watch", a["reason_key"].replace("alert.", "status."), a["updated_at"], a["id"], {}))
         for z in await conn.fetch("SELECT id, detected_on FROM attention_zones WHERE parcel_id = $1 AND status IN ('open', 'visited')", p["id"]):
-            signals.append(_signal("vigor_anomaly", "watch", "status.vigor_zone", now, z["id"], {}))
+            by_source["vigor_anomaly"].append(_signal("vigor_anomaly", "watch", "status.vigor_zone", now, z["id"], {}))
         for o in await conn.fetch("SELECT operation_id FROM operation_parcels WHERE parcel_id = $1 AND status = 'planned' AND performed_on < $2", p["id"], now.date()):
-            signals.append(_signal("overdue_operations", "watch", "status.overdue", now, o["operation_id"], {}))
+            by_source["overdue_operations"].append(_signal("overdue_operations", "watch", "status.overdue", now, o["operation_id"], {}))
+        # irrigation (F4) and health (F5) are not registered: they contribute nothing, without error
+        signals = drop_unreliable_vigor(collect_signals({name: (lambda rows=rows: rows) for name, rows in by_source.items()}), reliability)
         doubts: list[str] = []
         if not signals and await _unknown_threshold(conn, p["id"], farm, thresholds):
             doubts.append("unknown_threshold")
         status = parcel_status(signals, now, doubts)
-        computed.append({"p": p, "signals": signals, "status": status, "contributors": len(status["items"])})
+        computed.append({"p": p, "signals": signals, "status": status, "contributors": len(status["items"]), "reliability": reliability})
     ordered = sort_parcels([{"id": c["p"]["id"], "color": c["status"]["color"], "contributors": c["contributors"], "name": c["p"]["name"]} for c in computed])
     rank = {o["id"]: i for i, o in enumerate(ordered)}
     for c in computed:
@@ -69,7 +74,7 @@ async def _farm(conn: Any, farm: uuid.UUID, now: dt.datetime) -> int:
             "INSERT INTO parcel_status (parcel_id, farm_id, color, reason_key, reason_params, rank, computed_at, data_age_at, imagery_reliability)"
             " VALUES ($1,$2,$3,$4,'{}'::jsonb,$5,$6,$6,$7) ON CONFLICT (parcel_id) DO UPDATE SET color = $3, reason_key = $4, rank = $5,"
             " computed_at = $6, data_age_at = $6, imagery_reliability = $7",
-            p["id"], farm, s["color"], s["reason_key"], rank[p["id"]], now, imagery_reliability(float(p["area"]), p["greenhouse"], min_area),
+            p["id"], farm, s["color"], s["reason_key"], rank[p["id"]], now, c["reliability"],
         )
         await conn.execute("DELETE FROM parcel_status_items WHERE parcel_id = $1", p["id"])
         by_source = {sig["source"]: sig for sig in c["signals"]}

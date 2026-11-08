@@ -27,3 +27,10 @@ async def param(conn: Any, key: str, default: Any = None) -> Any:
 
     raw = await conn.fetchval("SELECT value FROM monitoring_params WHERE key = $1", key)
     return default if raw is None else json.loads(raw) if isinstance(raw, str) else raw
+
+
+async def load_thresholds(conn: Any) -> list[dict[str, Any]]:
+    """Reference thresholds with plain floats (numeric columns arrive as Decimal)."""
+    from decimal import Decimal
+
+    return [{k: float(v) if isinstance(v, Decimal) else v for k, v in r.items()} for r in map(dict, await conn.fetch("SELECT * FROM crop_weather_thresholds"))]

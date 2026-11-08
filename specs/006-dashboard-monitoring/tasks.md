@@ -77,8 +77,8 @@
 - [x] T041 [P] [US1] RED intégration R1-A1, R1-A2, CL : `services/api/tests/integration/test_f3_weather.py` (`farm_weather` lu depuis le cache, ferme non localisée -> `unavailable`/invitation, ferme sans parcelle -> météo seule) et `services/workers/tests/test_refresh_weather.py` (1 appel par cellule 0,1°/3 h, verrou Redis).
 - [x] T042 [P] [US1] RED contrat : `services/api/tests/contract/test_f3_weather_contract.py`.
 - [x] T043 [US1] RED e2e (API) : `services/api/tests/e2e/test_f3_weather_e2e.py` (R1-A1, R1-A2 via données synchronisées datées).
-- [ ] T044 [US1] GREEN : `services/api/app/monitoring/weather.py`, `services/workers/tasks/refresh_weather.py`, route météo/dashboard dans `services/api/app/routers/dashboard.py` ; fait passer T040 à T043.
-- [ ] T045 [US1] GREEN view model hors écran : `apps/mobile/src/monitoring/viewModels/weatherViewModel.ts`, `apps/mobile/src/monitoring/staleness.ts` (+ `__tests__`).
+- [x] T044 [US1] GREEN : `services/api/app/monitoring/weather.py`, `services/workers/tasks/refresh_weather.py`, route météo/dashboard dans `services/api/app/routers/dashboard.py` ; fait passer T040 à T043.
+- [x] T045 [US1] GREEN view model hors écran : `apps/mobile/src/monitoring/viewModels/weatherViewModel.ts`, `apps/mobile/src/monitoring/staleness.ts` (+ `__tests__`).
 - [ ] T046 [US1] [écran] RED puis GREEN F3-E1 `apps/mobile/src/screens/Dashboard/` (partie météo), F3-E2 `apps/mobile/src/screens/Weather7Days/` (+ `__tests__`, 4 états, RTL, Maestro `apps/mobile/maestro/{weather_offline,dashboard_30s}.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase 4 : Récit 2 — Alertes météo par culture et stade (P1) [US2]
@@ -89,8 +89,8 @@
 - [x] T048 [P] [US2] RED intégration R2-A1 à R2-A4 : `services/api/tests/integration/test_f3_alerts.py` (alerte avec parcelle, gravité, raison ; 403 `alert.dismiss` ouvrier ; 20 actives/parcelle ; archivée -> aucune alerte) et `services/workers/tests/test_evaluate_alerts.py` (seuils de fixture, destinataires et parcelles par destinataire via `visible_parcels`, `notify_at`).
 - [x] T049 [P] [US2] RED contrat : `services/api/tests/contract/test_f3_alerts_contract.py`.
 - [x] T050 [US2] RED e2e (API) : `services/api/tests/e2e/test_f3_alerts_e2e.py` (gel à 48 h -> `notify_at` avant 18 h la veille ; gel non dépassé -> aucune alerte).
-- [ ] T051 [US2] GREEN : `services/api/app/routers/alerts.py`, `services/workers/tasks/{evaluate_alerts.py,import_crop_thresholds.py}` (import validé par l'agronomie, aucune valeur de production inventée) ; fait passer T047 à T050.
-- [ ] T052 [US2] GREEN non-écran mobile : `apps/mobile/src/monitoring/alertNotifications.ts` (notifications locales programmées depuis les alertes synchronisées, hors ligne) + view model + `__tests__`.
+- [x] T051 [US2] GREEN : `services/api/app/routers/alerts.py`, `services/workers/tasks/{evaluate_alerts.py,import_crop_thresholds.py}` (import validé par l'agronomie, aucune valeur de production inventée) ; fait passer T047 à T050.
+- [x] T052 [US2] GREEN non-écran mobile : `apps/mobile/src/monitoring/alertNotifications.ts` (notifications locales programmées depuis les alertes synchronisées, hors ligne) + view model + `__tests__`.
 - [ ] T053 [US2] [écran] RED puis GREEN F3-E3 `apps/mobile/src/screens/Alerts/` (+ `__tests__`, Maestro `apps/mobile/maestro/frost_alert.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase 5 : Récit 3 — Vigueur par satellite (P1) [US3]
@@ -101,8 +101,8 @@
 - [x] T055 [P] [US3] RED intégration R3-A1 à R3-A4 : `services/api/tests/integration/test_f3_vigor.py` (scène `rejected_cloud` jamais affichée, dernière valide servie avec sa date ; libellés i18n sans « NDVI/NDMI » ; fenêtre <= 24 mois, <= 400 points ; reprocess 403 ouvrier) ; `services/workers/tests/test_ingest_imagery.py` (téléchargement par tuile, raster <= 500 Mo vérifié avant lecture, stats zonales dans le worker, géométrie jamais sortante) ; `services/workers/tests/test_backfill_parcel_vigor.py` (1 backfill actif/parcelle, 12 mois, `duration_s` mesuré).
 - [x] T056 [P] [US3] RED contrat : `services/api/tests/contract/test_f3_vigor_contract.py`.
 - [x] T057 [US3] RED e2e (API) : `services/api/tests/e2e/test_f3_vigor_e2e.py` (parcelle créée -> historique 12 mois publié ; SC-002 < 10 min mesuré sur jeu de test).
-- [ ] T058 [US3] GREEN : `services/api/app/monitoring/imagery.py`, `services/api/app/routers/vigor.py`, `services/workers/tasks/{ingest_imagery.py,backfill_parcel_vigor.py}` ; fait passer T054 à T057.
-- [ ] T059 [US3] GREEN view model + courbe : `apps/mobile/src/monitoring/viewModels/vigorViewModel.ts` (données de courbe plafonnées, rendu SVG/Skia sans bibliothèque lourde) + `__tests__`.
+- [x] T058 [US3] GREEN : `services/api/app/monitoring/imagery.py`, `services/api/app/routers/vigor.py`, `services/workers/tasks/{ingest_imagery.py,backfill_parcel_vigor.py}` ; fait passer T054 à T057.
+- [x] T059 [US3] GREEN view model + courbe : `apps/mobile/src/monitoring/viewModels/vigorViewModel.ts` (données de courbe plafonnées, rendu SVG/Skia sans bibliothèque lourde) + `__tests__`.
 - [ ] T060 [US3] [écran] RED puis GREEN F3-E4 `apps/mobile/src/screens/ParcelVigor/` (+ `__tests__`, Maestro `apps/mobile/maestro/vigor_cloud.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase 6 : Récit 4 — Zones à vérifier et guidage (P1) [US4]
@@ -113,8 +113,8 @@
 - [x] T062 [P] [US4] RED intégration R4-A1 à R4-A3 : `services/api/tests/integration/test_f3_zones.py` (zone délimitée, <= 5/parcelle, <= 200/ferme, polygone <= 200 sommets, observation rattachée via REST et `/v1/sync/upload`, transition `open -> visited`, `zone.dismiss` 403 ouvrier, ouvrier limité à ses parcelles) et `services/workers/tests/test_detect_zones.py`.
 - [x] T063 [P] [US4] RED contrat : `services/api/tests/contract/test_f3_zones_contract.py`.
 - [x] T064 [US4] RED e2e (API) : `services/api/tests/e2e/test_f3_zones_e2e.py` (nouvelle scène -> zone -> observation avec photo opaque -> `visited`).
-- [ ] T065 [US4] GREEN : `services/api/app/monitoring/zones.py`, `services/api/app/routers/zones.py`, `services/workers/tasks/detect_zones.py`, observations dans `services/api/app/sync/monitoring.py` ; fait passer T061 à T064.
-- [ ] T066 [US4] GREEN non-écran mobile : `apps/mobile/src/monitoring/guidance.ts` (expo-location, fonds MapLibre en cache) + view model + `__tests__`.
+- [x] T065 [US4] GREEN : `services/api/app/monitoring/zones.py`, `services/api/app/routers/zones.py`, `services/workers/tasks/detect_zones.py`, observations dans `services/api/app/sync/monitoring.py` ; fait passer T061 à T064.
+- [x] T066 [US4] GREEN non-écran mobile : `apps/mobile/src/monitoring/guidance.ts` (expo-location, fonds MapLibre en cache) + view model + `__tests__`.
 - [ ] T067 [US4] [écran] RED puis GREEN F3-E6 `apps/mobile/src/screens/ZoneGuidance/` (+ `__tests__`, Maestro `apps/mobile/maestro/zone_guidance.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase 7 : Récit 5 — État résumé en couleur (P1) [US5]
@@ -125,8 +125,8 @@
 - [x] T069 [P] [US5] RED intégration R5-A1 à R5-A4 : `services/api/tests/integration/test_f3_status.py` (`parcel_status_items` avec source expliquée, adaptateur F6 « opérations en retard » disponible, F4/F5 absents, aucun item pour source indisponible, ouvrier limité) et `services/workers/tests/test_recompute_status.py` (recalcul < 5 min après signal, verrou `monitoring:{farm}`).
 - [x] T070 [P] [US5] RED contrat : `services/api/tests/contract/test_f3_status_contract.py`.
 - [x] T071 [US5] RED e2e (API) : `services/api/tests/e2e/test_f3_status_e2e.py` (signaux météo + vigueur + opération en retard -> couleur, phrase, tri, détail).
-- [ ] T072 [US5] GREEN : `services/api/app/monitoring/status_sources.py`, `services/workers/tasks/recompute_status.py`, routes d'état dans `services/api/app/routers/dashboard.py` ; fait passer T068 à T071.
-- [ ] T073 [US5] GREEN view model : `apps/mobile/src/monitoring/viewModels/{dashboardViewModel,statusDetailViewModel}.ts` (tri, 200 parcelles < 2 s depuis SQLite) + `__tests__`.
+- [x] T072 [US5] GREEN : `services/api/app/monitoring/status_sources.py`, `services/workers/tasks/recompute_status.py`, routes d'état dans `services/api/app/routers/dashboard.py` ; fait passer T068 à T071.
+- [x] T073 [US5] GREEN view model : `apps/mobile/src/monitoring/viewModels/{dashboardViewModel,statusDetailViewModel}.ts` (tri, 200 parcelles < 2 s depuis SQLite) + `__tests__`.
 - [ ] T074 [US5] [écran] RED puis GREEN F3-E1 (liste des parcelles par état) `apps/mobile/src/screens/Dashboard/`, F3-E5 `apps/mobile/src/screens/StatusDetail/` (+ `__tests__`, Maestro `apps/mobile/maestro/{status_detail,worker_scope}.yaml`) ; dépend de T004 + fusion 004.
 
 ## Phase 8 : Récit 6 — Comparaison N-1 (P2) [US6]

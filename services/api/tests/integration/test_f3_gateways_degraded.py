@@ -25,6 +25,7 @@ def _weather_row(farm, *, age_h, availability="ok", reason=None, days=True):
 
 def test_given_no_gateway_and_no_forecast_ever_then_weather_is_unavailable_with_a_reason_and_no_value(client, token_for, world3):
     w = world3
+    sql("UPDATE farms SET location = ST_SetSRID(ST_MakePoint(-7.6, 33.57), 4326) WHERE id = $1", w["farm_a"])  # located: farm_not_located is another case
     r = call(client, token_for(w["owner"]), "GET", f"/v1/farms/{w['farm_a']}/weather")
     assert r.status_code == 200, r.text
     b = r.json()
@@ -55,6 +56,7 @@ def test_given_an_unreachable_gateway_recorded_by_the_worker_then_the_reason_is_
 
 def test_given_no_gateway_then_the_dashboard_and_vigor_answer_200_with_unavailable_and_dated_history(client, token_for, world3):
     w = world3
+    sql("UPDATE farms SET location = ST_SetSRID(ST_MakePoint(-7.6, 33.57), 4326) WHERE id = $1", w["farm_a"])  # located: farm_not_located is another case
     seed_scene(w["farm_a"], w["a1"])
     tok = token_for(w["owner"])
     d = call(client, tok, "GET", f"/v1/farms/{w['farm_a']}/dashboard")

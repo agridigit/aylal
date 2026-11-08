@@ -15,6 +15,7 @@ from app.domain.monitoring_limits import LIMITS
 from app.monitoring import cache, uploads
 from app.monitoring.access import visible_parcels
 from app.monitoring.access_sql import STAFF_ROLES, VISIBLE_PARCELS_SQL, scope_params
+from app.monitoring.weather import today_plus_seven
 
 # One lock per farm, taken BEFORE any quota is read and held until the transaction ends.
 FARM_LOCK_SQL = "SELECT pg_advisory_xact_lock(hashtextextended(CAST(:farm AS text), 0))"
@@ -38,22 +39,30 @@ def _scope(ctx: FarmContext) -> dict[str, Any]:
 
 # ---------------------------------------------------------------- weather
 async def weather(ctx: FarmContext, now: dt.datetime | None = None) -> dict[str, Any]:
-    """Last stored forecast with its freshness; nothing is invented and no gateway is ever called."""
+    """Last stored forecast (today to day 7) with its freshness; nothing is invented and no gateway is ever called."""
     now = now or dt.datetime.now(dt.UTC)
+    located = bool(
+        (await ctx.session.execute(text("SELECT location IS NOT NULL FROM farms WHERE id = :f"), {"f": ctx.farm_id})).scalar()
+    )
     row = (
         await ctx.session.execute(
             text("SELECT availability, reason, fetched_at, days FROM farm_weather WHERE farm_id = :f"), {"f": ctx.farm_id}
         )
     ).mappings().first()
+    if not located and (row is None or not row["days"]):
+        return {"availability": "unavailable", "reason": "farm_not_located", "fetched_at": None, "days": []}
     if row is None:
         reason = "gateway_unreachable" if get_settings().weather_url else "gateway_not_configured"
         return {"availability": "unavailable", "reason": reason, "fetched_at": None, "days": []}
     availability, reason = row["availability"], row["reason"]
+    if located and reason == "farm_not_located":
+        reason = "gateway_unreachable" if get_settings().weather_url else "gateway_not_configured"
     if availability != "unavailable" and row["fetched_at"] is not None and now - row["fetched_at"] > STALE_AFTER:
         availability, reason = "stale", "stale"
     return {
         "availability": availability, "reason": reason,
-        "fetched_at": row["fetched_at"].isoformat() if row["fetched_at"] else None, "days": list(row["days"] or []),
+        "fetched_at": row["fetched_at"].isoformat() if row["fetched_at"] else None,
+        "days": today_plus_seven(list(row["days"] or []), now.date()),
     }
 
 
@@ -127,16 +136,18 @@ async def parcel_status(ctx: FarmContext, parcel_id: uuid.UUID) -> dict[str, Any
 
 
 # ---------------------------------------------------------------- alerts and zones
-async def alerts(ctx: FarmContext, limit: int) -> list[dict[str, Any]]:
+async def alerts(ctx: FarmContext, limit: int, only: uuid.UUID | None = None) -> list[dict[str, Any]]:
+    """Active alerts, or the one alert `only` whatever its status (the dismissal answer carries the full schema)."""
     rows = (
         await ctx.session.execute(
             text(
                 "SELECT a.id, a.parcel_id, a.crop_slug, a.type, a.severity, a.source, a.status, a.forecast_day, a.reason_key,"
                 " a.reason_params, a.advice_key, a.notify_at, a.revision FROM alerts a"
-                f" WHERE a.farm_id = :farm AND a.status = 'active' AND a.parcel_id IN ({VISIBLE_PARCELS_SQL})"
+                f" WHERE a.farm_id = :farm AND ((CAST(:only AS uuid) IS NULL AND a.status = 'active') OR a.id = :only)"
+                f" AND a.parcel_id IN ({VISIBLE_PARCELS_SQL})"
                 " ORDER BY CASE a.severity WHEN 'critical' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END, a.forecast_day, a.id LIMIT :limit"
             ),
-            {**_scope(ctx), "limit": limit},
+            {**_scope(ctx), "limit": limit, "only": only},
         )
     ).mappings().all()
     return [_jsonable(dict(r)) for r in rows]
@@ -149,16 +160,16 @@ def _jsonable(row: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-async def zones(ctx: FarmContext, limit: int) -> list[dict[str, Any]]:
+async def zones(ctx: FarmContext, limit: int, only: uuid.UUID | None = None) -> list[dict[str, Any]]:
     rows = (
         await ctx.session.execute(
             text(
                 "SELECT z.id, z.parcel_id, z.status, ST_AsGeoJSON(z.geometry)::json AS geometry,"
                 " ST_AsGeoJSON(z.centroid)::json AS centroid, z.detected_on, z.area_ha::float8 AS area_ha, z.reason_key"
-                f" FROM attention_zones z WHERE z.farm_id = :farm AND z.status IN ('open', 'visited')"
-                f" AND z.parcel_id IN ({VISIBLE_PARCELS_SQL}) ORDER BY z.detected_on DESC, z.id LIMIT :limit"
+                f" FROM attention_zones z WHERE z.farm_id = :farm AND ((CAST(:only AS uuid) IS NULL AND z.status IN ('open', 'visited'))"
+                f" OR z.id = :only) AND z.parcel_id IN ({VISIBLE_PARCELS_SQL}) ORDER BY z.detected_on DESC, z.id LIMIT :limit"
             ),
-            {**_scope(ctx), "limit": limit},
+            {**_scope(ctx), "limit": limit, "only": only},
         )
     ).mappings().all()
     return [_jsonable(dict(r)) for r in rows]
@@ -177,9 +188,8 @@ async def dismiss(ctx: FarmContext, table: str, object_id: uuid.UUID) -> dict[st
         )
     await ctx.session.commit()
     await cache.bump_data_version(ctx.farm_id)
-    rows = await (alerts(ctx, 1000) if table == "alerts" else zones(ctx, 1000))
-    found = next((r for r in rows if r["id"] == str(object_id)), None)
-    return found or {"id": str(object_id), "status": "dismissed"}
+    rows = await (alerts(ctx, 1, object_id) if table == "alerts" else zones(ctx, 1, object_id))
+    return rows[0] if rows else {"id": str(object_id), "status": "dismissed"}
 
 
 # ---------------------------------------------------------------- vigor
@@ -330,6 +340,9 @@ async def create_observation(
         text("INSERT INTO zone_observations (id, farm_id, zone_id, parcel_id, author_id, note, photo_key)"
              " VALUES (:i, :f, :z, :p, :u, :n, :k)"),
         {"i": observation_id, "f": farm_id, "z": zone_id, "p": zone[0], "u": user_id, "n": note, "k": key},
+    )
+    await session.execute(  # only the server moves a zone to visited; dismissed and resolved zones are never reopened
+        text("UPDATE attention_zones SET status = 'visited' WHERE id = :z AND farm_id = :f AND status = 'open'"), {"z": zone_id, "f": farm_id}
     )
     return True
 
