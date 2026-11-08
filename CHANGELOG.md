@@ -2,6 +2,24 @@
 
 Tenu automatiquement par Claude (sous-agent `git-keeper`). Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [SemVer](https://semver.org/lang/fr/).
 
+## [0.5.0] - 2026-11-08 — F3 Tableau de bord et monitoring
+### Ajouts
+- Tableau de bord et monitoring : météo, alertes par culture et stade, vigueur, zones à vérifier, état résumé, comparaison N-1, résumé vocal
+- Passerelles externes à URLs vides par défaut (fonctionnalité signalée non disponible)
+- Dérogation de budget APK à 52 Mo documentée via apk-budget.env
+### Corrections
+- Corrections de sécurité : appartenance active vérifiée, agrégats limités à la portée de l'appelant
+- Corrections de fiabilité : seaux PowerSync valides, drain des jobs backfill, limite de retraitement
+### Documentation
+- Documentation ingénieur et agriculteur (fr, ar) du module 006-dashboard-monitoring
+- Limites connues : écrans reportés (porte design T004 + 004-design-system) ; aucun seuil agronomique semé donc ni alerte ni zone ; rasters non câblés ; recalcul < 5 min non implémenté (cron seulement)
+### Technique
+- Redis isolé par worker de test
+- Test météo déterministe
+- Tests rouges puis verts par histoire utilisateur
+
+Documentation du module : [docs/modules/006-dashboard-monitoring/](docs/modules/006-dashboard-monitoring/)
+
 ## [0.4.0] - 2026-11-07 — F6 Journal des opérations
 ### Ajouts
 - Journal des opérations de l'exploitation

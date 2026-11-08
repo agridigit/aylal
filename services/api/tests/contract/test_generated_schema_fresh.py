@@ -28,3 +28,9 @@ def test_f6_operation_schema_is_exported_from_zod_and_generated() -> None:
     assert (DOMAIN_DIR / "schema" / "operation.json").exists(), "Zod export has no F6 operation schema"
     assert (GENERATED / "schema" / "operation.json").exists(), "generated F6 operation schema missing"
     assert "OperationInput" in (GENERATED / "models.py").read_text(), "Pydantic OperationInput not generated"
+
+
+def test_f3_observation_schema_is_exported_from_zod_and_generated() -> None:
+    assert (DOMAIN_DIR / "schema" / "observation.json").exists(), "Zod export has no F3 observation schema"
+    assert (GENERATED / "schema" / "observation.json").exists(), "generated F3 observation schema missing"
+    assert "ObservationInput" in (GENERATED / "models.py").read_text(), "Pydantic ObservationInput not generated"

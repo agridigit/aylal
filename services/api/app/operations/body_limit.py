@@ -4,9 +4,12 @@ import re
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from app.domain.monitoring_limits import LIMITS as F3_LIMITS
 from app.domain.operation_limits import LIMITS
 
 _F6 = re.compile(r"^/v1/farms/[^/]+/(operations|registry|phyto-products)(/|$)")
+_F3 = re.compile(r"^/v1/farms/[^/]+/(zones|summary)(/|$)")
+_PHOTO = re.compile(r"^/v1/farms/[^/]+/zones/[^/]+/observations/photo$")
 _LABEL = re.compile(r"^/v1/farms/[^/]+/operations/label$")
 _MULTIPART_OVERHEAD = 1024 * 1024
 
@@ -18,10 +21,15 @@ class BodyLimitMiddleware:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http" or scope["method"] not in ("POST", "PATCH", "PUT") or not _F6.match(scope["path"]):
+        if scope["type"] != "http" or scope["method"] not in ("POST", "PATCH", "PUT") or not (_F6.match(scope["path"]) or _F3.match(scope["path"])):
             await self.app(scope, receive, send)
             return
-        limit = LIMITS["label_bytes"] + _MULTIPART_OVERHEAD if _LABEL.match(scope["path"]) else LIMITS["body_bytes"]
+        if _PHOTO.match(scope["path"]):
+            limit = F3_LIMITS["photo_bytes"] + _MULTIPART_OVERHEAD
+        elif _F3.match(scope["path"]):
+            limit = F3_LIMITS["body_bytes"]
+        else:
+            limit = LIMITS["label_bytes"] + _MULTIPART_OVERHEAD if _LABEL.match(scope["path"]) else LIMITS["body_bytes"]
         declared = dict(scope["headers"]).get(b"content-length")
         if declared is not None and declared.isdigit() and int(declared) > limit:
             await self._refuse(scope, receive, send)

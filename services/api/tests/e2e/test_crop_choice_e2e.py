@@ -11,7 +11,7 @@ def test_given_the_16_crops_and_a_free_crop_when_creating_a_field_each_then_ever
     fresh(PHONE)
     with httpx.Client(base_url=BASE, verify=False, timeout=60) as c:
         h, farm = owner_with_farm(c, PHONE)
-        crops = c.get("/crops", headers=h).json()["items"]
+        crops = [x for x in c.get("/crops", headers=h).json()["items"] if not x["slug"].startswith("fx_")]  # F3 fixture crops are never deleted
         assert len(crops) == 16 and all(x["photo_key"] for x in crops)
         for i, crop in enumerate(crops):
             f = c.post(f"/farms/{farm}/fields", json={"name": crop["slug"], "geometry": square(-7.9 + i * 0.004)}, headers=h)

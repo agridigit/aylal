@@ -1,0 +1,58 @@
+{
+ "from": {
+  "lat": 33.57,
+  "lon": -7.6
+ },
+ "cases": [
+  {
+   "name": "north",
+   "to": {
+    "lat": 33.571,
+    "lon": -7.6
+   },
+   "bearing": 0,
+   "distance_m": 111.2
+  },
+  {
+   "name": "south",
+   "to": {
+    "lat": 33.569,
+    "lon": -7.6
+   },
+   "bearing": 180,
+   "distance_m": 111.2
+  },
+  {
+   "name": "east",
+   "to": {
+    "lat": 33.57,
+    "lon": -7.599
+   },
+   "bearing": 90,
+   "distance_m": 92.8
+  },
+  {
+   "name": "west",
+   "to": {
+    "lat": 33.57,
+    "lon": -7.601
+   },
+   "bearing": 270,
+   "distance_m": 92.8
+  },
+  {
+   "name": "same point",
+   "to": {
+    "lat": 33.57,
+    "lon": -7.6
+   },
+   "bearing": 0,
+   "distance_m": 0
+  }
+ ],
+ "tolerance": {
+  "bearing_deg": 0.6,
+  "distance_ratio": 0.01,
+  "distance_abs_m": 0.5
+ }
+}

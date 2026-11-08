@@ -70,3 +70,18 @@ describe("F6 roles matrix shared vectors (operation.*, registry.*, phyto_product
     expect(ROLES.some((r) => can(r, "operation.delete"))).toBe(false);
   });
 });
+
+const f3: { role: string; action: string; allowed: boolean }[] = JSON.parse(
+  readFileSync(new URL("../vectors/f3_roles.json", import.meta.url), "utf-8"),
+);
+
+describe("F3 monitoring rights (G1)", () => {
+  for (const m of f3) {
+    it(`given role ${m.role} when doing ${m.action} then allowed is ${m.allowed}`, () => {
+      expect(can(m.role, m.action)).toBe(m.allowed);
+    });
+  }
+  it("given the F3 actions then none is a financial action", () => {
+    expect(f3.filter((m) => /finance|price|cost|amount/.test(m.action))).toEqual([]);
+  });
+});

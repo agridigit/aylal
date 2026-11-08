@@ -1,0 +1,15 @@
+flowchart TD
+    A[Ouvrir l'application] --> B[Voir la météo : aujourd'hui et 7 jours]
+    A --> C[Voir mes parcelles : rouge, orange, vert]
+    C --> D[Ouvrir une parcelle]
+    D --> E[Lire la raison et sa source]
+    D --> F[Voir la vigueur par satellite]
+    F --> G{Une zone à vérifier ?}
+    G -- Oui --> H[Me laisser guider jusqu'à la zone]
+    H --> I[Noter ce que je vois]
+    G -- Non --> J[Rien à faire]
+    F --> K[Comparer avec l'an dernier]
+    B --> L{Alerte pour ma culture ?}
+    L -- Oui --> M[Recevoir l'alerte]
+    L -- Non --> J
+    A --> N[Écouter le résumé du jour]

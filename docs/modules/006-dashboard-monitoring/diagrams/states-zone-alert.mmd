@@ -1,0 +1,20 @@
+stateDiagram-v2
+  direction LR
+  state "Zone a verifier" as Zone {
+    [*] --> open : detect_zones
+    open --> visited : observation enregistree (serveur)
+    open --> dismissed : staff
+    open --> resolved : vigueur au-dessus du seuil, 2 scenes
+    visited --> resolved : vigueur au-dessus du seuil, 2 scenes
+    dismissed --> [*]
+    resolved --> [*]
+  }
+  state "Alerte meteo" as Alerte {
+    [*] --> active : evaluate_alerts
+    active --> resolved : prevision disparue ou stade change
+    resolved --> active : prevision revenue, revision + 1
+    active --> dismissed : staff
+    active --> expired : jour passe
+    dismissed --> [*]
+    expired --> [*]
+  }

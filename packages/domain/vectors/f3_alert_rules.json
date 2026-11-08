@@ -1,0 +1,219 @@
+{
+ "thresholds": [
+  {
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "frost_c": -2,
+   "chergui_tmax_c": 38,
+   "chergui_rh_max_pct": 30,
+   "chergui_wind_kmh": 25,
+   "heavy_rain_mm_24h": 40,
+   "strong_wind_kmh": 30,
+   "source": "fixture"
+  },
+  {
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_dormant",
+   "frost_c": null,
+   "chergui_tmax_c": 38,
+   "chergui_rh_max_pct": 30,
+   "chergui_wind_kmh": 25,
+   "heavy_rain_mm_24h": 40,
+   "strong_wind_kmh": 30,
+   "source": "fixture"
+  }
+ ],
+ "lookups": [
+  {
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "found": true
+  },
+  {
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_unknown",
+   "found": false
+  },
+  {
+   "crop_slug": "fixture_unknown",
+   "stage_key": "fixture_flowering",
+   "found": false
+  }
+ ],
+ "evaluations": [
+  {
+   "name": "frost well below the threshold of a sensitive stage",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": -5,
+    "tmax": 25,
+    "rain_mm": 0,
+    "wind_kmh": 5,
+    "humidity_pct": 60
+   },
+   "expected": [
+    {
+     "type": "frost",
+     "severity": "critical"
+    }
+   ]
+  },
+  {
+   "name": "frost forecast stays above the threshold",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": 4,
+    "tmax": 25,
+    "rain_mm": 0,
+    "wind_kmh": 5,
+    "humidity_pct": 60
+   },
+   "expected": []
+  },
+  {
+   "name": "frost exactly at the threshold alerts",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": -2,
+    "tmax": 25,
+    "rain_mm": 0,
+    "wind_kmh": 5,
+    "humidity_pct": 60
+   },
+   "expected": [
+    {
+     "type": "frost"
+    }
+   ]
+  },
+  {
+   "name": "frost on a stage without a frost threshold",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_dormant",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": -5,
+    "tmax": 25,
+    "rain_mm": 0,
+    "wind_kmh": 5,
+    "humidity_pct": 60
+   },
+   "expected": []
+  },
+  {
+   "name": "chergui when heat, dryness and wind all reach the thresholds",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": 10,
+    "tmax": 41,
+    "rain_mm": 0,
+    "wind_kmh": 26,
+    "humidity_pct": 20
+   },
+   "expected": [
+    {
+     "type": "chergui"
+    }
+   ]
+  },
+  {
+   "name": "no chergui when humidity is above the limit",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": 10,
+    "tmax": 41,
+    "rain_mm": 0,
+    "wind_kmh": 26,
+    "humidity_pct": 45
+   },
+   "expected": []
+  },
+  {
+   "name": "heavy rain at or above the 24 h threshold",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": 10,
+    "tmax": 25,
+    "rain_mm": 55,
+    "wind_kmh": 5,
+    "humidity_pct": 60
+   },
+   "expected": [
+    {
+     "type": "heavy_rain"
+    }
+   ]
+  },
+  {
+   "name": "rain below the threshold",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": 10,
+    "tmax": 25,
+    "rain_mm": 10,
+    "wind_kmh": 5,
+    "humidity_pct": 60
+   },
+   "expected": []
+  },
+  {
+   "name": "strong wind advises not to spray",
+   "crop_slug": "fixture_sensitive",
+   "stage_key": "fixture_flowering",
+   "day": {
+    "date": "2026-12-05",
+    "tmin": 10,
+    "tmax": 25,
+    "rain_mm": 0,
+    "wind_kmh": 35,
+    "humidity_pct": 60
+   },
+   "expected": [
+    {
+     "type": "strong_wind",
+     "advice_key": "do_not_spray"
+    }
+   ]
+  }
+ ],
+ "dedup": {
+  "base": {
+   "farm_id": "11111111-1111-4111-8111-111111111111",
+   "parcel_id": "22222222-2222-4222-8222-222222222222",
+   "crop_slug": "fixture_sensitive",
+   "type": "frost",
+   "forecast_day": "2026-12-05"
+  },
+  "variants": [
+   {
+    "farm_id": "33333333-3333-4333-8333-333333333333"
+   },
+   {
+    "parcel_id": "44444444-4444-4444-8444-444444444444"
+   },
+   {
+    "crop_slug": "fixture_other"
+   },
+   {
+    "type": "chergui"
+   },
+   {
+    "forecast_day": "2026-12-06"
+   }
+  ]
+ }
+}

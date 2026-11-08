@@ -1,0 +1,26 @@
+[
+ {
+  "clear_pct": 79.9,
+  "publishable": false
+ },
+ {
+  "clear_pct": 80.0,
+  "publishable": true
+ },
+ {
+  "clear_pct": 100,
+  "publishable": true
+ },
+ {
+  "clear_pct": 0,
+  "publishable": false
+ },
+ {
+  "clear_pct": 100.1,
+  "publishable": false
+ },
+ {
+  "clear_pct": -1,
+  "publishable": false
+ }
+]
