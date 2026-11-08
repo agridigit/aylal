@@ -1,0 +1,51 @@
+flowchart LR
+  subgraph Mobile["apps/mobile (SQLite + PowerSync)"]
+    LB[localBalance.ts]
+    VOICE[adviceVoice.ts]
+    VM[viewModels system, record]
+  end
+  subgraph Domain["packages/domain + app/domain (vecteurs f4_*.json)"]
+    ADV[irrigation-advice]
+    WB[water-balance]
+    LEACH[water-analysis / leaching]
+    EV[irrigation-event / units]
+  end
+  subgraph API["services/api (FastAPI)"]
+    R[routers irrigation_*, water_analyses, consumption]
+    ACC[irrigation/access.py visible_parcels]
+    SVC[irrigation/service.py]
+    SYNC[sync/irrigation.py]
+    WV[worker_view.py]
+  end
+  subgraph Workers["services/workers (Arq)"]
+    CP[compute_irrigation_plans]
+    REM[send_irrigation_reminders]
+    IMP[import_irrigation_params]
+    RS[recompute_status F3]
+  end
+  PG[(PostgreSQL)]
+  PS[PowerSync]
+  RD[(Redis)]
+  GW[Passerelle meteo Maroc]
+  F9[F9 ingest_moisture]
+  Mobile <--> PS
+  PS <--> PG
+  Mobile -->|/v1/sync/upload| SYNC
+  R --> ACC
+  SYNC --> ACC
+  R --> SVC
+  SYNC --> SVC
+  SVC --> PG
+  SVC --> Domain
+  CP --> Domain
+  CP --> PG
+  CP --> WV
+  REM --> PG
+  IMP --> PG
+  CP --> RS
+  RS --> PG
+  GW --> PG
+  F9 --> PG
+  R --> RD
+  Workers --> RD
+  LB --> Domain
