@@ -145,6 +145,8 @@ def _integration_database(request: pytest.FixtureRequest) -> None:
 @pytest.fixture
 def clean_db(migrated: None) -> None:
     sql(f"TRUNCATE {TABLES} CASCADE")
+    # F3/F4 fixtures insert global fx_* crops that no TRUNCATE above reaches; real reference crops stay.
+    sql("DELETE FROM crops WHERE slug LIKE 'fx\\_%'")
 
 
 @pytest.fixture

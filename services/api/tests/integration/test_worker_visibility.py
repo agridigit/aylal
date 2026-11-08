@@ -48,7 +48,7 @@ def test_given_the_worker_bucket_then_no_financial_table_or_column_nor_wildcard_
 
 
 # Global reference buckets (readable by every member, workers included), named explicitly: T015 / F6 spec.
-GLOBAL_CATALOG_BUCKETS = {"phyto_catalog"}
+GLOBAL_CATALOG_BUCKETS = {"phyto_catalog", "irrigation_reference"}
 # Per-user buckets (F3 daily summaries): every ACTIVE member, workers included, reads only their own (farm_id, user_id) rows; see decisions F3.
 PER_USER_BUCKETS = {"user_summaries"}
 

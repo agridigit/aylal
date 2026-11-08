@@ -19,7 +19,7 @@ COVERED_ROUTES = {
     "parcels/{parcel_id}/irrigation/events/{event_id}/cancel", "parcels/{parcel_id}/water-analyses",
 }
 COVERED_TABLES = {"irrigation_systems", "irrigation_system_versions", "irrigation_events", "irrigation_applied", "water_analyses", "water_balance_days",
-                  "irrigation_plans", "moisture_corrections", "irrigation_notification_log", "weather_observed", "crop_irrigation_params", "soil_textures", "irrigation_params"}
+                  "irrigation_plans", "moisture_corrections", "irrigation_notification_log", "weather_observed", "crop_irrigation_params", "soil_textures", "irrigation_params", "irrigation_jobs"}
 COVERED_TASKS = {"compute_irrigation_plans", "import_irrigation_params", "send_irrigation_reminders"}
 COVERED_BUCKETS = {"farm_irrigation", "farm_worker_irrigation", "farm_worker_irrigation_own", "irrigation_reference"}
 # every task that existed before F4 (F1-F3 + F6 sets of test_f3_path_parity.py), so adding a task is never silently accepted
