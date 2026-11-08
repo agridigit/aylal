@@ -1,0 +1,168 @@
+openapi: 3.1.0
+info:
+  title: AYLAL F3 - Tableau de bord et monitoring
+  version: 0.1.0
+  description: |
+    Toutes les routes passent par farm_context/require(action). Non-membre, membre retiré, ferme inconnue ou supprimée => 404 {"detail":"not_found"} identique.
+    Parcelle non attribuée (ouvrier), archivée (ouvrier) ou inconnue => 404 identique. Rôle insuffisant sur une parcelle visible => 403.
+    Agrégats calculés sur la portée de l'appelant. Aucune clé de stockage ni URL n'est acceptée en entrée ; extra=forbid.
+    Corps lus avec plafond avant parsing (413). Limiteur Redis par IP/utilisateur/ferme ; 429 + Retry-After. IP via client_ip() (AYLAL_TRUSTED_PROXIES).
+servers: [{url: /v1}]
+components:
+  responses:
+    NotFound: {description: "404 identique (ferme inconnue/supprimée/inter-ferme, parcelle invisible)", content: {application/json: {schema: {type: object, properties: {detail: {const: not_found}}}}}}
+    Forbidden: {description: "403 rôle insuffisant", content: {application/json: {schema: {type: object, properties: {detail: {const: forbidden}}}}}}
+    TooMany: {description: "429", headers: {Retry-After: {schema: {type: integer}}}}
+    TooLarge: {description: "413 plafond dépassé avant traitement"}
+  schemas:
+    Availability: {type: string, enum: [ok, stale, unavailable]}
+    Freshness: {type: object, required: [fetched_at, availability], properties: {fetched_at: {type: [string, "null"], format: date-time}, availability: {$ref: "#/components/schemas/Availability"}, reason: {type: [string, "null"], enum: [gateway_not_configured, gateway_unreachable, farm_not_located, stale, null]}}}
+    WeatherDay: {type: object, required: [date, tmin, tmax, rain_mm, wind_kmh, humidity_pct, icon], properties: {date: {type: string, format: date}, tmin: {type: number}, tmax: {type: number}, rain_mm: {type: number}, wind_kmh: {type: number}, humidity_pct: {type: number}, icon: {type: string}}}
+    Weather: {allOf: [{$ref: "#/components/schemas/Freshness"}, {type: object, properties: {days: {type: array, maxItems: 8, items: {$ref: "#/components/schemas/WeatherDay"}}}}]}
+    StatusItem: {type: object, required: [source, severity, reason_key, observed_at], properties: {source: {type: string, enum: [weather_alert, vigor_anomaly, overdue_operations, irrigation_need, health_risk]}, severity: {type: string, enum: [watch, act]}, reason_key: {type: string}, reason_params: {type: object}, observed_at: {type: string, format: date-time}}}
+    ParcelStatus: {type: object, required: [parcel_id, color, reason_key, computed_at, imagery_reliability], properties: {parcel_id: {type: string, format: uuid}, color: {type: string, enum: [green, orange, red]}, reason_key: {type: string}, reason_params: {type: object}, computed_at: {type: string, format: date-time}, data_age_at: {type: string, format: date-time}, imagery_reliability: {type: string, enum: [ok, low]}, items: {type: array, items: {$ref: "#/components/schemas/StatusItem"}}}}
+    Counts: {type: object, description: "calculés sur la portée de l'appelant uniquement", required: [red, orange, green], properties: {red: {type: integer}, orange: {type: integer}, green: {type: integer}}}
+    Dashboard: {type: object, required: [weather, parcels, counts, generated_at], properties: {weather: {$ref: "#/components/schemas/Weather"}, parcels: {type: array, maxItems: 100, items: {$ref: "#/components/schemas/ParcelStatus"}}, counts: {$ref: "#/components/schemas/Counts"}, next_cursor: {type: [string, "null"]}, generated_at: {type: string, format: date-time}}}
+    Alert: {type: object, required: [id, parcel_id, type, severity, source, status, forecast_day, reason_key], properties: {id: {type: string, format: uuid}, parcel_id: {type: string, format: uuid}, crop_slug: {type: string}, type: {type: string, enum: [frost, chergui, heavy_rain, strong_wind]}, severity: {type: string, enum: [info, warning, critical]}, source: {type: string}, status: {type: string, enum: [active, resolved, dismissed, expired]}, forecast_day: {type: string, format: date}, reason_key: {type: string}, reason_params: {type: object}, advice_key: {type: [string, "null"]}, notify_at: {type: [string, "null"], format: date-time}, revision: {type: integer}}}
+    VigorPoint: {type: object, required: [acquired_on, vigor, plant_moisture, clear_pct], properties: {acquired_on: {type: string, format: date}, vigor: {type: number}, plant_moisture: {type: number}, clear_pct: {type: number, minimum: 80, maximum: 100}}}
+    VigorSeries: {type: object, required: [points, reliability], properties: {points: {type: array, maxItems: 400, items: {$ref: "#/components/schemas/VigorPoint"}}, reliability: {type: string, enum: [ok, low]}, last_valid_map: {type: [object, "null"], properties: {map_id: {type: string, format: uuid}, acquired_on: {type: string, format: date}}}, processing: {type: boolean}}}
+    Zone: {type: object, required: [id, parcel_id, status, geometry, centroid, detected_on], properties: {id: {type: string, format: uuid}, parcel_id: {type: string, format: uuid}, status: {type: string, enum: [open, visited, dismissed, resolved]}, geometry: {type: object}, centroid: {type: object}, detected_on: {type: string, format: date}, area_ha: {type: number}}}
+    ObservationInput: {type: object, additionalProperties: false, required: [id, note], properties: {id: {type: string, format: uuid}, note: {type: string, maxLength: 500}, photo_id: {type: [string, "null"], format: uuid, description: "opaque, émis par le serveur ; clé de stockage refusée"}}}
+    YearCompare: {type: object, required: [reference_available, current, previous], properties: {reference_available: {type: boolean}, current: {type: array, maxItems: 200, items: {type: object, required: [day_of_campaign, acquired_on, vigor, plant_moisture], properties: {day_of_campaign: {type: integer, minimum: 0}, acquired_on: {type: string, format: date}, vigor: {type: number}, plant_moisture: {type: number}}}}, previous: {type: array, maxItems: 200, items: {type: object, required: [day_of_campaign, acquired_on, vigor, plant_moisture], properties: {day_of_campaign: {type: integer, minimum: 0}, acquired_on: {type: string, format: date}, vigor: {type: number}, plant_moisture: {type: number}}}}}}
+    Summary: {type: object, required: [summary_date, locale, items], properties: {summary_date: {type: string, format: date}, locale: {type: string, enum: [ary, ar, fr]}, items: {type: array, maxItems: 100, items: {type: object, required: [parcel_id, color, reason_key], properties: {parcel_id: {type: string, format: uuid}, color: {type: string, enum: [red, orange]}, reason_key: {type: string}}}}, weather_code: {type: [string, "null"]}}}
+paths:
+  /farms/{farm_id}/dashboard:
+    get:
+      summary: Tableau de bord (meteo + parcelles par etat). x-action dashboard.read ; limit<=100, curseur
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: dashboard.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Dashboard"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/weather:
+    get:
+      summary: Meteo 7 jours (lecture de cache, aucun appel sortant). x-action weather.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: weather.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Weather"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/alerts:
+    get:
+      summary: Alertes (parcelles visibles). x-action alert.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: alert.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Alert"}}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/alerts/{alert_id}/dismiss:
+    post:
+      summary: Ecarter une alerte (staff). x-action alert.dismiss
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: alert.dismiss
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Alert"}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/parcels/{parcel_id}/status:
+    get:
+      summary: Etat et elements contributeurs avec leur source. x-action status.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: status.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/ParcelStatus"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/parcels/{parcel_id}/vigor:
+    get:
+      summary: Serie de vigueur (fenetre<=24 mois, <=400 points). x-action vigor.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: vigor.read
+      # query: from, to (<=24 mois), compare=previous_year
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/VigorSeries"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "413": {$ref: "#/components/responses/TooLarge"}
+        "429": {$ref: "#/components/responses/TooMany"}
+  /farms/{farm_id}/parcels/{parcel_id}/vigor/compare:
+    get:
+      summary: Comparaison N-1 alignee par jour de campagne ; 200 avec reference_available=false si absente. x-action vigor.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: vigor.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/YearCompare"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/parcels/{parcel_id}/vigor/scenes/{scene_id}/map:
+    get:
+      summary: URL signee 15 min (scene_id opaque serveur). x-action vigor.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: vigor.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {type: object, properties: {url: {type: string}, expires_at: {type: string, format: date-time}, acquired_on: {type: string, format: date}}}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/parcels/{parcel_id}/vigor/reprocess:
+    post:
+      summary: Retraitement (staff, <=3/jour/parcelle, quota sous verrou). x-action imagery.reprocess
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: imagery.reprocess
+      responses:
+        "202": {description: accepted}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "429": {$ref: "#/components/responses/TooMany"}
+  /farms/{farm_id}/zones:
+    get:
+      summary: Zones a verifier (parcelles visibles). x-action zone.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: zone.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Zone"}}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/zones/{zone_id}/dismiss:
+    post:
+      summary: Ecarter une zone (staff). x-action zone.dismiss
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: zone.dismiss
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Zone"}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/zones/{zone_id}/observations/photo:
+    post:
+      summary: Depot de photo (<=3 Mo, signature verifiee) -> photo_id opaque lie (farm,user), 24 h. x-action zone.observe
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: zone.observe
+      responses:
+        "201": {description: created, content: {application/json: {schema: {type: object, properties: {photo_id: {type: string, format: uuid}}}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "413": {$ref: "#/components/responses/TooLarge"}
+        "429": {$ref: "#/components/responses/TooMany"}
+  /farms/{farm_id}/zones/{zone_id}/observations:
+    post:
+      summary: Observation rattachee a la zone (aussi via /sync/upload). x-action zone.observe ; photo_id inconnu => 422 invalid_object_ref identique
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: zone.observe
+      requestBody:
+        content: {application/json: {schema: {$ref: "#/components/schemas/ObservationInput"}}}
+      responses:
+        "201": {description: created}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "422": {description: invalid_object_ref}
+        "429": {$ref: "#/components/responses/TooMany"}
+  /farms/{farm_id}/summary/today:
+    get:
+      summary: Resume vocal du jour, calcule sur la portee de l'appelant. x-action summary.read
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: summary.read
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/Summary"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /farms/{farm_id}/summary/settings:
+    put:
+      summary: Heure du resume (0-23) et alertes ; propres a l'appelant. x-action summary.settings
+      parameters: [{name: farm_id, in: path, required: true, schema: {type: string, format: uuid}}]
+      x-action: summary.settings
+      requestBody: {required: true, content: {application/json: {schema: {type: object, required: [summary_hour, alerts_enabled], properties: {summary_hour: {type: integer, minimum: 0, maximum: 23}, alerts_enabled: {type: boolean}}}}}}
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {type: object, properties: {summary_hour: {type: integer, minimum: 0, maximum: 23}, alerts_enabled: {type: boolean}}}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "422": {description: invalid_summary_settings}

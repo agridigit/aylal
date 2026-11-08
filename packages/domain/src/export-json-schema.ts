@@ -7,6 +7,7 @@ import { FarmRegistration } from "./farm";
 import { ProfileUpdate } from "./onboarding";
 import { PhoneInput } from "./phone";
 import { OperationInput } from "./operation";
+import { ObservationInput } from "./observation";
 import { TrialRecordCreate } from "./schemas/trial_record";
 
 const outDir = new URL("../schema/", import.meta.url);
@@ -18,6 +19,7 @@ const targets = { trial_record: TrialRecordCreate, parcel: ParcelCreate, farm: F
   consent: ConsentGrant,
   profile: ProfileUpdate,
   operation: OperationInput,
+  observation: ObservationInput,
 };
 for (const [name, schema] of Object.entries(targets)) {
   const json = z.toJSONSchema(schema, { io: "input", target: "draft-7", unrepresentable: "any" });

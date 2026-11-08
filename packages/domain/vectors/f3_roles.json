@@ -1,0 +1,182 @@
+[
+ {
+  "role": "owner",
+  "action": "dashboard.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "dashboard.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "dashboard.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "weather.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "weather.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "weather.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "status.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "status.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "status.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "alert.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "alert.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "alert.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "vigor.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "vigor.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "vigor.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "zone.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "zone.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "zone.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "zone.observe",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "zone.observe",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "zone.observe",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "zone.dismiss",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "zone.dismiss",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "zone.dismiss",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "alert.dismiss",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "alert.dismiss",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "alert.dismiss",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "imagery.reprocess",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "imagery.reprocess",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "imagery.reprocess",
+  "allowed": false
+ },
+ {
+  "role": "owner",
+  "action": "summary.read",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "summary.read",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "summary.read",
+  "allowed": true
+ },
+ {
+  "role": "owner",
+  "action": "summary.settings",
+  "allowed": true
+ },
+ {
+  "role": "manager",
+  "action": "summary.settings",
+  "allowed": true
+ },
+ {
+  "role": "worker",
+  "action": "summary.settings",
+  "allowed": true
+ }
+]

@@ -1,0 +1,37 @@
+{
+ "min_hour": 17,
+ "cases": [
+  {
+   "name": "seen days before notifies the evening before at 17:00 Morocco time",
+   "forecast_day": "2026-12-05",
+   "first_seen_at": "2026-12-02T10:00:00Z",
+   "notify_hour": 17,
+   "notify_at": "2026-12-04T16:00:00Z",
+   "late": false
+  },
+  {
+   "name": "seen between 17:00 and 18:00 the evening before notifies immediately",
+   "forecast_day": "2026-12-05",
+   "first_seen_at": "2026-12-04T16:30:00Z",
+   "notify_hour": 17,
+   "notify_at": "2026-12-04T16:30:00Z",
+   "late": false
+  },
+  {
+   "name": "seen after 18:00 the evening before notifies immediately and is late",
+   "forecast_day": "2026-12-05",
+   "first_seen_at": "2026-12-04T17:30:00Z",
+   "notify_hour": 17,
+   "notify_at": "2026-12-04T17:30:00Z",
+   "late": true
+  },
+  {
+   "name": "a configured hour above 18 is capped at 18",
+   "forecast_day": "2026-12-05",
+   "first_seen_at": "2026-12-02T10:00:00Z",
+   "notify_hour": 21,
+   "notify_at": "2026-12-04T17:00:00Z",
+   "late": false
+  }
+ ]
+}

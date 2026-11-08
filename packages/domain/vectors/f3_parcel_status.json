@@ -1,0 +1,245 @@
+{
+ "cases": [
+  {
+   "name": "no signal is green",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [],
+   "doubts": [],
+   "expected": {
+    "color": "green",
+    "reason_key": "status.nothing_to_do",
+    "item_sources": []
+   }
+  },
+  {
+   "name": "one watch signal is orange",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "overdue_operations",
+     "severity": "watch",
+     "reason_key": "status.overdue",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    }
+   ],
+   "doubts": [],
+   "expected": {
+    "color": "orange",
+    "reason_key": "status.overdue",
+    "item_sources": [
+     "overdue_operations"
+    ]
+   }
+  },
+  {
+   "name": "one act signal is red",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "weather_alert",
+     "severity": "act",
+     "reason_key": "status.frost",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    }
+   ],
+   "doubts": [],
+   "expected": {
+    "color": "red",
+    "reason_key": "status.frost",
+    "item_sources": [
+     "weather_alert"
+    ]
+   }
+  },
+  {
+   "name": "an expired signal is ignored",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "weather_alert",
+     "severity": "act",
+     "reason_key": "status.frost",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 60
+    }
+   ],
+   "doubts": [],
+   "expected": {
+    "color": "green",
+    "reason_key": "status.nothing_to_do",
+    "item_sources": []
+   }
+  },
+  {
+   "name": "an ok signal is green and not listed",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "irrigation_need",
+     "severity": "ok",
+     "reason_key": "status.irrigation_ok",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    }
+   ],
+   "doubts": [],
+   "expected": {
+    "color": "green",
+    "reason_key": "status.nothing_to_do",
+    "item_sources": []
+   }
+  },
+  {
+   "name": "irrigation outranks vigor at equal severity",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "vigor_anomaly",
+     "severity": "watch",
+     "reason_key": "status.vigor",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    },
+    {
+     "source": "irrigation_need",
+     "severity": "watch",
+     "reason_key": "status.irrigation",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    }
+   ],
+   "doubts": [],
+   "expected": {
+    "color": "orange",
+    "reason_key": "status.irrigation",
+    "item_sources": [
+     "irrigation_need",
+     "vigor_anomaly"
+    ]
+   }
+  },
+  {
+   "name": "weather act outranks everything and makes it red",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "overdue_operations",
+     "severity": "watch",
+     "reason_key": "status.overdue",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    },
+    {
+     "source": "weather_alert",
+     "severity": "act",
+     "reason_key": "status.frost",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    },
+    {
+     "source": "health_risk",
+     "severity": "watch",
+     "reason_key": "status.health",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    }
+   ],
+   "doubts": [],
+   "expected": {
+    "color": "red",
+    "reason_key": "status.frost",
+    "item_sources": [
+     "weather_alert",
+     "health_risk",
+     "overdue_operations"
+    ]
+   }
+  },
+  {
+   "name": "doubt alone is orange never green",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [],
+   "doubts": [
+    "unknown_threshold"
+   ],
+   "expected": {
+    "color": "orange",
+    "reason_key": "status.threshold_unvalidated",
+    "item_sources": []
+   }
+  },
+  {
+   "name": "doubt does not hide a red",
+   "now": "2026-12-05T09:00:00Z",
+   "signals": [
+    {
+     "source": "weather_alert",
+     "severity": "act",
+     "reason_key": "status.frost",
+     "observed_at": "2026-12-05T08:00:00Z",
+     "ttl_s": 86400
+    }
+   ],
+   "doubts": [
+    "unknown_threshold"
+   ],
+   "expected": {
+    "color": "red",
+    "reason_key": "status.frost",
+    "item_sources": [
+     "weather_alert"
+    ]
+   }
+  }
+ ],
+ "sorting": {
+  "parcels": [
+   {
+    "id": "g1",
+    "color": "green",
+    "contributors": 0,
+    "name": "A"
+   },
+   {
+    "id": "o1",
+    "color": "orange",
+    "contributors": 1,
+    "name": "B"
+   },
+   {
+    "id": "r1",
+    "color": "red",
+    "contributors": 1,
+    "name": "C"
+   },
+   {
+    "id": "o2",
+    "color": "orange",
+    "contributors": 3,
+    "name": "D"
+   },
+   {
+    "id": "r2",
+    "color": "red",
+    "contributors": 1,
+    "name": "A"
+   },
+   {
+    "id": "g2",
+    "color": "green",
+    "contributors": 0,
+    "name": "0"
+   }
+  ],
+  "expected": [
+   "r2",
+   "r1",
+   "o2",
+   "o1",
+   "g2",
+   "g1"
+  ]
+ }
+}

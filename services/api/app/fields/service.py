@@ -29,6 +29,7 @@ from app.domain.field_limits import (
 from app.domain.field_rules import LIMITS as FIELD_LIMITS
 from app.domain.geometry import centroid, is_in_morocco
 from app.domain.season_rules import estimate_stage
+from app.monitoring.jobs import queue_initial_history
 
 Data = Mapping[str, Any]
 FIELD_COLS = (
@@ -220,6 +221,7 @@ async def create_field(
         ),
         {"id": field_id, "farm": farm_id, "uid": user_id, "g": geometry, **values},
     )
+    await queue_initial_history(session, farm_id, field_id, user_id)
     return {**await get_field(session, farm_id, field_id), "warnings": await overlap_warnings(session, farm_id, field_id)}
 
 

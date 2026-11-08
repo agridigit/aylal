@@ -1,0 +1,68 @@
+{
+ "params": {
+  "anomaly_drop": 0.15,
+  "anomaly_min_pixels": 20,
+  "source": "fixture"
+ },
+ "zones": [
+  {
+   "drop_score": 0.15,
+   "pixels": 20,
+   "anomalous": true
+  },
+  {
+   "drop_score": 0.1499,
+   "pixels": 20,
+   "anomalous": false
+  },
+  {
+   "drop_score": 0.4,
+   "pixels": 19,
+   "anomalous": false
+  },
+  {
+   "drop_score": 0.0,
+   "pixels": 500,
+   "anomalous": false
+  },
+  {
+   "drop_score": 0.3,
+   "pixels": 500,
+   "anomalous": true
+  }
+ ],
+ "resolution": [
+  {
+   "recent_vigor": [
+    0.6,
+    0.6
+   ],
+   "threshold": 0.5,
+   "resolved": true
+  },
+  {
+   "recent_vigor": [
+    0.4,
+    0.6
+   ],
+   "threshold": 0.5,
+   "resolved": false
+  },
+  {
+   "recent_vigor": [
+    0.6
+   ],
+   "threshold": 0.5,
+   "resolved": false
+  },
+  {
+   "recent_vigor": [
+    0.3,
+    0.6,
+    0.7
+   ],
+   "threshold": 0.5,
+   "resolved": true
+  }
+ ]
+}

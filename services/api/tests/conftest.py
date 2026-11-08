@@ -23,6 +23,13 @@ from fastapi.testclient import TestClient
 
 from tests.helpers import auth, sql
 
+# Redis isolation: each pytest-xdist worker gets its own Redis database (1..8), so a FLUSHDB or a rate-limit counter
+# in one worker never resets another worker's counters (flaky 429 tests). Without xdist the shared DB 0 is kept.
+_XDIST = os.environ.get("PYTEST_XDIST_WORKER", "")
+if _XDIST.startswith("gw") and _XDIST[2:].isdigit():
+    _base = os.environ.get("AYLAL_REDIS_URL", "redis://redis:6379/0").rsplit("/", 1)[0]
+    os.environ["AYLAL_REDIS_URL"] = f"{_base}/{1 + int(_XDIST[2:]) % 15}"
+
 TABLES = (
     "sync_conflicts, applied_ops, trial_records, worker_parcels, invitations, parcels,"
     " farm_members, farms, refresh_tokens, consents, otp_challenges, users, phyto_products, catalog_versions"

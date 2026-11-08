@@ -21,6 +21,7 @@ from app.db.session import get_session
 from app.domain.phone import normalize_phone
 from app.domain.roles import can_assign_parcels_to, can_remove_member
 from app.domain.validation import validate
+from app.monitoring import lifecycle
 
 router = APIRouter(prefix="/farms")
 INVITATION_TTL = dt.timedelta(days=30)
@@ -181,7 +182,10 @@ async def change_role(
     member = await _active_member(ctx.session, ctx.farm_id, user_id)
     if member.role == "owner":
         raise HTTPException(status_code=403, detail="owner_immutable")
+    changed = member.role != body.role
     member.role = body.role
+    if changed:  # the scope changes: summaries and preferences of the member go in the same transaction (FR-021)
+        await lifecycle.purge_member_monitoring(ctx.session, ctx.farm_id, user_id)
     if body.role != "worker":
         await ctx.session.execute(
             delete(WorkerParcel).where(
@@ -200,6 +204,7 @@ async def remove_member(
     if not can_remove_member(ctx.role, member.role):
         raise HTTPException(status_code=403, detail="owner_not_removable")
     member.removed_at = func.now()
+    await lifecycle.purge_member_monitoring(ctx.session, ctx.farm_id, user_id)
     await ctx.session.execute(
         delete(WorkerParcel).where(
             WorkerParcel.farm_id == ctx.farm_id, WorkerParcel.user_id == user_id

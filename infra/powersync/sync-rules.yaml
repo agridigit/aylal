@@ -29,6 +29,14 @@ bucket_definitions:
       - SELECT * FROM operation_reminders WHERE farm_id = bucket.farm_id
       - SELECT * FROM operation_corrections WHERE farm_id = bucket.farm_id
       - SELECT * FROM registry_entries WHERE farm_id = bucket.farm_id
+      - SELECT farm_id AS id, farm_id, cell_id, fetched_at, availability, reason, days FROM farm_weather WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, season_id, crop_slug, type, severity, source, status, forecast_day, reason_key, reason_params, advice_key, notify_at, revision, parcel_archived_at, updated_at FROM alerts WHERE farm_id = bucket.farm_id AND parcel_archived_at IS NULL
+      - SELECT parcel_id AS id, farm_id, parcel_id, color, reason_key, reason_params, rank, computed_at, data_age_at, imagery_reliability, parcel_archived_at FROM parcel_status WHERE farm_id = bucket.farm_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, source, severity, reason_key, reason_params, source_ref, observed_at, parcel_archived_at FROM parcel_status_items WHERE farm_id = bucket.farm_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, scene_id, acquired_on, vigor_mean, plant_moisture_mean, clear_pct, reliability, season_id, parcel_archived_at FROM parcel_vigor_points WHERE farm_id = bucket.farm_id AND valid = true
+      - SELECT id, farm_id, parcel_id, scene_id, acquired_on, bounds, parcel_archived_at FROM vigor_maps WHERE farm_id = bucket.farm_id
+      - SELECT id, farm_id, parcel_id, geometry, centroid, detected_on, drop_score, area_ha, status, reason_key, parcel_archived_at FROM attention_zones WHERE farm_id = bucket.farm_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, zone_id, parcel_id, author_id, note, created_at, parcel_archived_at FROM zone_observations WHERE farm_id = bucket.farm_id AND parcel_archived_at IS NULL
   farm_worker_farm:
     parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
     data:
@@ -55,6 +63,38 @@ bucket_definitions:
     parameters: SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels WHERE user_id = request.user_id()
     data:
       - SELECT id, farm_id, operation_id, parcel_id, author_id, type, performed_on, status, product_id, free_product_name, allocated_quantity, allocated_dose, dose_unit, area_ha_snapshot, crop_slug, warnings, parcel_archived_at, updated_at FROM operation_parcels WHERE parcel_id = bucket.parcel_id AND author_id = bucket.user_id AND parcel_archived_at IS NULL
+  # F3 (specs/006-dashboard-monitoring) : tableau de bord et monitoring. Aucune clé de stockage (map_key, photo_key, raster_key,
+  # object_key) ni jeton push n'est répliquée ; aucune jointure ni sous-requête ; les parcelles archivées sortent de tous les seaux
+  # (l'historique de vigueur reste lisible par le personnel). Les écritures passent par POST /v1/sync/upload (zone_observations).
+  # La météo (niveau ferme, aucune donnée de parcelle) est servie à l'ouvrier par farm_id.
+  farm_worker_weather:
+    parameters: SELECT farm_id FROM farm_members WHERE user_id = request.user_id() AND role = 'worker' AND removed_at IS NULL
+    data:
+      - SELECT farm_id AS id, farm_id, cell_id, fetched_at, availability, reason, days FROM farm_weather WHERE farm_id = bucket.farm_id
+  # ouvrier : uniquement ses parcelles attribuées et non archivées (un seul paramètre, parcel_id). worker_parcels est purgé à la
+  # sortie du membre, au changement de rôle et à la suppression de ferme : seules les lignes d'ouvriers ACTIFS existent.
+  farm_worker_monitoring:
+    parameters: SELECT parcel_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, parcel_id, crop_slug, type, severity, status, forecast_day, reason_key, reason_params, advice_key, notify_at, revision, parcel_archived_at, updated_at FROM alerts WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT parcel_id AS id, farm_id, parcel_id, color, reason_key, reason_params, rank, computed_at, data_age_at, imagery_reliability, parcel_archived_at FROM parcel_status WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, source, severity, reason_key, reason_params, observed_at, parcel_archived_at FROM parcel_status_items WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, scene_id, acquired_on, vigor_mean, plant_moisture_mean, clear_pct, reliability, parcel_archived_at FROM parcel_vigor_points WHERE parcel_id = bucket.parcel_id AND valid = true AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, scene_id, acquired_on, bounds, parcel_archived_at FROM vigor_maps WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+      - SELECT id, farm_id, parcel_id, geometry, centroid, detected_on, area_ha, status, reason_key, parcel_archived_at FROM attention_zones WHERE parcel_id = bucket.parcel_id AND parcel_archived_at IS NULL
+  # moindre privilège : l'ouvrier ne reçoit que SES observations (auteur) ; deux paramètres, donc un seau distinct
+  # (le service refuse une requête qui ne couvre pas tous les paramètres de son seau).
+  farm_worker_observations:
+    parameters: SELECT parcel_id, request.user_id() AS user_id FROM worker_parcels WHERE user_id = request.user_id()
+    data:
+      - SELECT id, farm_id, zone_id, parcel_id, author_id, note, created_at, parcel_archived_at FROM zone_observations WHERE parcel_id = bucket.parcel_id AND author_id = bucket.user_id AND parcel_archived_at IS NULL
+  # résumés vocaux : un par destinataire, limité à sa portée côté serveur. Le paramètre est soumis à l'appartenance ACTIVE ;
+  # les données sont filtrées par (farm_id, user_id), jamais par request.user_id() seul. Purge au retrait, au changement de rôle
+  # et à la suppression de ferme.
+  user_summaries:
+    parameters: SELECT farm_id, request.user_id() AS user_id FROM farm_members WHERE user_id = request.user_id() AND removed_at IS NULL
+    data:
+      - SELECT id, farm_id, user_id, summary_date, locale, payload, created_at FROM daily_summaries WHERE farm_id = bucket.farm_id AND user_id = bucket.user_id
 # F6 (specs/005-operations-journal) : journal des opérations. Aucune clé de stockage n'est répliquée (colonnes listées pour
 # operations ; pas de table d'export ni d'envoi d'étiquette). Le registre réglementaire n'est lu que par propriétaire et gestionnaire :
 # l'ouvrier ne reçoit que ses propres lignes (auteur), sur ses parcelles attribuées et non archivées (parcel_archived_at copié par le serveur).

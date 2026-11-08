@@ -2,6 +2,7 @@
 import os
 import secrets
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 _WEAK_SECRET = "dev-only-secret-change-me"
 _MIN_SECRET_LEN = 32
@@ -29,6 +30,14 @@ class Settings:
     registry_retention_years: int = 5
     minio_user: str = ""
     minio_password: str = ""
+    # F3: external gateways hosted in Morocco. Empty = "unavailable" (no default value, no call); only listed hosts are called.
+    weather_url: str = ""
+    imagery_url: str = ""
+    push_url: str = ""
+    weather_key: str = ""
+    imagery_key: str = ""
+    push_key: str = ""
+    external_allowed_hosts: tuple[str, ...] = ()
 
 
 def get_settings() -> Settings:
@@ -70,6 +79,15 @@ def get_settings() -> Settings:
         registry_retention_years=int(os.environ.get("AYLAL_REGISTRY_RETENTION_YEARS", "5") or "5"),
         minio_user=os.environ.get("MINIO_ROOT_USER", ""),
         minio_password=os.environ.get("MINIO_ROOT_PASSWORD", ""),
+        weather_url=os.environ.get("AYLAL_WEATHER_URL", "").strip(),
+        imagery_url=os.environ.get("AYLAL_IMAGERY_URL", "").strip(),
+        push_url=os.environ.get("AYLAL_PUSH_URL", "").strip(),
+        weather_key=os.environ.get("AYLAL_WEATHER_KEY", ""),
+        imagery_key=os.environ.get("AYLAL_IMAGERY_KEY", ""),
+        push_key=os.environ.get("AYLAL_PUSH_KEY", ""),
+        external_allowed_hosts=tuple(
+            h.strip().lower() for h in os.environ.get("AYLAL_EXTERNAL_ALLOWED_HOSTS", "").split(",") if h.strip()
+        ),
         trusted_proxies=tuple(
             p.strip() for p in os.environ.get("AYLAL_TRUSTED_PROXIES", "").split(",") if p.strip()
         ),
@@ -88,3 +106,17 @@ def require_minio_credentials(settings: Settings) -> tuple[str, str]:
     if settings.env not in _LOCAL_ENVS and not (settings.minio_user and settings.minio_password):
         raise RuntimeError("MINIO_ROOT_USER and MINIO_ROOT_PASSWORD must be set when AYLAL_ENV is not dev/test")
     return settings.minio_user, settings.minio_password
+
+
+def validate_external_gateways(settings: Settings) -> None:
+    """Outside dev/test a gateway URL must be HTTPS and its host listed in AYLAL_EXTERNAL_ALLOWED_HOSTS (G5)."""
+    if settings.env in _LOCAL_ENVS:
+        return
+    for name, url in (("WEATHER", settings.weather_url), ("IMAGERY", settings.imagery_url), ("PUSH", settings.push_url)):
+        if not url:
+            continue
+        parsed = urlparse(url)
+        if parsed.scheme != "https":
+            raise RuntimeError(f"AYLAL_{name}_URL must use HTTPS when AYLAL_ENV is not dev/test")
+        if (parsed.hostname or "").lower() not in settings.external_allowed_hosts:
+            raise RuntimeError(f"AYLAL_{name}_URL host must be listed in AYLAL_EXTERNAL_ALLOWED_HOSTS")
